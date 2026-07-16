@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+import "users/v1/users.proto";
+
+package auth.v1;
+
+option go_package = "gen/auth/v1;auth";
+
+// Auth service provides authentication services. 
+service Auth {
+
+    // RegisterUser creates a new user.
+    rpc RegisterUser (RegisterUserRequest) returns (RegisterUserResponse);
+
+    // LoginUser allows the user to access resources he is authorized to use
+    rpc LoginUser (LoginUserRequest) returns (LoginUserResponse);
+}
+
+// RegisterUserRequest contains registration information
+message RegisterUserRequest {
+
+    // user's name
+    string name = 1;
+    
+    // user's email
+    string email = 2;
+
+    // userr's password
+    string password = 3;
+
+    // user's phone
+    string phone = 4;
+}
+
+// RegisterUserResponse contains the created user
+message RegisterUserResponse {
+
+    // newly created user
+    users.v1.User user = 1;
+}
+
+// LoginUserRequest contains the user's email and password
+message LoginUserRequest {
+
+    // user's email
+    string email = 1;
+
+    // user's password
+    string password = 2;
+}
+
+// LoginUserResponse contains the JWT token for the user to use to access
+message LoginUserResponse {
+    
+    // auth token
+    string token = 1;
+}

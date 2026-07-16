@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package users.v1;
+
+option go_package = "gen/users/v1;users";
+
+// users service provides user related oeprations
+service Users {
+
+    // GetUserProfile returns the user object
+    rpc GetUserProfile (GetUserProfileRequest) returns (GetUserProfileResponse);
+
+    // UpdateUserProfile updates the user details
+    rpc UpdateUserProfile (UpdateUserProfileRequest) returns (UpdateUserProfileResponse);
+}
+
+// User represents a registered user
+message User {
+
+    // user's id
+    string id = 1;
+
+    // user's name
+    string name = 2;
+
+    // user's email
+    string email = 3;
+
+    // user's phone
+    string phone = 5;
+}
+
+// GetUserProfileRequest is the input for fetching a profile
+message GetUserProfileRequest {}
+
+// GetUserProfileResponse contains the user object
+message GetUserProfileResponse {
+
+    // requested user object
+    User user = 1;
+}
+
+// UpdateUserPorifleRequest contains the user's new details
+message UpdateUserProfileRequest {
+
+    // user's name
+    string name = 1;
+
+    // user's email
+    string email = 2;
+
+    // user's password
+    string password = 3;
+
+    // user's phone
+    string phone = 4;
+}
+
+// UpdateUserProfileResponse is empty
+message UpdateUserProfileResponse {}

@@ -1,0 +1,114 @@
+package interceptors
+
+import (
+	"context"
+	"errors"
+	"log/slog"
+	"strings"
+	"time"
+
+	authpb "cloud/gen/auth/v1"
+	"cloud/internal/config"
+	handlers "cloud/internal/handlers/auth"
+
+	"github.com/golang-jwt/jwt/v5"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
+)
+
+var (
+	ErrMissingAuthHeader  = errors.New("missing authorization header")
+	ErrMissingBearerToken = errors.New("missing bearer token")
+	ErrInvalidToken       = errors.New("invalid token")
+	ErrTokenExpired       = errors.New("token expired")
+)
+
+var publicMethods = map[string]bool{
+	authpb.Auth_LoginUser_FullMethodName:    true,
+	authpb.Auth_RegisterUser_FullMethodName: true,
+}
+
+func AuthInterceptor(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+	if ok := publicMethods[info.FullMethod]; ok {
+		return handler(ctx, req)
+	}
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, ErrMissingAuthHeader.Error())
+	}
+
+	authHeaders := md.Get("authorization")
+	if len(authHeaders) == 0 {
+		slog.Error("[AuthInterceptor]: ", slog.String("error", ErrMissingAuthHeader.Error()))
+		return nil, status.Error(codes.Unauthenticated, ErrMissingAuthHeader.Error())
+	}
+
+	authHeader := authHeaders[0]
+	if authHeader == "" {
+		slog.Error("[AuthInterceptor]: ", slog.String("error", ErrMissingAuthHeader.Error()))
+		return nil, status.Error(codes.Unauthenticated, ErrMissingAuthHeader.Error())
+	}
+
+	const bearerPrefix = "Bearer "
+	if !strings.HasPrefix(authHeader, bearerPrefix) {
+		slog.Error("[AuthInterceptor]: ", slog.String("error", ErrMissingBearerToken.Error()))
+		return nil, status.Error(codes.Unauthenticated, ErrMissingBearerToken.Error())
+	}
+
+	tokenString := strings.TrimPrefix(authHeader, bearerPrefix)
+	if tokenString == "" {
+		slog.Error("[AuthInterceptor]: ", slog.String("error", ErrMissingBearerToken.Error()))
+		return nil, status.Error(codes.Unauthenticated, ErrMissingBearerToken.Error())
+	}
+
+	cfg, err := config.GetConfig()
+	if err != nil {
+		slog.Error("[AuthInterceptor]: ", slog.String("error", err.Error()))
+		return nil, status.Error(codes.Internal, handlers.ErrSomethingWentWrong.Error())
+	}
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if token.Method.Alg() != jwt.SigningMethodHS256.Alg() {
+			return nil, ErrInvalidToken
+		}
+		return []byte(cfg.JWTSecret), nil
+	})
+	if err != nil || !token.Valid {
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			slog.Error("[AuthInterceptor]: ", slog.String("error", ErrTokenExpired.Error()))
+			return nil, status.Error(codes.Unauthenticated, ErrTokenExpired.Error())
+		} else {
+			slog.Error("[AuthInterceptor]: ", slog.String("error", ErrInvalidToken.Error()))
+			return nil, status.Error(codes.Unauthenticated, ErrInvalidToken.Error())
+		}
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		slog.Error("[AuthInterceptor]: ", slog.String("error", ErrInvalidToken.Error()))
+		return nil, status.Error(codes.Unauthenticated, ErrInvalidToken.Error())
+	}
+
+	if iss, ok := claims["iss"].(string); !ok || iss != "todo-app" {
+		slog.Error("[AuthInterceptor]: ", slog.String("error", ErrInvalidToken.Error()))
+		return nil, status.Error(codes.Unauthenticated, ErrInvalidToken.Error())
+	}
+
+	userID, ok := claims["sub"].(string)
+	if !ok || userID == "" {
+		slog.Error("[AuthInterceptor]: ", slog.String("error", ErrInvalidToken.Error()))
+		return nil, status.Error(codes.Unauthenticated, ErrInvalidToken.Error())
+	}
+
+	if iat, ok := claims["iat"].(float64); !ok || int64(iat) <= 0 || time.Unix(int64(iat), 0).After(time.Now()) {
+		slog.Error("[AuthInterceptor]: ", slog.String("error", ErrInvalidToken.Error()))
+		return nil, status.Error(codes.Unauthenticated, ErrInvalidToken.Error())
+	}
+
+	ctx = metadata.NewIncomingContext(ctx, metadata.Pairs("user_id", userID))
+
+	return handler(ctx, req)
+}
