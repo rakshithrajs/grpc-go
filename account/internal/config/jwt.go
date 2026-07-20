@@ -1,8 +1,8 @@
 package config
 
 import (
-	"github.com/rakshithrajs/cloud/services/account/internal/models"
 	"errors"
+	"github.com/rakshithrajs/cloud/services/account/internal/models"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -56,7 +56,7 @@ func ParseJWT(tokenString, secret string) (*Claims, error) {
 	}
 
 	sub, ok := claims["sub"].(string)
-	if !ok || sub == "" {
+	if !ok || sub == nullString {
 		return nil, ErrInvalidToken
 	}
 

@@ -19,7 +19,7 @@ func (f *FileHandler) DeleteFile(ctx context.Context, req *filespb.DeleteFileReq
 		return nil, err
 	}
 
-	if req.GetFileID() == "" {
+	if req.GetFileID() == nullString {
 		return nil, status.Error(codes.InvalidArgument, ErrFileIDRequired.Error())
 	}
 
@@ -28,7 +28,7 @@ func (f *FileHandler) DeleteFile(ctx context.Context, req *filespb.DeleteFileReq
 		if errors.Is(err, storage.ErrFileNotFound) {
 			return &filespb.DeleteFileResponse{}, nil
 		}
-		slog.Error("[DeleteFile]: failed to get file", slog.Any("error", err))
+		slog.Error(logPrefix(fnDeleteFile)+"failed to get file", slog.Any("error", err))
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -36,13 +36,13 @@ func (f *FileHandler) DeleteFile(ctx context.Context, req *filespb.DeleteFileReq
 		if errors.Is(err, storage.ErrFileNotFound) {
 			return &filespb.DeleteFileResponse{}, nil
 		}
-		slog.Error("[DeleteFile]: failed to delete file record", slog.Any("error", err))
+		slog.Error(logPrefix(fnDeleteFile)+"failed to delete file record", slog.Any("error", err))
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	if err := os.Remove(*file.Path); err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			slog.Error("[DeleteFile]: failed to remove file from disk", slog.Any("error", err), slog.String("path", *file.Path))
+			slog.Error(logPrefix(fnDeleteFile)+"failed to remove file from disk", slog.Any("error", err), slog.String("path", *file.Path))
 		}
 	}
 

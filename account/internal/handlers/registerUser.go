@@ -1,14 +1,15 @@
 package handlers
 
 import (
-	accountpb "github.com/rakshithrajs/cloud/services/account/gen/account/v1"
-	"github.com/rakshithrajs/cloud/services/account/internal/models"
-	"github.com/rakshithrajs/cloud/services/account/internal/storage"
-	"github.com/rakshithrajs/cloud/services/account/internal/utils"
 	"context"
 	"errors"
 	"log/slog"
 	"strings"
+
+	accountpb "github.com/rakshithrajs/cloud/services/account/gen/account/v1"
+	"github.com/rakshithrajs/cloud/services/account/internal/models"
+	"github.com/rakshithrajs/cloud/services/account/internal/storage"
+	"github.com/rakshithrajs/cloud/services/account/internal/utils"
 
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
@@ -34,7 +35,7 @@ func (a *AccountHandler) RegisterUser(ctx context.Context, req *accountpb.Regist
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
 	if err != nil {
-		slog.Error("[RegisterUser]: failed to hash password", slog.Any("error", err))
+		slog.Error(logPrefix(fnRegisterUser)+"failed to hash password", slog.Any("error", err))
 		return &accountpb.RegisterUserResponse{}, status.Error(codes.Internal, ErrFailedToRegisterUser.Error())
 	}
 
@@ -49,7 +50,7 @@ func (a *AccountHandler) RegisterUser(ctx context.Context, req *accountpb.Regist
 		if errors.Is(err, storage.ErrUserEmailAlreadyExists) || errors.Is(err, storage.ErrPhoneNumberAlreadyExists) {
 			return &accountpb.RegisterUserResponse{}, status.Error(codes.AlreadyExists, err.Error())
 		}
-		slog.Error("[RegisterUser]: failed to create user", slog.Any("error", err))
+		slog.Error(logPrefix(fnRegisterUser)+"failed to create user", slog.Any("error", err))
 		return &accountpb.RegisterUserResponse{}, status.Error(codes.Internal, ErrFailedToRegisterUser.Error())
 	}
 

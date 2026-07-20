@@ -38,6 +38,12 @@ func (d *DbConfig) DSN() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", d.Host, d.Port, d.User, d.Password, d.DbName, d.SSLMode)
 }
 
+const (
+	functionName = "Load"
+	logPrefix    = "[" + functionName + "]: "
+	nullString   = ""
+)
+
 type Config struct {
 	GRPCAddress string
 	DSN         string
@@ -72,15 +78,15 @@ func envRoot() string {
 func Load() (*Config, error) {
 	env, err := godotenv.Read(filepath.Join(envRoot(), ".env"))
 	if err != nil {
-		slog.Error("[Load]: failed to read .env file", slog.Any("error", err))
+		slog.Error(logPrefix+"failed to read .env file", slog.Any("error", err))
 	}
 
 	grpcConf := &gRPCConfig{
 		Host: env["ACCOUNT_GRPC_HOST"],
 		Port: env["ACCOUNT_GRPC_PORT"],
 	}
-	if grpcConf.Host == "" || grpcConf.Port == "" {
-		slog.Error("[Load]: missing gRPC environment variables", slog.Any("error", ErrMissingEnvVariable))
+	if grpcConf.Host == nullString || grpcConf.Port == nullString {
+		slog.Error(logPrefix+"missing gRPC environment variables", slog.Any("error", ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
 
@@ -92,14 +98,14 @@ func Load() (*Config, error) {
 		Password: env["ACCOUNT_DB_PASSWORD"],
 		SSLMode:  env["ACCOUNT_DB_SSLMODE"],
 	}
-	if dbConf.Host == "" || dbConf.Port == "" || dbConf.DbName == "" || dbConf.User == "" || dbConf.Password == "" || dbConf.SSLMode == "" {
-		slog.Error("[Load]: missing database environment variables", slog.Any("error", ErrMissingEnvVariable))
+	if dbConf.Host == nullString || dbConf.Port == nullString || dbConf.DbName == nullString || dbConf.User == nullString || dbConf.Password == nullString || dbConf.SSLMode == nullString {
+		slog.Error(logPrefix+"missing database environment variables", slog.Any("error", ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
 
 	jwtSecret := env["JWT_SECRET"]
-	if jwtSecret == "" {
-		slog.Error("[Load]: missing JWT environment variable", slog.Any("error", ErrMissingEnvVariable))
+	if jwtSecret == nullString {
+		slog.Error(logPrefix+"missing JWT environment variable", slog.Any("error", ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
 

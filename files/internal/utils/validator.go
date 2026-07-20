@@ -15,6 +15,8 @@ var (
 	ErrFileNameInvalid  = errors.New("file name contains invalid characters")
 )
 
+const nullString = ""
+
 var Validate = validator.New()
 
 var fileNameRegex = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
@@ -25,12 +27,12 @@ func init() {
 }
 
 func validateNotEmpty(fl validator.FieldLevel) bool {
-	return strings.TrimSpace(fl.Field().String()) != ""
+	return strings.TrimSpace(fl.Field().String()) != nullString
 }
 
 func validateFileName(fl validator.FieldLevel) bool {
 	name := strings.TrimSpace(fl.Field().String())
-	if name == "" {
+	if name == nullString {
 		return false
 	}
 	if len(name) > 150 {

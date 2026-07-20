@@ -1,16 +1,26 @@
 package storage
 
 import (
-	"github.com/rakshithrajs/cloud/services/files/internal/models"
-	"github.com/rakshithrajs/cloud/services/files/internal/utils"
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/rakshithrajs/cloud/services/files/internal/models"
+	"github.com/rakshithrajs/cloud/services/files/internal/utils"
 	"log/slog"
 
 	"github.com/lib/pq"
 	"github.com/lib/pq/pqerror"
 )
+
+const (
+	fnUploadFile  = "UploadFile"
+	fnGetFiles    = "GetFiles"
+	fnGetFileByID = "GetFileByID"
+	fnUpdateFile  = "UpdateFile"
+	fnDeleteFile  = "DeleteFile"
+)
+
+func logPrefix(fn string) string { return "[" + fn + "]: " }
 
 type fileStore struct {
 	db *sql.DB
@@ -25,7 +35,7 @@ func (f *fileStore) UploadFile(ctx context.Context, file *models.File) (*models.
 
 	stmt, err := f.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("[UploadFile]: prepare statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnUploadFile)+"prepare statement", slog.Any("error", err))
 		return nil, ErrFailedToUploadFile
 	}
 	defer stmt.Close()
@@ -41,11 +51,11 @@ func (f *fileStore) UploadFile(ctx context.Context, file *models.File) (*models.
 			case "files_user_path_unique":
 				return nil, ErrFilePathAlreadyExists
 			default:
-				slog.Error("[UploadFile]: unique constraint violation", slog.Any("error", err))
+				slog.Error(logPrefix(fnUploadFile)+"unique constraint violation", slog.Any("error", err))
 				return nil, ErrFailedToUploadFile
 			}
 		}
-		slog.Error("[UploadFile]: query row", slog.Any("error", err))
+		slog.Error(logPrefix(fnUploadFile)+"query row", slog.Any("error", err))
 		return nil, ErrFailedToUploadFile
 	}
 
@@ -57,14 +67,14 @@ func (f *fileStore) GetFiles(ctx context.Context, userID string) ([]*models.List
 
 	stmt, err := f.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("[GetFiles]: prepare statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnGetFiles)+"prepare statement", slog.Any("error", err))
 		return nil, ErrFailedToGetFiles
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.QueryContext(ctx, userID)
 	if err != nil {
-		slog.Error("[GetFiles]: query rows", slog.Any("error", err))
+		slog.Error(logPrefix(fnGetFiles)+"query rows", slog.Any("error", err))
 		return nil, ErrFailedToGetFiles
 	}
 	defer rows.Close()
@@ -73,14 +83,14 @@ func (f *fileStore) GetFiles(ctx context.Context, userID string) ([]*models.List
 	for rows.Next() {
 		var file models.ListFileResponse
 		if err := rows.Scan(&file.ID, &file.FileName, &file.FileSize, &file.MimeType); err != nil {
-			slog.Error("[GetFiles]: scan row", slog.Any("error", err))
+			slog.Error(logPrefix(fnGetFiles)+"scan row", slog.Any("error", err))
 			return nil, ErrFailedToGetFiles
 		}
 		files = append(files, &file)
 	}
 
 	if err := rows.Err(); err != nil {
-		slog.Error("[GetFiles]: rows error", slog.Any("error", err))
+		slog.Error(logPrefix(fnGetFiles)+"rows error", slog.Any("error", err))
 		return nil, ErrFailedToGetFiles
 	}
 
@@ -92,7 +102,7 @@ func (f *fileStore) GetFileByID(ctx context.Context, id string, userID string) (
 
 	stmt, err := f.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("[GetFileByID]: prepare statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnGetFileByID)+"prepare statement", slog.Any("error", err))
 		return nil, ErrFailedToGetFileByID
 	}
 	defer stmt.Close()
@@ -103,7 +113,7 @@ func (f *fileStore) GetFileByID(ctx context.Context, id string, userID string) (
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrFileNotFound
 		}
-		slog.Error("[GetFileByID]: query row", slog.Any("error", err))
+		slog.Error(logPrefix(fnGetFileByID)+"query row", slog.Any("error", err))
 		return nil, ErrFailedToGetFileByID
 	}
 
@@ -125,7 +135,7 @@ func (f *fileStore) UpdateFile(ctx context.Context, id string, req models.Update
 
 	stmt, err := f.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("[UpdateFile]: prepare statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnUpdateFile)+"prepare statement", slog.Any("error", err))
 		return ErrFailedToUpdateFile
 	}
 	defer stmt.Close()
@@ -140,17 +150,17 @@ func (f *fileStore) UpdateFile(ctx context.Context, id string, req models.Update
 			case "files_user_path_unique":
 				return ErrFilePathAlreadyExists
 			default:
-				slog.Error("[UpdateFile]: unique constraint violation", slog.Any("error", err))
+				slog.Error(logPrefix(fnUpdateFile)+"unique constraint violation", slog.Any("error", err))
 				return ErrFailedToUpdateFile
 			}
 		}
-		slog.Error("[UpdateFile]: execute statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnUpdateFile)+"execute statement", slog.Any("error", err))
 		return ErrFailedToUpdateFile
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		slog.Error("[UpdateFile]: getting rows affected", slog.Any("error", err))
+		slog.Error(logPrefix(fnUpdateFile)+"getting rows affected", slog.Any("error", err))
 		return ErrFailedToUpdateFile
 	}
 
@@ -166,20 +176,20 @@ func (f *fileStore) DeleteFile(ctx context.Context, id string, userID string) er
 
 	stmt, err := f.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("[DeleteFile]: prepare statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnDeleteFile)+"prepare statement", slog.Any("error", err))
 		return ErrFailedToDeleteFile
 	}
 	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx, id, userID)
 	if err != nil {
-		slog.Error("[DeleteFile]: execute statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnDeleteFile)+"execute statement", slog.Any("error", err))
 		return ErrFailedToDeleteFile
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		slog.Error("[DeleteFile]: getting rows affected", slog.Any("error", err))
+		slog.Error(logPrefix(fnDeleteFile)+"getting rows affected", slog.Any("error", err))
 		return ErrFailedToDeleteFile
 	}
 

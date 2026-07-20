@@ -17,6 +17,8 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+const nullString = ""
+
 var (
 	token       string
 	filesAddr   string
@@ -30,11 +32,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	flag.StringVar(&token, "token", "", "JWT token for authentication (or FILES_TOKEN env)")
+	flag.StringVar(&token, "token", nullString, "JWT token for authentication (or FILES_TOKEN env)")
 	flag.StringVar(&filesAddr, "addr", cfg.GRPCAddress, "files gRPC server address")
 	flag.Parse()
 
-	if token == "" {
+	if token == nullString {
 		fmt.Printf("missing authentication token: provide --token flag or set FILES_TOKEN env var\n")
 		os.Exit(1)
 	}
@@ -117,7 +119,7 @@ func runInteractive() error {
 
 func promptAndUploadFile() error {
 	filePath := prompt("File path")
-	if filePath == "" {
+	if filePath == nullString {
 		return fmt.Errorf("file path is required")
 	}
 
@@ -176,12 +178,12 @@ func runListFiles() error {
 
 func promptAndDownloadFile() error {
 	fileID := prompt("File ID")
-	if fileID == "" {
+	if fileID == nullString {
 		return fmt.Errorf("file ID is required")
 	}
 
 	outputPath := prompt("Output path")
-	if outputPath == "" {
+	if outputPath == nullString {
 		return fmt.Errorf("output path is required")
 	}
 
@@ -209,12 +211,12 @@ func promptAndDownloadFile() error {
 
 func promptAndRenameFile() error {
 	fileID := prompt("File ID")
-	if fileID == "" {
+	if fileID == nullString {
 		return fmt.Errorf("file ID is required")
 	}
 
 	newName := prompt("New file name")
-	if newName == "" {
+	if newName == nullString {
 		return fmt.Errorf("new file name is required")
 	}
 
@@ -236,7 +238,7 @@ func promptAndRenameFile() error {
 
 func promptAndDeleteFile() error {
 	fileID := prompt("File ID")
-	if fileID == "" {
+	if fileID == nullString {
 		return fmt.Errorf("file ID is required")
 	}
 

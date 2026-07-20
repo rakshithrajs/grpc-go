@@ -29,6 +29,8 @@ var (
 
 var Validate = validator.New()
 
+const nullString = ""
+
 var (
 	nameRegex  = regexp.MustCompile(`^[a-zA-Z]+$`)
 	phoneRegex = regexp.MustCompile(`^[0-9]{10}$`)
@@ -43,7 +45,7 @@ func init() {
 }
 
 func validateNotEmpty(fl validator.FieldLevel) bool {
-	return strings.TrimSpace(fl.Field().String()) != ""
+	return strings.TrimSpace(fl.Field().String()) != nullString
 }
 
 func validatePassword(fl validator.FieldLevel) bool {

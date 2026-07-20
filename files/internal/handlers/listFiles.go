@@ -18,7 +18,7 @@ func (f *FileHandler) ListFiles(ctx context.Context, req *filespb.ListFilesReque
 
 	files, err := f.fileService.GetFiles(ctx, userID)
 	if err != nil {
-		slog.Error("[ListFiles]: failed to get files", slog.Any("error", err))
+		slog.Error(logPrefix(fnListFiles)+"failed to get files", slog.Any("error", err))
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 

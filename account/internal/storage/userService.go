@@ -1,16 +1,26 @@
 package storage
 
 import (
-	"github.com/rakshithrajs/cloud/services/account/internal/models"
-	"github.com/rakshithrajs/cloud/services/account/internal/utils"
 	"context"
 	"database/sql"
 	"errors"
 	"log/slog"
 
+	"github.com/rakshithrajs/cloud/services/account/internal/models"
+	"github.com/rakshithrajs/cloud/services/account/internal/utils"
+
 	"github.com/lib/pq"
 	"github.com/lib/pq/pqerror"
 )
+
+const (
+	fnCreateUser     = "CreateUser"
+	fnGetUserByID    = "GetUserByID"
+	fnGetUserByEmail = "GetUserByEmail"
+	fnUpdateUser     = "UpdateUser"
+)
+
+func logPrefix(fn string) string { return "[" + fn + "]: " }
 
 type userStore struct {
 	db *sql.DB
@@ -25,7 +35,7 @@ func (u *userStore) CreateUser(ctx context.Context, user *models.User) (*models.
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("[CreateUser]: prepare statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnCreateUser)+"prepare statement", slog.Any("error", err))
 		return nil, ErrFailedToCreateUser
 	}
 	defer stmt.Close()
@@ -40,11 +50,11 @@ func (u *userStore) CreateUser(ctx context.Context, user *models.User) (*models.
 			case "users_phone_key":
 				return nil, ErrPhoneNumberAlreadyExists
 			default:
-				slog.Error("[CreateUser]: unique constraint violation", slog.Any("error", err))
+				slog.Error(logPrefix(fnCreateUser)+"unique constraint violation", slog.Any("error", err))
 				return nil, ErrFailedToCreateUser
 			}
 		}
-		slog.Error("[CreateUser]: query row", slog.Any("error", err))
+		slog.Error(logPrefix(fnCreateUser)+"query row", slog.Any("error", err))
 		return nil, ErrFailedToCreateUser
 	}
 
@@ -56,7 +66,7 @@ func (u *userStore) GetUserByID(ctx context.Context, id string) (*models.User, e
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("[GetUserByID]: prepare query", slog.Any("error", err))
+		slog.Error(logPrefix(fnGetUserByID)+"prepare query", slog.Any("error", err))
 		return nil, ErrFailedToGetUserByID
 	}
 	defer stmt.Close()
@@ -66,7 +76,7 @@ func (u *userStore) GetUserByID(ctx context.Context, id string) (*models.User, e
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrUserNotFound
 		}
-		slog.Error("[GetUserByID]: query", slog.Any("error", err))
+		slog.Error(logPrefix(fnGetUserByID)+"query", slog.Any("error", err))
 		return nil, ErrFailedToGetUserByID
 	}
 
@@ -78,7 +88,7 @@ func (u *userStore) GetUserByEmail(ctx context.Context, email string) (*models.U
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("[GetUserByEmail]: prepare query", slog.Any("error", err))
+		slog.Error(logPrefix(fnGetUserByEmail)+"prepare query", slog.Any("error", err))
 		return nil, ErrFailedToGetUserByEmail
 	}
 	defer stmt.Close()
@@ -88,7 +98,7 @@ func (u *userStore) GetUserByEmail(ctx context.Context, email string) (*models.U
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrEmailNotFound
 		}
-		slog.Error("[GetUserByEmail]: query", slog.Any("error", err))
+		slog.Error(logPrefix(fnGetUserByEmail)+"query", slog.Any("error", err))
 		return nil, ErrFailedToGetUserByEmail
 	}
 
@@ -115,7 +125,7 @@ func (u *userStore) UpdateUser(ctx context.Context, id string, req models.Update
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("[UpdateUser]: prepare statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnUpdateUser)+"prepare statement", slog.Any("error", err))
 		return ErrFailedToUpdateUser
 	}
 	defer stmt.Close()
@@ -129,11 +139,11 @@ func (u *userStore) UpdateUser(ctx context.Context, id string, req models.Update
 			case "users_phone_key":
 				return ErrPhoneNumberAlreadyExists
 			default:
-				slog.Error("[UpdateUser]: unique constraint violation", slog.Any("error", err))
+				slog.Error(logPrefix(fnUpdateUser)+"unique constraint violation", slog.Any("error", err))
 				return ErrFailedToUpdateUser
 			}
 		}
-		slog.Error("[UpdateUser]: update user", slog.Any("error", err))
+		slog.Error(logPrefix(fnUpdateUser)+"update user", slog.Any("error", err))
 		return ErrFailedToUpdateUser
 	}
 

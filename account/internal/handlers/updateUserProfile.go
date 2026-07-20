@@ -1,14 +1,15 @@
 package handlers
 
 import (
-	accountpb "github.com/rakshithrajs/cloud/services/account/gen/account/v1"
-	"github.com/rakshithrajs/cloud/services/account/internal/models"
-	"github.com/rakshithrajs/cloud/services/account/internal/storage"
-	"github.com/rakshithrajs/cloud/services/account/internal/utils"
 	"context"
 	"errors"
 	"log/slog"
 	"strings"
+
+	accountpb "github.com/rakshithrajs/cloud/services/account/gen/account/v1"
+	"github.com/rakshithrajs/cloud/services/account/internal/models"
+	"github.com/rakshithrajs/cloud/services/account/internal/storage"
+	"github.com/rakshithrajs/cloud/services/account/internal/utils"
 
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
@@ -26,7 +27,7 @@ func (a *AccountHandler) UpdateUserProfile(ctx context.Context, req *accountpb.U
 	}
 
 	setField := func(value string) *string {
-		if value == "" {
+		if value == nullString {
 			return nil
 		}
 		return &value
@@ -38,7 +39,7 @@ func (a *AccountHandler) UpdateUserProfile(ctx context.Context, req *accountpb.U
 		Phone: setField(strings.TrimSpace(req.GetPhone())),
 	}
 
-	if req.GetPassword() != "" {
+	if req.GetPassword() != nullString {
 		password := strings.TrimSpace(req.GetPassword())
 		confirmPassword := strings.TrimSpace(req.GetConfirmPassword())
 		payload.Password = &password
@@ -68,7 +69,7 @@ func (a *AccountHandler) UpdateUserProfile(ctx context.Context, req *accountpb.U
 
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*payload.Password), bcrypt.DefaultCost)
 		if err != nil {
-			slog.Error("[UpdateUserProfile]: failed to hash password", slog.Any("error", err))
+			slog.Error(logPrefix(fnUpdateUserProfile)+"failed to hash password", slog.Any("error", err))
 			return nil, status.Error(codes.Internal, storage.ErrFailedToUpdateUser.Error())
 		}
 		hashed := string(hashedPassword)
@@ -82,7 +83,7 @@ func (a *AccountHandler) UpdateUserProfile(ctx context.Context, req *accountpb.U
 		if errors.Is(err, storage.ErrUserEmailAlreadyExists) || errors.Is(err, storage.ErrPhoneNumberAlreadyExists) {
 			return nil, status.Error(codes.AlreadyExists, err.Error())
 		}
-		slog.Error("[UpdateUserProfile]: failed to update user", slog.Any("error", err))
+		slog.Error(logPrefix(fnUpdateUserProfile)+"failed to update user", slog.Any("error", err))
 		return nil, status.Error(codes.Internal, storage.ErrFailedToUpdateUser.Error())
 	}
 

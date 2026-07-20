@@ -24,7 +24,7 @@ func (f *FileHandler) DownloadFile(ctx context.Context, req *filespb.DownloadFil
 		return nil, err
 	}
 
-	if req.GetFileID() == "" {
+	if req.GetFileID() == nullString {
 		return nil, status.Error(codes.InvalidArgument, ErrFileIDRequired.Error())
 	}
 
@@ -33,20 +33,20 @@ func (f *FileHandler) DownloadFile(ctx context.Context, req *filespb.DownloadFil
 		if errors.Is(err, storage.ErrFileNotFound) {
 			return &filespb.DownloadFileResponse{}, nil
 		}
-		slog.Error("[DownloadFile]: failed to get file", slog.Any("error", err))
+		slog.Error(logPrefix(fnDownloadFile)+"failed to get file", slog.Any("error", err))
 		return nil, status.Error(codes.Internal, ErrFailedToDownloadFile.Error())
 	}
 
 	fi, err := os.Open(*file.Path)
 	if err != nil {
-		slog.Error("[DownloadFile]: failed to open file", slog.Any("error", err), slog.String("path", *file.Path))
+		slog.Error(logPrefix(fnDownloadFile)+"failed to open file", slog.Any("error", err), slog.String("path", *file.Path))
 		return nil, status.Error(codes.Internal, ErrFailedToDownloadFile.Error())
 	}
 	defer fi.Close()
 
 	contents := make([]byte, *file.Size)
 	if _, err := fi.Read(contents); err != nil {
-		slog.Error("[DownloadFile]: failed to read file", slog.Any("error", err), slog.String("path", *file.Path))
+		slog.Error(logPrefix(fnDownloadFile)+"failed to read file", slog.Any("error", err), slog.String("path", *file.Path))
 		return nil, status.Error(codes.Internal, ErrFailedToDownloadFile.Error())
 	}
 

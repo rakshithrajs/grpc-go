@@ -43,7 +43,7 @@ func ParseJWT(tokenString, secret string) (*Claims, error) {
 	}
 
 	sub, ok := claims["sub"].(string)
-	if !ok || sub == "" {
+	if !ok || sub == nullString {
 		return nil, ErrInvalidToken
 	}
 

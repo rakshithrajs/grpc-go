@@ -41,7 +41,7 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *filespb.UploadFileReq
 
 	cfg, err := config.GetConfig()
 	if err != nil {
-		slog.Error("[UploadFile]: failed to get config", slog.Any("error", err))
+		slog.Error(logPrefix(fnUploadFile)+"failed to get config", slog.Any("error", err))
 		return nil, status.Error(codes.Internal, ErrFailedToUploadFile.Error())
 	}
 
@@ -50,7 +50,7 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *filespb.UploadFileReq
 
 	userDir := filepath.Join(cfg.UserStoragePath, userID)
 	if err := os.MkdirAll(userDir, 0o755); err != nil {
-		slog.Error("[UploadFile]: failed to create user directory", slog.Any("error", err))
+		slog.Error(logPrefix(fnUploadFile)+"failed to create user directory", slog.Any("error", err))
 		return nil, status.Error(codes.Internal, ErrFailedToUploadFile.Error())
 	}
 
@@ -61,19 +61,19 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *filespb.UploadFileReq
 		if errors.Is(err, os.ErrExist) {
 			return nil, status.Error(codes.AlreadyExists, storage.ErrFilePathAlreadyExists.Error())
 		}
-		slog.Error("[UploadFile]: failed to create file", slog.Any("error", err))
+		slog.Error(logPrefix(fnUploadFile)+"failed to create file", slog.Any("error", err))
 		return nil, status.Error(codes.Internal, ErrFailedToUploadFile.Error())
 	}
 	defer fi.Close()
 
 	written, err := fi.Write(payload.Contents)
 	if err != nil || written != len(payload.Contents) {
-		slog.Error("[UploadFile]: failed to write file", slog.Any("error", err), slog.Int("written", written), slog.Int("expected", len(payload.Contents)))
+		slog.Error(logPrefix(fnUploadFile)+"failed to write file", slog.Any("error", err), slog.Int("written", written), slog.Int("expected", len(payload.Contents)))
 		return nil, status.Error(codes.Internal, ErrFailedToUploadFile.Error())
 	}
 
 	if err := fi.Sync(); err != nil {
-		slog.Error("[UploadFile]: failed to sync file", slog.Any("error", err))
+		slog.Error(logPrefix(fnUploadFile)+"failed to sync file", slog.Any("error", err))
 		return nil, status.Error(codes.Internal, ErrFailedToUploadFile.Error())
 	}
 
@@ -90,7 +90,7 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *filespb.UploadFileReq
 		if errors.Is(err, storage.ErrFileNameAlreadyExists) || errors.Is(err, storage.ErrFilePathAlreadyExists) {
 			return nil, status.Error(codes.AlreadyExists, err.Error())
 		}
-		slog.Error("[UploadFile]: failed to save file", slog.Any("error", err))
+		slog.Error(logPrefix(fnUploadFile)+"failed to save file", slog.Any("error", err))
 		return nil, status.Error(codes.Internal, ErrFailedToUploadFile.Error())
 	}
 

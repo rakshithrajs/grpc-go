@@ -27,7 +27,7 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *filespb.RenameFileReq
 		return nil, err
 	}
 
-	if req.GetFileID() == "" {
+	if req.GetFileID() == nullString {
 		return nil, status.Error(codes.InvalidArgument, ErrFileIDRequired.Error())
 	}
 
@@ -42,7 +42,7 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *filespb.RenameFileReq
 		if errors.Is(err, storage.ErrFileNotFound) {
 			return &filespb.RenameFileResponse{}, nil
 		}
-		slog.Error("[RenameFile]: failed to get file", slog.Any("error", err))
+		slog.Error(logPrefix(fnRenameFile)+"failed to get file", slog.Any("error", err))
 		return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 	}
 
@@ -57,12 +57,12 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *filespb.RenameFileReq
 	if _, err := os.Stat(newPath); err == nil {
 		return nil, status.Error(codes.AlreadyExists, storage.ErrFilePathAlreadyExists.Error())
 	} else if !errors.Is(err, os.ErrNotExist) {
-		slog.Error("[RenameFile]: failed to check target path", slog.Any("error", err), slog.String("path", newPath))
+		slog.Error(logPrefix(fnRenameFile)+"failed to check target path", slog.Any("error", err), slog.String("path", newPath))
 		return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 	}
 
 	if err := os.Rename(oldPath, newPath); err != nil {
-		slog.Error("[RenameFile]: failed to rename file on disk", slog.Any("error", err), slog.String("oldPath", oldPath), slog.String("newPath", newPath))
+		slog.Error(logPrefix(fnRenameFile)+"failed to rename file on disk", slog.Any("error", err), slog.String("oldPath", oldPath), slog.String("newPath", newPath))
 		return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 	}
 
@@ -73,7 +73,7 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *filespb.RenameFileReq
 
 	if err := f.fileService.UpdateFile(ctx, req.GetFileID(), updateReq, userID); err != nil {
 		if rbErr := os.Rename(newPath, oldPath); rbErr != nil {
-			slog.Error("[RenameFile]: failed to rollback disk rename", slog.Any("error", rbErr), slog.String("oldPath", oldPath), slog.String("newPath", newPath))
+			slog.Error(logPrefix(fnRenameFile)+"failed to rollback disk rename", slog.Any("error", rbErr), slog.String("oldPath", oldPath), slog.String("newPath", newPath))
 		}
 
 		switch {
@@ -82,7 +82,7 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *filespb.RenameFileReq
 		case errors.Is(err, storage.ErrFileNameAlreadyExists), errors.Is(err, storage.ErrFilePathAlreadyExists):
 			return nil, status.Error(codes.AlreadyExists, err.Error())
 		default:
-			slog.Error("[RenameFile]: failed to update file record", slog.Any("error", err))
+			slog.Error(logPrefix(fnRenameFile)+"failed to update file record", slog.Any("error", err))
 			return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 		}
 	}
