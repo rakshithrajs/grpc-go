@@ -45,10 +45,10 @@ const (
 )
 
 type Config struct {
-	GRPCAddress     string
-	DSN             string
-	JWTSecret       string
-	UserStoragePath string
+	GRPCAddress        string
+	AccountGRPCAddress string
+	DSN                string
+	UserStoragePath    string
 }
 
 var cfg *Config
@@ -91,6 +91,15 @@ func Load() (*Config, error) {
 		return nil, ErrMissingEnvVariable
 	}
 
+	accountGRPCConf := &gRPCConfig{
+		Host: env["ACCOUNT_GRPC_HOST"],
+		Port: env["ACCOUNT_GRPC_PORT"],
+	}
+	if accountGRPCConf.Host == nullString || accountGRPCConf.Port == nullString {
+		slog.Error(logPrefix, slog.Any("error", ErrMissingEnvVariable))
+		return nil, ErrMissingEnvVariable
+	}
+
 	dbConf := &DbConfig{
 		Host:     env["FILES_DB_HOST"],
 		Port:     env["FILES_DB_PORT"],
@@ -104,12 +113,6 @@ func Load() (*Config, error) {
 		return nil, ErrMissingEnvVariable
 	}
 
-	jwtSecret := env["JWT_SECRET"]
-	if jwtSecret == nullString {
-		slog.Error(logPrefix+"missing JWT environment variable", slog.Any("error", ErrMissingEnvVariable))
-		return nil, ErrMissingEnvVariable
-	}
-
 	userStoragePath := env["USER_STORAGE_PATH"]
 	if userStoragePath == nullString {
 		slog.Error(logPrefix+"missing user storage path environment variable", slog.Any("error", ErrMissingEnvVariable))
@@ -117,10 +120,10 @@ func Load() (*Config, error) {
 	}
 
 	cfg = &Config{
-		GRPCAddress:     grpcConf.Address(),
-		DSN:             dbConf.DSN(),
-		JWTSecret:       jwtSecret,
-		UserStoragePath: userStoragePath,
+		GRPCAddress:        grpcConf.Address(),
+		AccountGRPCAddress: accountGRPCConf.Address(),
+		DSN:                dbConf.DSN(),
+		UserStoragePath:    userStoragePath,
 	}
 
 	return cfg, nil
