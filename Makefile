@@ -1,24 +1,45 @@
 include .env
 
-MIGRATE_DB_URL="postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=${DB_SSLMODE}"
+ACCOUNT_DIR=account
+FILES_DIR=files
 
-check:
-	@echo ${MIGRATE_DB_URL}
+ACCOUNT_MIGRATE_DB_URL="postgres://${ACCOUNT_DB_USER}:${ACCOUNT_DB_PASSWORD}@${ACCOUNT_DB_HOST}:${ACCOUNT_DB_PORT}/${ACCOUNT_DB_NAME}?sslmode=${ACCOUNT_DB_SSLMODE}"
+FILES_MIGRATE_DB_URL="postgres://${FILES_DB_USER}:${FILES_DB_PASSWORD}@${FILES_DB_HOST}:${FILES_DB_PORT}/${FILES_DB_NAME}?sslmode=${FILES_DB_SSLMODE}"
 
-create:
-	@migrate create -ext sql -dir internal/storage/migrations -seq ${NAME}
+check-account:
+	@echo ${ACCOUNT_MIGRATE_DB_URL}
 
-up:
-	@migrate -path internal/storage/migrations -database ${MIGRATE_DB_URL} -verbose up
+check-files:
+	@echo ${FILES_MIGRATE_DB_URL}
 
-down: 
-	@migrate -path internal/storage/migrations -database ${MIGRATE_DB_URL} -verbose down
+create-account-migration:
+	@migrate create -ext sql -dir $(ACCOUNT_DIR)/internal/storage/migrations -seq $(NAME)
 
-version:
-	@migrate -path internal/storage/migrations -database ${MIGRATE_DB_URL} version
+create-files-migration:
+	@migrate create -ext sql -dir $(FILES_DIR)/internal/storage/migrations -seq $(NAME)
 
-force:
-	@migrate -path internal/storage/migrations -database ${MIGRATE_DB_URL} force ${VERSION}
+migrate-account-up:
+	@migrate -path $(ACCOUNT_DIR)/internal/storage/migrations -database $(ACCOUNT_MIGRATE_DB_URL) -verbose up
 
-.PHONY: check create up down version force
+migrate-files-up:
+	@migrate -path $(FILES_DIR)/internal/storage/migrations -database $(FILES_MIGRATE_DB_URL) -verbose up
 
+migrate-account-down:
+	@migrate -path $(ACCOUNT_DIR)/internal/storage/migrations -database $(ACCOUNT_MIGRATE_DB_URL) -verbose down 1
+
+migrate-files-down:
+	@migrate -path $(FILES_DIR)/internal/storage/migrations -database $(FILES_MIGRATE_DB_URL) -verbose down 1
+
+account-version:
+	@migrate -path ${ACCOUNT_DIR}internal/storage/migrations -database ${ACCOUNT_MIGRATE_DB_URL} version
+
+files-version:
+	@migrate -path ${FILES_DIR}internal/storage/migrations -database ${FILES_MIGRATE_DB_URL} version
+
+force-account: 
+	@migrate -path ${ACCOUNT_DIR}/internal/storage/migrations -database ${ACCOUNT_MIGRATE_DB_URL} force ${VERSION}
+
+force-files: 
+	@migrate -path ${FILES_DIR}/internal/storage/migrations -database ${FILES_MIGRATE_DB_URL} force ${VERSION}
+
+.PHONY:migrate-account-up migrate-files-up migrate-account-down migrate-files-down create-account-migration create-files-migration account-version files-version force-account force-files

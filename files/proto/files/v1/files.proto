@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package files.v1;
+
+option go_package = "github.com/rakshithrajs/cloud/services/files/gen/files/v1;files";
+
+// Files service provides file operations in the cloud.
+service Files {
+
+    // UploadFile uploads a file to the cloud.
+    rpc UploadFile (UploadFileRequest) returns (UploadFileResponse);
+
+    // DownloadFile downloads a file from the cloud.
+    rpc DownloadFile (DownloadFileRequest) returns (DownloadFileResponse);
+
+    // ListFiles returns the list of files for the authenticated user.
+    rpc ListFiles (ListFilesRequest) returns (ListFilesResponse);
+
+    // DeleteFile deletes the intended file from the cloud.
+    rpc DeleteFile (DeleteFileRequest) returns (DeleteFileResponse);
+
+    // RenameFile renames the intended file in the cloud.
+    rpc RenameFile (RenameFileRequest) returns (RenameFileResponse);
+}
+
+message File {
+    string ID = 1;
+    string fileName = 2;
+    int64 fileSize = 3;
+    string mimeType = 4;
+}
+
+// UploadFileRequest contains file metadata.
+message UploadFileRequest {
+
+    // file's name
+    string fileName = 1;
+
+    // file's content
+    bytes content = 2;
+}
+
+// UploadFileResponse contains uploaded file metadata.
+message UploadFileResponse {
+    File file = 1;
+}
+
+// DownloadFileRequest contains the file ID to download.
+message DownloadFileRequest {
+
+    // file's ID to download
+    string fileID = 1;
+}
+
+// DownloadFileResponse contains the file's metadata and content.
+message DownloadFileResponse {
+
+    // file's name
+    string fileName = 1;
+
+    // file's type
+    string mimeType = 2;
+
+    // file's content
+    bytes content = 3;
+}
+
+// DeleteFileRequest contains the file ID to be deleted.
+message DeleteFileRequest {
+
+    // file's ID
+    string fileID = 1;
+}
+
+// DeleteFileResponse is empty.
+message DeleteFileResponse {}
+
+// RenameFileRequest contains the file's new name.
+message RenameFileRequest {
+
+    // file's ID
+    string fileID = 1;
+
+    // file's new name
+    string newName = 2;
+}
+
+// RenameFileResponse is empty.
+message RenameFileResponse {}
+
+// ListFilesRequest is empty.
+message ListFilesRequest {}
+
+// ListFilesResponse contains the list of files.
+message ListFilesResponse {
+    repeated File file = 1;
+}
