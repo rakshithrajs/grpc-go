@@ -48,25 +48,21 @@ func AuthInterceptor(ctx context.Context, req any, info *grpc.UnaryServerInfo, h
 
 	authHeaders := md.Get("authorization")
 	if len(authHeaders) == 0 {
-		slog.Error(logPrefix, slog.String("error", ErrMissingAuthHeader.Error()))
 		return nil, status.Error(codes.Unauthenticated, ErrMissingAuthHeader.Error())
 	}
 
 	authHeader := authHeaders[0]
 	if authHeader == nullString {
-		slog.Error(logPrefix, slog.String("error", ErrMissingAuthHeader.Error()))
 		return nil, status.Error(codes.Unauthenticated, ErrMissingAuthHeader.Error())
 	}
 
 	const bearerPrefix = "Bearer "
 	if !strings.HasPrefix(authHeader, bearerPrefix) {
-		slog.Error(logPrefix, slog.String("error", ErrMissingBearerToken.Error()))
 		return nil, status.Error(codes.Unauthenticated, ErrMissingBearerToken.Error())
 	}
 
 	tokenString := strings.TrimPrefix(authHeader, bearerPrefix)
 	if tokenString == nullString {
-		slog.Error(logPrefix, slog.String("error", ErrMissingBearerToken.Error()))
 		return nil, status.Error(codes.Unauthenticated, ErrMissingBearerToken.Error())
 	}
 
@@ -84,32 +80,26 @@ func AuthInterceptor(ctx context.Context, req any, info *grpc.UnaryServerInfo, h
 	})
 	if err != nil || !token.Valid {
 		if errors.Is(err, jwt.ErrTokenExpired) {
-			slog.Error(logPrefix, slog.String("error", ErrTokenExpired.Error()))
 			return nil, status.Error(codes.Unauthenticated, ErrTokenExpired.Error())
 		}
-		slog.Error(logPrefix, slog.String("error", ErrInvalidToken.Error()))
 		return nil, status.Error(codes.Unauthenticated, ErrInvalidToken.Error())
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		slog.Error(logPrefix, slog.String("error", ErrInvalidToken.Error()))
 		return nil, status.Error(codes.Unauthenticated, ErrInvalidToken.Error())
 	}
 
 	if iss, ok := claims["iss"].(string); !ok || iss != "cloud-app" {
-		slog.Error(logPrefix, slog.String("error", ErrInvalidToken.Error()))
 		return nil, status.Error(codes.Unauthenticated, ErrInvalidToken.Error())
 	}
 
 	userID, ok := claims["sub"].(string)
 	if !ok || userID == nullString {
-		slog.Error(logPrefix, slog.String("error", ErrInvalidToken.Error()))
 		return nil, status.Error(codes.Unauthenticated, ErrInvalidToken.Error())
 	}
 
 	if iat, ok := claims["iat"].(float64); !ok || int64(iat) <= 0 || time.Unix(int64(iat), 0).After(time.Now()) {
-		slog.Error(logPrefix, slog.String("error", ErrInvalidToken.Error()))
 		return nil, status.Error(codes.Unauthenticated, ErrInvalidToken.Error())
 	}
 

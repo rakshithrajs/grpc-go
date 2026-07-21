@@ -2,7 +2,6 @@ package interceptors
 
 import (
 	"context"
-	"log/slog"
 
 	accountpb "github.com/rakshithrajs/cloud/services/account/gen/account/v1"
 
@@ -10,11 +9,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-)
-
-const (
-	functionName = "AuthInterceptor"
-	logPrefix    = "[" + functionName + "]: "
 )
 
 var (
@@ -40,16 +34,13 @@ func NewAuthInterceptor(accountClient accountpb.AccountClient) grpc.UnaryServerI
 		if err != nil {
 			st, ok := status.FromError(err)
 			if ok {
-				slog.Error(logPrefix+"account auth check failed", slog.String("code", st.Code().String()), slog.String("message", st.Message()))
 				return nil, st.Err()
 			}
-			slog.Error(logPrefix+"account auth check failed", slog.Any("error", err))
 			return nil, ErrSomethingWentWrong
 		}
 
 		user := resp.GetUser()
 		if user == nil || user.GetId() == "" {
-			slog.Error(logPrefix, slog.String("error", "account returned empty user"))
 			return nil, ErrSomethingWentWrong
 		}
 

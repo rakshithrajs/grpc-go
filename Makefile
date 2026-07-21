@@ -31,7 +31,7 @@ migrate-files-down:
 	@migrate -path $(FILES_DIR)/internal/storage/migrations -database $(FILES_MIGRATE_DB_URL) -verbose down 1
 
 account-version:
-	@migrate -path ${ACCOUNT_DIR}internal/storage/migrations -database ${ACCOUNT_MIGRATE_DB_URL} version
+	@migrate -path ${ACCOUNT_DIR}/internal/storage/migrations -database ${ACCOUNT_MIGRATE_DB_URL} version
 
 files-version:
 	@migrate -path ${FILES_DIR}internal/storage/migrations -database ${FILES_MIGRATE_DB_URL} version
@@ -42,4 +42,4 @@ force-account:
 force-files: 
 	@migrate -path ${FILES_DIR}/internal/storage/migrations -database ${FILES_MIGRATE_DB_URL} force ${VERSION}
 
-.PHONY:migrate-account-up migrate-files-up migrate-account-down migrate-files-down create-account-migration create-files-migration account-version files-version force-account force-files
+.PHONY: check-account check-files migrate-account-up migrate-files-up migrate-account-down migrate-files-down create-account-migration create-files-migration account-version files-version force-account force-files

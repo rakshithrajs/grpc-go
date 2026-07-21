@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	accountpb "github.com/rakshithrajs/cloud/services/account/gen/account/v1"
-	"github.com/rakshithrajs/cloud/services/account/internal/storage"
 	"context"
 	"errors"
+
+	accountpb "github.com/rakshithrajs/cloud/services/account/gen/account/v1"
+	"github.com/rakshithrajs/cloud/services/account/internal/storage"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

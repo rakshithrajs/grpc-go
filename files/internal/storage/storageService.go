@@ -1,8 +1,9 @@
 package storage
 
 import (
-	"github.com/rakshithrajs/cloud/services/files/internal/models"
 	"context"
+
+	"github.com/rakshithrajs/cloud/services/files/internal/models"
 )
 
 type FileService interface {
