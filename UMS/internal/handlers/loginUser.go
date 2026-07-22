@@ -6,11 +6,12 @@ import (
 	"log/slog"
 	"strings"
 
-	accountpb "github.com/rakshithrajs/cloud/services/account/gen/account/v1"
-	"github.com/rakshithrajs/cloud/services/account/internal/config"
-	"github.com/rakshithrajs/cloud/services/account/internal/models"
-	"github.com/rakshithrajs/cloud/services/account/internal/storage"
-	"github.com/rakshithrajs/cloud/services/account/internal/utils"
+	UMSpb "github.com/rakshithrajs/cloud/UMS/gen/UMS/v1"
+
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
+	"github.com/rakshithrajs/cloud/UMS/internal/models"
+	"github.com/rakshithrajs/cloud/UMS/internal/storage"
+	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
@@ -23,40 +24,40 @@ var (
 	ErrSomethingWentWrong = errors.New("something went wrong")
 )
 
-func (a *AccountHandler) LoginUser(ctx context.Context, req *accountpb.LoginUserRequest) (*accountpb.LoginUserResponse, error) {
+func (a *UMSHandler) LoginUser(ctx context.Context, req *UMSpb.LoginUserRequest) (*UMSpb.LoginUserResponse, error) {
 	payload := models.LoginUserRequest{
 		Email:    utils.NormalizeEmail(req.GetEmail()),
 		Password: strings.TrimSpace(req.GetPassword()),
 	}
 
 	if err := utils.Validate.Struct(payload); err != nil {
-		return &accountpb.LoginUserResponse{}, status.Error(codes.InvalidArgument, strings.Join(utils.Errors(err), "; "))
+		return &UMSpb.LoginUserResponse{}, status.Error(codes.InvalidArgument, strings.Join(utils.Errors(err), "; "))
 	}
 
 	user, err := a.storage.GetUserByEmail(ctx, payload.Email)
 	if err != nil {
 		if errors.Is(err, storage.ErrEmailNotFound) {
-			return &accountpb.LoginUserResponse{}, status.Error(codes.Unauthenticated, ErrInvalidCredentials.Error())
+			return &UMSpb.LoginUserResponse{}, status.Error(codes.Unauthenticated, ErrInvalidCredentials.Error())
 		}
 		slog.Error(logPrefix(fnLoginUser)+"failed to get user by email", slog.Any("error", err))
-		return &accountpb.LoginUserResponse{}, status.Error(codes.Internal, ErrFailedToLoginUser.Error())
+		return &UMSpb.LoginUserResponse{}, status.Error(codes.Internal, ErrFailedToLoginUser.Error())
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(payload.Password)); err != nil {
-		return &accountpb.LoginUserResponse{}, status.Error(codes.Unauthenticated, ErrInvalidCredentials.Error())
+		return &UMSpb.LoginUserResponse{}, status.Error(codes.Unauthenticated, ErrInvalidCredentials.Error())
 	}
 
 	cfg, err := config.GetConfig()
 	if err != nil {
 		slog.Error(logPrefix(fnLoginUser)+"failed to get config", slog.Any("error", err))
-		return &accountpb.LoginUserResponse{}, status.Error(codes.Internal, ErrSomethingWentWrong.Error())
+		return &UMSpb.LoginUserResponse{}, status.Error(codes.Internal, ErrSomethingWentWrong.Error())
 	}
 
 	token, err := config.GenerateJWT(*user, cfg.JWTSecret)
 	if err != nil {
 		slog.Error(logPrefix(fnLoginUser)+"failed to generate JWT", slog.Any("error", err))
-		return &accountpb.LoginUserResponse{}, status.Error(codes.Internal, ErrSomethingWentWrong.Error())
+		return &UMSpb.LoginUserResponse{}, status.Error(codes.Internal, ErrSomethingWentWrong.Error())
 	}
 
-	return &accountpb.LoginUserResponse{Token: token}, nil
+	return &UMSpb.LoginUserResponse{Token: token}, nil
 }

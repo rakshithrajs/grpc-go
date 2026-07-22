@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	accountpb "github.com/rakshithrajs/cloud/services/account/gen/account/v1"
-	"github.com/rakshithrajs/cloud/services/account/internal/storage"
+	UMSpb "github.com/rakshithrajs/cloud/UMS/gen/UMS/v1"
+	"github.com/rakshithrajs/cloud/UMS/internal/storage"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -43,11 +43,11 @@ func UserIDFromContext(ctx context.Context) (string, error) {
 	return userIDs[0], nil
 }
 
-type AccountHandler struct {
-	accountpb.UnimplementedAccountServer
+type UMSHandler struct {
+	UMSpb.UnimplementedUMSServer
 	storage storage.UserService
 }
 
-func NewAccountHandler(store storage.UserService) *AccountHandler {
-	return &AccountHandler{storage: store}
+func NewUMSHandler(store storage.UserService) *UMSHandler {
+	return &UMSHandler{storage: store}
 }

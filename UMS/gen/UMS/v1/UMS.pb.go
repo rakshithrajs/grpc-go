@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v7.35.0
-// source: account/v1/account.proto
+// source: UMS/v1/UMS.proto
 
-package account
+package UMS
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -21,7 +21,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// User represents a registered account.
+// User represents a registered UMS.
 type User struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// user's id
@@ -38,7 +38,7 @@ type User struct {
 
 func (x *User) Reset() {
 	*x = User{}
-	mi := &file_account_v1_account_proto_msgTypes[0]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50,7 +50,7 @@ func (x *User) String() string {
 func (*User) ProtoMessage() {}
 
 func (x *User) ProtoReflect() protoreflect.Message {
-	mi := &file_account_v1_account_proto_msgTypes[0]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63,7 +63,7 @@ func (x *User) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use User.ProtoReflect.Descriptor instead.
 func (*User) Descriptor() ([]byte, []int) {
-	return file_account_v1_account_proto_rawDescGZIP(), []int{0}
+	return file_UMS_v1_UMS_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *User) GetId() string {
@@ -113,7 +113,7 @@ type RegisterUserRequest struct {
 
 func (x *RegisterUserRequest) Reset() {
 	*x = RegisterUserRequest{}
-	mi := &file_account_v1_account_proto_msgTypes[1]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -125,7 +125,7 @@ func (x *RegisterUserRequest) String() string {
 func (*RegisterUserRequest) ProtoMessage() {}
 
 func (x *RegisterUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_account_v1_account_proto_msgTypes[1]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -138,7 +138,7 @@ func (x *RegisterUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterUserRequest.ProtoReflect.Descriptor instead.
 func (*RegisterUserRequest) Descriptor() ([]byte, []int) {
-	return file_account_v1_account_proto_rawDescGZIP(), []int{1}
+	return file_UMS_v1_UMS_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *RegisterUserRequest) GetName() string {
@@ -187,7 +187,7 @@ type RegisterUserResponse struct {
 
 func (x *RegisterUserResponse) Reset() {
 	*x = RegisterUserResponse{}
-	mi := &file_account_v1_account_proto_msgTypes[2]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -199,7 +199,7 @@ func (x *RegisterUserResponse) String() string {
 func (*RegisterUserResponse) ProtoMessage() {}
 
 func (x *RegisterUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_account_v1_account_proto_msgTypes[2]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -212,7 +212,7 @@ func (x *RegisterUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterUserResponse.ProtoReflect.Descriptor instead.
 func (*RegisterUserResponse) Descriptor() ([]byte, []int) {
-	return file_account_v1_account_proto_rawDescGZIP(), []int{2}
+	return file_UMS_v1_UMS_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *RegisterUserResponse) GetUser() *User {
@@ -235,7 +235,7 @@ type LoginUserRequest struct {
 
 func (x *LoginUserRequest) Reset() {
 	*x = LoginUserRequest{}
-	mi := &file_account_v1_account_proto_msgTypes[3]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -247,7 +247,7 @@ func (x *LoginUserRequest) String() string {
 func (*LoginUserRequest) ProtoMessage() {}
 
 func (x *LoginUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_account_v1_account_proto_msgTypes[3]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -260,7 +260,7 @@ func (x *LoginUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginUserRequest.ProtoReflect.Descriptor instead.
 func (*LoginUserRequest) Descriptor() ([]byte, []int) {
-	return file_account_v1_account_proto_rawDescGZIP(), []int{3}
+	return file_UMS_v1_UMS_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *LoginUserRequest) GetEmail() string {
@@ -288,7 +288,7 @@ type LoginUserResponse struct {
 
 func (x *LoginUserResponse) Reset() {
 	*x = LoginUserResponse{}
-	mi := &file_account_v1_account_proto_msgTypes[4]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -300,7 +300,7 @@ func (x *LoginUserResponse) String() string {
 func (*LoginUserResponse) ProtoMessage() {}
 
 func (x *LoginUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_account_v1_account_proto_msgTypes[4]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -313,7 +313,7 @@ func (x *LoginUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginUserResponse.ProtoReflect.Descriptor instead.
 func (*LoginUserResponse) Descriptor() ([]byte, []int) {
-	return file_account_v1_account_proto_rawDescGZIP(), []int{4}
+	return file_UMS_v1_UMS_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *LoginUserResponse) GetToken() string {
@@ -332,7 +332,7 @@ type GetUserProfileRequest struct {
 
 func (x *GetUserProfileRequest) Reset() {
 	*x = GetUserProfileRequest{}
-	mi := &file_account_v1_account_proto_msgTypes[5]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -344,7 +344,7 @@ func (x *GetUserProfileRequest) String() string {
 func (*GetUserProfileRequest) ProtoMessage() {}
 
 func (x *GetUserProfileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_account_v1_account_proto_msgTypes[5]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -357,7 +357,7 @@ func (x *GetUserProfileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserProfileRequest.ProtoReflect.Descriptor instead.
 func (*GetUserProfileRequest) Descriptor() ([]byte, []int) {
-	return file_account_v1_account_proto_rawDescGZIP(), []int{5}
+	return file_UMS_v1_UMS_proto_rawDescGZIP(), []int{5}
 }
 
 // GetUserProfileResponse contains the user object.
@@ -371,7 +371,7 @@ type GetUserProfileResponse struct {
 
 func (x *GetUserProfileResponse) Reset() {
 	*x = GetUserProfileResponse{}
-	mi := &file_account_v1_account_proto_msgTypes[6]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -383,7 +383,7 @@ func (x *GetUserProfileResponse) String() string {
 func (*GetUserProfileResponse) ProtoMessage() {}
 
 func (x *GetUserProfileResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_account_v1_account_proto_msgTypes[6]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -396,7 +396,7 @@ func (x *GetUserProfileResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserProfileResponse.ProtoReflect.Descriptor instead.
 func (*GetUserProfileResponse) Descriptor() ([]byte, []int) {
-	return file_account_v1_account_proto_rawDescGZIP(), []int{6}
+	return file_UMS_v1_UMS_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetUserProfileResponse) GetUser() *User {
@@ -425,7 +425,7 @@ type UpdateUserProfileRequest struct {
 
 func (x *UpdateUserProfileRequest) Reset() {
 	*x = UpdateUserProfileRequest{}
-	mi := &file_account_v1_account_proto_msgTypes[7]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -437,7 +437,7 @@ func (x *UpdateUserProfileRequest) String() string {
 func (*UpdateUserProfileRequest) ProtoMessage() {}
 
 func (x *UpdateUserProfileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_account_v1_account_proto_msgTypes[7]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -450,7 +450,7 @@ func (x *UpdateUserProfileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateUserProfileRequest.ProtoReflect.Descriptor instead.
 func (*UpdateUserProfileRequest) Descriptor() ([]byte, []int) {
-	return file_account_v1_account_proto_rawDescGZIP(), []int{7}
+	return file_UMS_v1_UMS_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UpdateUserProfileRequest) GetName() string {
@@ -497,7 +497,7 @@ type UpdateUserProfileResponse struct {
 
 func (x *UpdateUserProfileResponse) Reset() {
 	*x = UpdateUserProfileResponse{}
-	mi := &file_account_v1_account_proto_msgTypes[8]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -509,7 +509,7 @@ func (x *UpdateUserProfileResponse) String() string {
 func (*UpdateUserProfileResponse) ProtoMessage() {}
 
 func (x *UpdateUserProfileResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_account_v1_account_proto_msgTypes[8]
+	mi := &file_UMS_v1_UMS_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -522,15 +522,14 @@ func (x *UpdateUserProfileResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateUserProfileResponse.ProtoReflect.Descriptor instead.
 func (*UpdateUserProfileResponse) Descriptor() ([]byte, []int) {
-	return file_account_v1_account_proto_rawDescGZIP(), []int{8}
+	return file_UMS_v1_UMS_proto_rawDescGZIP(), []int{8}
 }
 
-var File_account_v1_account_proto protoreflect.FileDescriptor
+var File_UMS_v1_UMS_proto protoreflect.FileDescriptor
 
-const file_account_v1_account_proto_rawDesc = "" +
+const file_UMS_v1_UMS_proto_rawDesc = "" +
 	"\n" +
-	"\x18account/v1/account.proto\x12\n" +
-	"account.v1\"V\n" +
+	"\x10UMS/v1/UMS.proto\x12\x06UMS.v1\"V\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
@@ -541,65 +540,65 @@ const file_account_v1_account_proto_rawDesc = "" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x03 \x01(\tR\bpassword\x12\x14\n" +
 	"\x05phone\x18\x04 \x01(\tR\x05phone\x12)\n" +
-	"\x10confirm_password\x18\x05 \x01(\tR\x0fconfirmPassword\"<\n" +
-	"\x14RegisterUserResponse\x12$\n" +
-	"\x04user\x18\x01 \x01(\v2\x10.account.v1.UserR\x04user\"D\n" +
+	"\x10confirm_password\x18\x05 \x01(\tR\x0fconfirmPassword\"8\n" +
+	"\x14RegisterUserResponse\x12 \n" +
+	"\x04user\x18\x01 \x01(\v2\f.UMS.v1.UserR\x04user\"D\n" +
 	"\x10LoginUserRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\")\n" +
 	"\x11LoginUserResponse\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\"\x17\n" +
-	"\x15GetUserProfileRequest\">\n" +
-	"\x16GetUserProfileResponse\x12$\n" +
-	"\x04user\x18\x01 \x01(\v2\x10.account.v1.UserR\x04user\"\xa1\x01\n" +
+	"\x15GetUserProfileRequest\":\n" +
+	"\x16GetUserProfileResponse\x12 \n" +
+	"\x04user\x18\x01 \x01(\v2\f.UMS.v1.UserR\x04user\"\xa1\x01\n" +
 	"\x18UpdateUserProfileRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x03 \x01(\tR\bpassword\x12\x14\n" +
 	"\x05phone\x18\x04 \x01(\tR\x05phone\x12)\n" +
 	"\x10confirm_password\x18\x05 \x01(\tR\x0fconfirmPassword\"\x1b\n" +
-	"\x19UpdateUserProfileResponse2\xe1\x02\n" +
-	"\aAccount\x12Q\n" +
-	"\fRegisterUser\x12\x1f.account.v1.RegisterUserRequest\x1a .account.v1.RegisterUserResponse\x12H\n" +
-	"\tLoginUser\x12\x1c.account.v1.LoginUserRequest\x1a\x1d.account.v1.LoginUserResponse\x12W\n" +
-	"\x0eGetUserProfile\x12!.account.v1.GetUserProfileRequest\x1a\".account.v1.GetUserProfileResponse\x12`\n" +
-	"\x11UpdateUserProfile\x12$.account.v1.UpdateUserProfileRequest\x1a%.account.v1.UpdateUserProfileResponseBGZEgithub.com/rakshithrajs/cloud/services/account/gen/account/v1;accountb\x06proto3"
+	"\x19UpdateUserProfileResponse2\xbd\x02\n" +
+	"\x03UMS\x12I\n" +
+	"\fRegisterUser\x12\x1b.UMS.v1.RegisterUserRequest\x1a\x1c.UMS.v1.RegisterUserResponse\x12@\n" +
+	"\tLoginUser\x12\x18.UMS.v1.LoginUserRequest\x1a\x19.UMS.v1.LoginUserResponse\x12O\n" +
+	"\x0eGetUserProfile\x12\x1d.UMS.v1.GetUserProfileRequest\x1a\x1e.UMS.v1.GetUserProfileResponse\x12X\n" +
+	"\x11UpdateUserProfile\x12 .UMS.v1.UpdateUserProfileRequest\x1a!.UMS.v1.UpdateUserProfileResponseB\x15Z\x13/UMS/gen/UMS/v1;UMSb\x06proto3"
 
 var (
-	file_account_v1_account_proto_rawDescOnce sync.Once
-	file_account_v1_account_proto_rawDescData []byte
+	file_UMS_v1_UMS_proto_rawDescOnce sync.Once
+	file_UMS_v1_UMS_proto_rawDescData []byte
 )
 
-func file_account_v1_account_proto_rawDescGZIP() []byte {
-	file_account_v1_account_proto_rawDescOnce.Do(func() {
-		file_account_v1_account_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_account_v1_account_proto_rawDesc), len(file_account_v1_account_proto_rawDesc)))
+func file_UMS_v1_UMS_proto_rawDescGZIP() []byte {
+	file_UMS_v1_UMS_proto_rawDescOnce.Do(func() {
+		file_UMS_v1_UMS_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_UMS_v1_UMS_proto_rawDesc), len(file_UMS_v1_UMS_proto_rawDesc)))
 	})
-	return file_account_v1_account_proto_rawDescData
+	return file_UMS_v1_UMS_proto_rawDescData
 }
 
-var file_account_v1_account_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
-var file_account_v1_account_proto_goTypes = []any{
-	(*User)(nil),                      // 0: account.v1.User
-	(*RegisterUserRequest)(nil),       // 1: account.v1.RegisterUserRequest
-	(*RegisterUserResponse)(nil),      // 2: account.v1.RegisterUserResponse
-	(*LoginUserRequest)(nil),          // 3: account.v1.LoginUserRequest
-	(*LoginUserResponse)(nil),         // 4: account.v1.LoginUserResponse
-	(*GetUserProfileRequest)(nil),     // 5: account.v1.GetUserProfileRequest
-	(*GetUserProfileResponse)(nil),    // 6: account.v1.GetUserProfileResponse
-	(*UpdateUserProfileRequest)(nil),  // 7: account.v1.UpdateUserProfileRequest
-	(*UpdateUserProfileResponse)(nil), // 8: account.v1.UpdateUserProfileResponse
+var file_UMS_v1_UMS_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_UMS_v1_UMS_proto_goTypes = []any{
+	(*User)(nil),                      // 0: UMS.v1.User
+	(*RegisterUserRequest)(nil),       // 1: UMS.v1.RegisterUserRequest
+	(*RegisterUserResponse)(nil),      // 2: UMS.v1.RegisterUserResponse
+	(*LoginUserRequest)(nil),          // 3: UMS.v1.LoginUserRequest
+	(*LoginUserResponse)(nil),         // 4: UMS.v1.LoginUserResponse
+	(*GetUserProfileRequest)(nil),     // 5: UMS.v1.GetUserProfileRequest
+	(*GetUserProfileResponse)(nil),    // 6: UMS.v1.GetUserProfileResponse
+	(*UpdateUserProfileRequest)(nil),  // 7: UMS.v1.UpdateUserProfileRequest
+	(*UpdateUserProfileResponse)(nil), // 8: UMS.v1.UpdateUserProfileResponse
 }
-var file_account_v1_account_proto_depIdxs = []int32{
-	0, // 0: account.v1.RegisterUserResponse.user:type_name -> account.v1.User
-	0, // 1: account.v1.GetUserProfileResponse.user:type_name -> account.v1.User
-	1, // 2: account.v1.Account.RegisterUser:input_type -> account.v1.RegisterUserRequest
-	3, // 3: account.v1.Account.LoginUser:input_type -> account.v1.LoginUserRequest
-	5, // 4: account.v1.Account.GetUserProfile:input_type -> account.v1.GetUserProfileRequest
-	7, // 5: account.v1.Account.UpdateUserProfile:input_type -> account.v1.UpdateUserProfileRequest
-	2, // 6: account.v1.Account.RegisterUser:output_type -> account.v1.RegisterUserResponse
-	4, // 7: account.v1.Account.LoginUser:output_type -> account.v1.LoginUserResponse
-	6, // 8: account.v1.Account.GetUserProfile:output_type -> account.v1.GetUserProfileResponse
-	8, // 9: account.v1.Account.UpdateUserProfile:output_type -> account.v1.UpdateUserProfileResponse
+var file_UMS_v1_UMS_proto_depIdxs = []int32{
+	0, // 0: UMS.v1.RegisterUserResponse.user:type_name -> UMS.v1.User
+	0, // 1: UMS.v1.GetUserProfileResponse.user:type_name -> UMS.v1.User
+	1, // 2: UMS.v1.UMS.RegisterUser:input_type -> UMS.v1.RegisterUserRequest
+	3, // 3: UMS.v1.UMS.LoginUser:input_type -> UMS.v1.LoginUserRequest
+	5, // 4: UMS.v1.UMS.GetUserProfile:input_type -> UMS.v1.GetUserProfileRequest
+	7, // 5: UMS.v1.UMS.UpdateUserProfile:input_type -> UMS.v1.UpdateUserProfileRequest
+	2, // 6: UMS.v1.UMS.RegisterUser:output_type -> UMS.v1.RegisterUserResponse
+	4, // 7: UMS.v1.UMS.LoginUser:output_type -> UMS.v1.LoginUserResponse
+	6, // 8: UMS.v1.UMS.GetUserProfile:output_type -> UMS.v1.GetUserProfileResponse
+	8, // 9: UMS.v1.UMS.UpdateUserProfile:output_type -> UMS.v1.UpdateUserProfileResponse
 	6, // [6:10] is the sub-list for method output_type
 	2, // [2:6] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
@@ -607,26 +606,26 @@ var file_account_v1_account_proto_depIdxs = []int32{
 	0, // [0:2] is the sub-list for field type_name
 }
 
-func init() { file_account_v1_account_proto_init() }
-func file_account_v1_account_proto_init() {
-	if File_account_v1_account_proto != nil {
+func init() { file_UMS_v1_UMS_proto_init() }
+func file_UMS_v1_UMS_proto_init() {
+	if File_UMS_v1_UMS_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_account_v1_account_proto_rawDesc), len(file_account_v1_account_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_UMS_v1_UMS_proto_rawDesc), len(file_UMS_v1_UMS_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_account_v1_account_proto_goTypes,
-		DependencyIndexes: file_account_v1_account_proto_depIdxs,
-		MessageInfos:      file_account_v1_account_proto_msgTypes,
+		GoTypes:           file_UMS_v1_UMS_proto_goTypes,
+		DependencyIndexes: file_UMS_v1_UMS_proto_depIdxs,
+		MessageInfos:      file_UMS_v1_UMS_proto_msgTypes,
 	}.Build()
-	File_account_v1_account_proto = out.File
-	file_account_v1_account_proto_goTypes = nil
-	file_account_v1_account_proto_depIdxs = nil
+	File_UMS_v1_UMS_proto = out.File
+	file_UMS_v1_UMS_proto_goTypes = nil
+	file_UMS_v1_UMS_proto_depIdxs = nil
 }

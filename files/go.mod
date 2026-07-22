@@ -6,7 +6,7 @@ require (
 	github.com/go-playground/validator/v10 v10.30.3
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.12.3
-	github.com/rakshithrajs/cloud/services/account v0.0.0
+	github.com/rakshithrajs/cloud/services/UMS v0.0.0
 	google.golang.org/grpc v1.82.1
 	google.golang.org/protobuf v1.36.11
 )
@@ -23,4 +23,4 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260414002931-afd174a4e478 // indirect
 )
 
-replace github.com/rakshithrajs/cloud/services/account => ../account
+replace github.com/rakshithrajs/cloud/services/UMS => ../UMS

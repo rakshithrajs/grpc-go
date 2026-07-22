@@ -6,8 +6,8 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/rakshithrajs/cloud/services/account/internal/models"
-	"github.com/rakshithrajs/cloud/services/account/internal/utils"
+	"github.com/rakshithrajs/cloud/UMS/internal/models"
+	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 
 	"github.com/lib/pq"
 	"github.com/lib/pq/pqerror"

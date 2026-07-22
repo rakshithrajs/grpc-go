@@ -6,10 +6,10 @@ import (
 	"log/slog"
 	"strings"
 
-	accountpb "github.com/rakshithrajs/cloud/services/account/gen/account/v1"
-	"github.com/rakshithrajs/cloud/services/account/internal/models"
-	"github.com/rakshithrajs/cloud/services/account/internal/storage"
-	"github.com/rakshithrajs/cloud/services/account/internal/utils"
+	UMSpb "github.com/rakshithrajs/cloud/UMS/gen/UMS/v1"
+	"github.com/rakshithrajs/cloud/UMS/internal/models"
+	"github.com/rakshithrajs/cloud/UMS/internal/storage"
+	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
@@ -20,7 +20,7 @@ var (
 	ErrFailedToRegisterUser = errors.New("failed to register user")
 )
 
-func (a *AccountHandler) RegisterUser(ctx context.Context, req *accountpb.RegisterUserRequest) (*accountpb.RegisterUserResponse, error) {
+func (a *UMSHandler) RegisterUser(ctx context.Context, req *UMSpb.RegisterUserRequest) (*UMSpb.RegisterUserResponse, error) {
 	payload := models.RegisterUserRequest{
 		Name:            strings.TrimSpace(req.GetName()),
 		Email:           utils.NormalizeEmail(req.GetEmail()),
@@ -30,13 +30,13 @@ func (a *AccountHandler) RegisterUser(ctx context.Context, req *accountpb.Regist
 	}
 
 	if err := utils.Validate.Struct(payload); err != nil {
-		return &accountpb.RegisterUserResponse{}, status.Error(codes.InvalidArgument, strings.Join(utils.Errors(err), "; "))
+		return &UMSpb.RegisterUserResponse{}, status.Error(codes.InvalidArgument, strings.Join(utils.Errors(err), "; "))
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
 	if err != nil {
 		slog.Error(logPrefix(fnRegisterUser)+"failed to hash password", slog.Any("error", err))
-		return &accountpb.RegisterUserResponse{}, status.Error(codes.Internal, ErrFailedToRegisterUser.Error())
+		return &UMSpb.RegisterUserResponse{}, status.Error(codes.Internal, ErrFailedToRegisterUser.Error())
 	}
 
 	password := string(hashedPassword)
@@ -48,13 +48,13 @@ func (a *AccountHandler) RegisterUser(ctx context.Context, req *accountpb.Regist
 	})
 	if err != nil {
 		if errors.Is(err, storage.ErrUserEmailAlreadyExists) || errors.Is(err, storage.ErrPhoneNumberAlreadyExists) {
-			return &accountpb.RegisterUserResponse{}, status.Error(codes.AlreadyExists, err.Error())
+			return &UMSpb.RegisterUserResponse{}, status.Error(codes.AlreadyExists, err.Error())
 		}
 		slog.Error(logPrefix(fnRegisterUser)+"failed to create user", slog.Any("error", err))
-		return &accountpb.RegisterUserResponse{}, status.Error(codes.Internal, ErrFailedToRegisterUser.Error())
+		return &UMSpb.RegisterUserResponse{}, status.Error(codes.Internal, ErrFailedToRegisterUser.Error())
 	}
 
-	return &accountpb.RegisterUserResponse{User: &accountpb.User{
+	return &UMSpb.RegisterUserResponse{User: &UMSpb.User{
 		Id:    *newUser.ID,
 		Name:  *newUser.Name,
 		Email: *newUser.Email,

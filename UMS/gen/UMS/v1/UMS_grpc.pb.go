@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             v7.35.0
-// source: account/v1/account.proto
+// source: UMS/v1/UMS.proto
 
-package account
+package UMS
 
 import (
 	context "context"
@@ -19,19 +19,19 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Account_RegisterUser_FullMethodName      = "/account.v1.Account/RegisterUser"
-	Account_LoginUser_FullMethodName         = "/account.v1.Account/LoginUser"
-	Account_GetUserProfile_FullMethodName    = "/account.v1.Account/GetUserProfile"
-	Account_UpdateUserProfile_FullMethodName = "/account.v1.Account/UpdateUserProfile"
+	UMS_RegisterUser_FullMethodName      = "/UMS.v1.UMS/RegisterUser"
+	UMS_LoginUser_FullMethodName         = "/UMS.v1.UMS/LoginUser"
+	UMS_GetUserProfile_FullMethodName    = "/UMS.v1.UMS/GetUserProfile"
+	UMS_UpdateUserProfile_FullMethodName = "/UMS.v1.UMS/UpdateUserProfile"
 )
 
-// AccountClient is the client API for Account service.
+// UMSClient is the client API for UMS service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// Account service provides authentication and user profile operations.
-type AccountClient interface {
-	// RegisterUser creates a new user account.
+// UMS service provides authentication and user profile operations.
+type UMSClient interface {
+	// RegisterUser creates a new user UMS.
 	RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterUserResponse, error)
 	// LoginUser issues a JWT for an existing user.
 	LoginUser(ctx context.Context, in *LoginUserRequest, opts ...grpc.CallOption) (*LoginUserResponse, error)
@@ -41,61 +41,61 @@ type AccountClient interface {
 	UpdateUserProfile(ctx context.Context, in *UpdateUserProfileRequest, opts ...grpc.CallOption) (*UpdateUserProfileResponse, error)
 }
 
-type accountClient struct {
+type uMSClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewAccountClient(cc grpc.ClientConnInterface) AccountClient {
-	return &accountClient{cc}
+func NewUMSClient(cc grpc.ClientConnInterface) UMSClient {
+	return &uMSClient{cc}
 }
 
-func (c *accountClient) RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterUserResponse, error) {
+func (c *uMSClient) RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterUserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RegisterUserResponse)
-	err := c.cc.Invoke(ctx, Account_RegisterUser_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UMS_RegisterUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *accountClient) LoginUser(ctx context.Context, in *LoginUserRequest, opts ...grpc.CallOption) (*LoginUserResponse, error) {
+func (c *uMSClient) LoginUser(ctx context.Context, in *LoginUserRequest, opts ...grpc.CallOption) (*LoginUserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LoginUserResponse)
-	err := c.cc.Invoke(ctx, Account_LoginUser_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UMS_LoginUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *accountClient) GetUserProfile(ctx context.Context, in *GetUserProfileRequest, opts ...grpc.CallOption) (*GetUserProfileResponse, error) {
+func (c *uMSClient) GetUserProfile(ctx context.Context, in *GetUserProfileRequest, opts ...grpc.CallOption) (*GetUserProfileResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetUserProfileResponse)
-	err := c.cc.Invoke(ctx, Account_GetUserProfile_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UMS_GetUserProfile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *accountClient) UpdateUserProfile(ctx context.Context, in *UpdateUserProfileRequest, opts ...grpc.CallOption) (*UpdateUserProfileResponse, error) {
+func (c *uMSClient) UpdateUserProfile(ctx context.Context, in *UpdateUserProfileRequest, opts ...grpc.CallOption) (*UpdateUserProfileResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UpdateUserProfileResponse)
-	err := c.cc.Invoke(ctx, Account_UpdateUserProfile_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UMS_UpdateUserProfile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// AccountServer is the server API for Account service.
-// All implementations must embed UnimplementedAccountServer
+// UMSServer is the server API for UMS service.
+// All implementations must embed UnimplementedUMSServer
 // for forward compatibility.
 //
-// Account service provides authentication and user profile operations.
-type AccountServer interface {
-	// RegisterUser creates a new user account.
+// UMS service provides authentication and user profile operations.
+type UMSServer interface {
+	// RegisterUser creates a new user UMS.
 	RegisterUser(context.Context, *RegisterUserRequest) (*RegisterUserResponse, error)
 	// LoginUser issues a JWT for an existing user.
 	LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error)
@@ -103,145 +103,145 @@ type AccountServer interface {
 	GetUserProfile(context.Context, *GetUserProfileRequest) (*GetUserProfileResponse, error)
 	// UpdateUserProfile updates the authenticated user's profile.
 	UpdateUserProfile(context.Context, *UpdateUserProfileRequest) (*UpdateUserProfileResponse, error)
-	mustEmbedUnimplementedAccountServer()
+	mustEmbedUnimplementedUMSServer()
 }
 
-// UnimplementedAccountServer must be embedded to have
+// UnimplementedUMSServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedAccountServer struct{}
+type UnimplementedUMSServer struct{}
 
-func (UnimplementedAccountServer) RegisterUser(context.Context, *RegisterUserRequest) (*RegisterUserResponse, error) {
+func (UnimplementedUMSServer) RegisterUser(context.Context, *RegisterUserRequest) (*RegisterUserResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RegisterUser not implemented")
 }
-func (UnimplementedAccountServer) LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error) {
+func (UnimplementedUMSServer) LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method LoginUser not implemented")
 }
-func (UnimplementedAccountServer) GetUserProfile(context.Context, *GetUserProfileRequest) (*GetUserProfileResponse, error) {
+func (UnimplementedUMSServer) GetUserProfile(context.Context, *GetUserProfileRequest) (*GetUserProfileResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUserProfile not implemented")
 }
-func (UnimplementedAccountServer) UpdateUserProfile(context.Context, *UpdateUserProfileRequest) (*UpdateUserProfileResponse, error) {
+func (UnimplementedUMSServer) UpdateUserProfile(context.Context, *UpdateUserProfileRequest) (*UpdateUserProfileResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateUserProfile not implemented")
 }
-func (UnimplementedAccountServer) mustEmbedUnimplementedAccountServer() {}
-func (UnimplementedAccountServer) testEmbeddedByValue()                 {}
+func (UnimplementedUMSServer) mustEmbedUnimplementedUMSServer() {}
+func (UnimplementedUMSServer) testEmbeddedByValue()             {}
 
-// UnsafeAccountServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to AccountServer will
+// UnsafeUMSServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to UMSServer will
 // result in compilation errors.
-type UnsafeAccountServer interface {
-	mustEmbedUnimplementedAccountServer()
+type UnsafeUMSServer interface {
+	mustEmbedUnimplementedUMSServer()
 }
 
-func RegisterAccountServer(s grpc.ServiceRegistrar, srv AccountServer) {
-	// If the following call panics, it indicates UnimplementedAccountServer was
+func RegisterUMSServer(s grpc.ServiceRegistrar, srv UMSServer) {
+	// If the following call panics, it indicates UnimplementedUMSServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&Account_ServiceDesc, srv)
+	s.RegisterService(&UMS_ServiceDesc, srv)
 }
 
-func _Account_RegisterUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UMS_RegisterUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RegisterUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AccountServer).RegisterUser(ctx, in)
+		return srv.(UMSServer).RegisterUser(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Account_RegisterUser_FullMethodName,
+		FullMethod: UMS_RegisterUser_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccountServer).RegisterUser(ctx, req.(*RegisterUserRequest))
+		return srv.(UMSServer).RegisterUser(ctx, req.(*RegisterUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Account_LoginUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UMS_LoginUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LoginUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AccountServer).LoginUser(ctx, in)
+		return srv.(UMSServer).LoginUser(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Account_LoginUser_FullMethodName,
+		FullMethod: UMS_LoginUser_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccountServer).LoginUser(ctx, req.(*LoginUserRequest))
+		return srv.(UMSServer).LoginUser(ctx, req.(*LoginUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Account_GetUserProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UMS_GetUserProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetUserProfileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AccountServer).GetUserProfile(ctx, in)
+		return srv.(UMSServer).GetUserProfile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Account_GetUserProfile_FullMethodName,
+		FullMethod: UMS_GetUserProfile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccountServer).GetUserProfile(ctx, req.(*GetUserProfileRequest))
+		return srv.(UMSServer).GetUserProfile(ctx, req.(*GetUserProfileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Account_UpdateUserProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UMS_UpdateUserProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateUserProfileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AccountServer).UpdateUserProfile(ctx, in)
+		return srv.(UMSServer).UpdateUserProfile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Account_UpdateUserProfile_FullMethodName,
+		FullMethod: UMS_UpdateUserProfile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccountServer).UpdateUserProfile(ctx, req.(*UpdateUserProfileRequest))
+		return srv.(UMSServer).UpdateUserProfile(ctx, req.(*UpdateUserProfileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Account_ServiceDesc is the grpc.ServiceDesc for Account service.
+// UMS_ServiceDesc is the grpc.ServiceDesc for UMS service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Account_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "account.v1.Account",
-	HandlerType: (*AccountServer)(nil),
+var UMS_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "UMS.v1.UMS",
+	HandlerType: (*UMSServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "RegisterUser",
-			Handler:    _Account_RegisterUser_Handler,
+			Handler:    _UMS_RegisterUser_Handler,
 		},
 		{
 			MethodName: "LoginUser",
-			Handler:    _Account_LoginUser_Handler,
+			Handler:    _UMS_LoginUser_Handler,
 		},
 		{
 			MethodName: "GetUserProfile",
-			Handler:    _Account_GetUserProfile_Handler,
+			Handler:    _UMS_GetUserProfile_Handler,
 		},
 		{
 			MethodName: "UpdateUserProfile",
-			Handler:    _Account_UpdateUserProfile_Handler,
+			Handler:    _UMS_UpdateUserProfile_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "account/v1/account.proto",
+	Metadata: "UMS/v1/UMS.proto",
 }

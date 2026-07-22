@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package account.v1;
+package UMS.v1;
 
-option go_package = "github.com/rakshithrajs/cloud/services/account/gen/account/v1;account";
+option go_package = "/UMS/gen/UMS/v1;UMS";
 
-// Account service provides authentication and user profile operations.
-service Account {
+// UMS service provides authentication and user profile operations.
+service UMS {
 
-    // RegisterUser creates a new user account.
+    // RegisterUser creates a new user UMS.
     rpc RegisterUser (RegisterUserRequest) returns (RegisterUserResponse);
 
     // LoginUser issues a JWT for an existing user.
@@ -20,7 +20,7 @@ service Account {
     rpc UpdateUserProfile (UpdateUserProfileRequest) returns (UpdateUserProfileResponse);
 }
 
-// User represents a registered account.
+// User represents a registered UMS.
 message User {
 
     // user's id

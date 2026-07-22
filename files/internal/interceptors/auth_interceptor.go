@@ -3,8 +3,6 @@ package interceptors
 import (
 	"context"
 
-	accountpb "github.com/rakshithrajs/cloud/services/account/gen/account/v1"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -16,7 +14,7 @@ var (
 	ErrSomethingWentWrong = status.Error(codes.Internal, "something went wrong")
 )
 
-func NewAuthInterceptor(accountClient accountpb.AccountClient) grpc.UnaryServerInterceptor {
+func NewAuthInterceptor(UMSnt UMSpb.UMSClient) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
@@ -28,9 +26,9 @@ func NewAuthInterceptor(accountClient accountpb.AccountClient) grpc.UnaryServerI
 			return nil, ErrMissingAuthHeader
 		}
 
-		accountCtx := metadata.NewOutgoingContext(ctx, metadata.Pairs("authorization", authHeaders[0]))
+		UMSCtx := metadata.NewOutgoingContext(ctx, metadata.Pairs("authorization", authHeaders[0]))
 
-		resp, err := accountClient.GetUserProfile(accountCtx, &accountpb.GetUserProfileRequest{})
+		resp, err := UMSClient.GetUserProfile(UMSCtx, &UMSpb.GetUserProfileRequest{})
 		if err != nil {
 			st, ok := status.FromError(err)
 			if ok {

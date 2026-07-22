@@ -82,8 +82,8 @@ func Load() (*Config, error) {
 	}
 
 	grpcConf := &gRPCConfig{
-		Host: env["ACCOUNT_GRPC_HOST"],
-		Port: env["ACCOUNT_GRPC_PORT"],
+		Host: env["UMS_GRPC_HOST"],
+		Port: env["UMS_GRPC_PORT"],
 	}
 	if grpcConf.Host == nullString || grpcConf.Port == nullString {
 		slog.Error(logPrefix+"missing gRPC environment variables", slog.Any("error", ErrMissingEnvVariable))
@@ -91,12 +91,12 @@ func Load() (*Config, error) {
 	}
 
 	dbConf := &DbConfig{
-		Host:     env["ACCOUNT_DB_HOST"],
-		Port:     env["ACCOUNT_DB_PORT"],
-		DbName:   env["ACCOUNT_DB_NAME"],
-		User:     env["ACCOUNT_DB_USER"],
-		Password: env["ACCOUNT_DB_PASSWORD"],
-		SSLMode:  env["ACCOUNT_DB_SSLMODE"],
+		Host:     env["UMS_DB_HOST"],
+		Port:     env["UMS_DB_PORT"],
+		DbName:   env["UMS_DB_NAME"],
+		User:     env["UMS_DB_USER"],
+		Password: env["UMS_DB_PASSWORD"],
+		SSLMode:  env["UMS_DB_SSLMODE"],
 	}
 	if dbConf.Host == nullString || dbConf.Port == nullString || dbConf.DbName == nullString || dbConf.User == nullString || dbConf.Password == nullString || dbConf.SSLMode == nullString {
 		slog.Error(logPrefix+"missing database environment variables", slog.Any("error", ErrMissingEnvVariable))

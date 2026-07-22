@@ -6,10 +6,10 @@ import (
 	"log/slog"
 	"strings"
 
-	accountpb "github.com/rakshithrajs/cloud/services/account/gen/account/v1"
-	"github.com/rakshithrajs/cloud/services/account/internal/models"
-	"github.com/rakshithrajs/cloud/services/account/internal/storage"
-	"github.com/rakshithrajs/cloud/services/account/internal/utils"
+	UMSpb "github.com/rakshithrajs/cloud/UMS/gen/UMS/v1"
+	"github.com/rakshithrajs/cloud/UMS/internal/models"
+	"github.com/rakshithrajs/cloud/UMS/internal/storage"
+	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
@@ -20,7 +20,7 @@ var (
 	ErrNoFieldsToUpdate = errors.New("no fields to update")
 )
 
-func (a *AccountHandler) UpdateUserProfile(ctx context.Context, req *accountpb.UpdateUserProfileRequest) (*accountpb.UpdateUserProfileResponse, error) {
+func (a *UMSHandler) UpdateUserProfile(ctx context.Context, req *UMSpb.UpdateUserProfileRequest) (*UMSpb.UpdateUserProfileResponse, error) {
 	userID, err := UserIDFromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (a *AccountHandler) UpdateUserProfile(ctx context.Context, req *accountpb.U
 		user, err := a.storage.GetUserByID(ctx, userID)
 		if err != nil {
 			if errors.Is(err, storage.ErrUserNotFound) {
-				return &accountpb.UpdateUserProfileResponse{}, nil
+				return &UMSpb.UpdateUserProfileResponse{}, nil
 			}
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -78,7 +78,7 @@ func (a *AccountHandler) UpdateUserProfile(ctx context.Context, req *accountpb.U
 
 	if err := a.storage.UpdateUser(ctx, userID, payload); err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
-			return &accountpb.UpdateUserProfileResponse{}, nil
+			return &UMSpb.UpdateUserProfileResponse{}, nil
 		}
 		if errors.Is(err, storage.ErrUserEmailAlreadyExists) || errors.Is(err, storage.ErrPhoneNumberAlreadyExists) {
 			return nil, status.Error(codes.AlreadyExists, err.Error())
@@ -87,5 +87,5 @@ func (a *AccountHandler) UpdateUserProfile(ctx context.Context, req *accountpb.U
 		return nil, status.Error(codes.Internal, storage.ErrFailedToUpdateUser.Error())
 	}
 
-	return &accountpb.UpdateUserProfileResponse{}, nil
+	return &UMSpb.UpdateUserProfileResponse{}, nil
 }

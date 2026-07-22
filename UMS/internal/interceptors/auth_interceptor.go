@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	accountpb "github.com/rakshithrajs/cloud/services/account/gen/account/v1"
-	"github.com/rakshithrajs/cloud/services/account/internal/config"
+	UMSpb "github.com/rakshithrajs/cloud/UMS/gen/UMS/v1"
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 
 	"github.com/golang-jwt/jwt/v5"
 	"google.golang.org/grpc"
@@ -32,8 +32,8 @@ var (
 )
 
 var publicMethods = map[string]bool{
-	accountpb.Account_RegisterUser_FullMethodName: true,
-	accountpb.Account_LoginUser_FullMethodName:    true,
+	UMSpb.UMS_RegisterUser_FullMethodName: true,
+	UMSpb.UMS_LoginUser_FullMethodName:    true,
 }
 
 func AuthInterceptor(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {

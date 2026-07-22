@@ -4,7 +4,6 @@ import (
 	"log/slog"
 	"net"
 
-	accountpb "github.com/rakshithrajs/cloud/services/account/gen/account/v1"
 	filespb "github.com/rakshithrajs/cloud/services/files/gen/files/v1"
 	"github.com/rakshithrajs/cloud/services/files/internal/config"
 	"github.com/rakshithrajs/cloud/services/files/internal/handlers"
@@ -34,14 +33,14 @@ func main() {
 	}
 	defer db.Close()
 
-	accountConn, err := grpc.NewClient(cfg.AccountGRPCAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	UMSConn, err := grpc.NewClient(cfg.UMSGRPCAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		slog.Error(logPrefix+"failed to connect to account service", slog.Any("error", err))
+		slog.Error(logPrefix+"failed to connect to UMS service", slog.Any("error", err))
 		return
 	}
-	defer accountConn.Close()
+	defer UMSConn.Close()
 
-	accountClient := accountpb.NewAccountClient(accountConn)
+	UMSClient := UMSpb.NewUMSClient(UMSConn)
 
 	listen, err := net.Listen("tcp", cfg.GRPCAddress)
 	if err != nil {
@@ -49,7 +48,7 @@ func main() {
 		return
 	}
 
-	server := grpc.NewServer(grpc.UnaryInterceptor(interceptors.NewAuthInterceptor(accountClient)))
+	server := grpc.NewServer(grpc.UnaryInterceptor(interceptors.NewAuthInterceptor(UMSClient)))
 
 	store := storage.NewFileStore(db)
 	fileHandler := handlers.NewFileHandler(store)

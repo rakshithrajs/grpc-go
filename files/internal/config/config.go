@@ -45,10 +45,10 @@ const (
 )
 
 type Config struct {
-	GRPCAddress        string
-	AccountGRPCAddress string
-	DSN                string
-	UserStoragePath    string
+	GRPCAddress     string
+	UMSGRPCAddress  string
+	DSN             string
+	UserStoragePath string
 }
 
 var cfg *Config
@@ -91,11 +91,11 @@ func Load() (*Config, error) {
 		return nil, ErrMissingEnvVariable
 	}
 
-	accountGRPCConf := &gRPCConfig{
-		Host: env["ACCOUNT_GRPC_HOST"],
-		Port: env["ACCOUNT_GRPC_PORT"],
+	UMSGRPCConf := &gRPCConfig{
+		Host: env["UMS_GRPC_HOST"],
+		Port: env["UMS_GRPC_PORT"],
 	}
-	if accountGRPCConf.Host == nullString || accountGRPCConf.Port == nullString {
+	if UMSGRPCConf.Host == nullString || UMSGRPCConf.Port == nullString {
 		slog.Error(logPrefix, slog.Any("error", ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
@@ -120,10 +120,10 @@ func Load() (*Config, error) {
 	}
 
 	cfg = &Config{
-		GRPCAddress:        grpcConf.Address(),
-		AccountGRPCAddress: accountGRPCConf.Address(),
-		DSN:                dbConf.DSN(),
-		UserStoragePath:    userStoragePath,
+		GRPCAddress:     grpcConf.Address(),
+		UMSGRPCAddress:  UMSGRPCConf.Address(),
+		DSN:             dbConf.DSN(),
+		UserStoragePath: userStoragePath,
 	}
 
 	return cfg, nil

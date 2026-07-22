@@ -1,4 +1,4 @@
-module github.com/rakshithrajs/cloud/services/account
+module github.com/rakshithrajs/cloud/UMS
 
 go 1.26.4
 

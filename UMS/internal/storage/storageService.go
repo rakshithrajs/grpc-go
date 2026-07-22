@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 
-	"github.com/rakshithrajs/cloud/services/account/internal/models"
+	"github.com/rakshithrajs/cloud/UMS/internal/models"
 )
 
 type UserService interface {

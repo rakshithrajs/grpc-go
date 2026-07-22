@@ -2,8 +2,9 @@ package config
 
 import (
 	"errors"
-	"github.com/rakshithrajs/cloud/services/account/internal/models"
 	"time"
+
+	"github.com/rakshithrajs/cloud/UMS/internal/models"
 
 	"github.com/golang-jwt/jwt/v5"
 )
