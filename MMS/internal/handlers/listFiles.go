@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (f *FileHandler) ListFiles(ctx context.Context, req *MMSpb.ListFilesRequest) (*MMSpb.ListFilesResponse, error) {
+func (f *FileHandler) ListFiles(ctx context.Context, req *MMSpb.EmptyMessage) (*MMSpb.ListFilesResponse, error) {
 	userID, err := UserIDFromContext(ctx)
 	if err != nil {
 		return nil, err

@@ -345,43 +345,6 @@ func (x *DeleteFileRequest) GetFileID() string {
 	return ""
 }
 
-// DeleteFileResponse is empty.
-type DeleteFileResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteFileResponse) Reset() {
-	*x = DeleteFileResponse{}
-	mi := &file_MMS_v1_MMS_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteFileResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteFileResponse) ProtoMessage() {}
-
-func (x *DeleteFileResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_MMS_v1_MMS_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteFileResponse.ProtoReflect.Descriptor instead.
-func (*DeleteFileResponse) Descriptor() ([]byte, []int) {
-	return file_MMS_v1_MMS_proto_rawDescGZIP(), []int{6}
-}
-
 // RenameFileRequest contains the file's new name.
 type RenameFileRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -395,7 +358,7 @@ type RenameFileRequest struct {
 
 func (x *RenameFileRequest) Reset() {
 	*x = RenameFileRequest{}
-	mi := &file_MMS_v1_MMS_proto_msgTypes[7]
+	mi := &file_MMS_v1_MMS_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -407,7 +370,7 @@ func (x *RenameFileRequest) String() string {
 func (*RenameFileRequest) ProtoMessage() {}
 
 func (x *RenameFileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_MMS_v1_MMS_proto_msgTypes[7]
+	mi := &file_MMS_v1_MMS_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -420,7 +383,7 @@ func (x *RenameFileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RenameFileRequest.ProtoReflect.Descriptor instead.
 func (*RenameFileRequest) Descriptor() ([]byte, []int) {
-	return file_MMS_v1_MMS_proto_rawDescGZIP(), []int{7}
+	return file_MMS_v1_MMS_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *RenameFileRequest) GetFileID() string {
@@ -437,80 +400,6 @@ func (x *RenameFileRequest) GetNewName() string {
 	return ""
 }
 
-// RenameFileResponse is empty.
-type RenameFileResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RenameFileResponse) Reset() {
-	*x = RenameFileResponse{}
-	mi := &file_MMS_v1_MMS_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RenameFileResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RenameFileResponse) ProtoMessage() {}
-
-func (x *RenameFileResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_MMS_v1_MMS_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RenameFileResponse.ProtoReflect.Descriptor instead.
-func (*RenameFileResponse) Descriptor() ([]byte, []int) {
-	return file_MMS_v1_MMS_proto_rawDescGZIP(), []int{8}
-}
-
-// ListFilesRequest is empty.
-type ListFilesRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListFilesRequest) Reset() {
-	*x = ListFilesRequest{}
-	mi := &file_MMS_v1_MMS_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListFilesRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListFilesRequest) ProtoMessage() {}
-
-func (x *ListFilesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_MMS_v1_MMS_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListFilesRequest.ProtoReflect.Descriptor instead.
-func (*ListFilesRequest) Descriptor() ([]byte, []int) {
-	return file_MMS_v1_MMS_proto_rawDescGZIP(), []int{9}
-}
-
 // ListFilesResponse contains the list of files.
 type ListFilesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -521,7 +410,7 @@ type ListFilesResponse struct {
 
 func (x *ListFilesResponse) Reset() {
 	*x = ListFilesResponse{}
-	mi := &file_MMS_v1_MMS_proto_msgTypes[10]
+	mi := &file_MMS_v1_MMS_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -533,7 +422,7 @@ func (x *ListFilesResponse) String() string {
 func (*ListFilesResponse) ProtoMessage() {}
 
 func (x *ListFilesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_MMS_v1_MMS_proto_msgTypes[10]
+	mi := &file_MMS_v1_MMS_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -546,7 +435,7 @@ func (x *ListFilesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListFilesResponse.ProtoReflect.Descriptor instead.
 func (*ListFilesResponse) Descriptor() ([]byte, []int) {
-	return file_MMS_v1_MMS_proto_rawDescGZIP(), []int{10}
+	return file_MMS_v1_MMS_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListFilesResponse) GetFile() []*File {
@@ -554,6 +443,43 @@ func (x *ListFilesResponse) GetFile() []*File {
 		return x.File
 	}
 	return nil
+}
+
+// EmptyMessage has an empty body.
+type EmptyMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EmptyMessage) Reset() {
+	*x = EmptyMessage{}
+	mi := &file_MMS_v1_MMS_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EmptyMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EmptyMessage) ProtoMessage() {}
+
+func (x *EmptyMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_MMS_v1_MMS_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EmptyMessage.ProtoReflect.Descriptor instead.
+func (*EmptyMessage) Descriptor() ([]byte, []int) {
+	return file_MMS_v1_MMS_proto_rawDescGZIP(), []int{8}
 }
 
 var File_MMS_v1_MMS_proto protoreflect.FileDescriptor
@@ -578,24 +504,22 @@ const file_MMS_v1_MMS_proto_rawDesc = "" +
 	"\bmimeType\x18\x02 \x01(\tR\bmimeType\x12\x18\n" +
 	"\acontent\x18\x03 \x01(\fR\acontent\"+\n" +
 	"\x11DeleteFileRequest\x12\x16\n" +
-	"\x06fileID\x18\x01 \x01(\tR\x06fileID\"\x14\n" +
-	"\x12DeleteFileResponse\"E\n" +
+	"\x06fileID\x18\x01 \x01(\tR\x06fileID\"E\n" +
 	"\x11RenameFileRequest\x12\x16\n" +
 	"\x06fileID\x18\x01 \x01(\tR\x06fileID\x12\x18\n" +
-	"\anewName\x18\x02 \x01(\tR\anewName\"\x14\n" +
-	"\x12RenameFileResponse\"\x12\n" +
-	"\x10ListFilesRequest\"7\n" +
+	"\anewName\x18\x02 \x01(\tR\anewName\"7\n" +
 	"\x11ListFilesResponse\x12\"\n" +
-	"\x04file\x18\x01 \x03(\v2\x0e.files.v1.FileR\x04file2\xf7\x02\n" +
+	"\x04file\x18\x01 \x03(\v2\x0e.files.v1.FileR\x04file\"\x0e\n" +
+	"\fEmptyMessage2\xe7\x02\n" +
 	"\x05Files\x12G\n" +
 	"\n" +
 	"UploadFile\x12\x1b.files.v1.UploadFileRequest\x1a\x1c.files.v1.UploadFileResponse\x12M\n" +
-	"\fDownloadFile\x12\x1d.files.v1.DownloadFileRequest\x1a\x1e.files.v1.DownloadFileResponse\x12D\n" +
-	"\tListFiles\x12\x1a.files.v1.ListFilesRequest\x1a\x1b.files.v1.ListFilesResponse\x12G\n" +
+	"\fDownloadFile\x12\x1d.files.v1.DownloadFileRequest\x1a\x1e.files.v1.DownloadFileResponse\x12@\n" +
+	"\tListFiles\x12\x16.files.v1.EmptyMessage\x1a\x1b.files.v1.ListFilesResponse\x12A\n" +
 	"\n" +
-	"DeleteFile\x12\x1b.files.v1.DeleteFileRequest\x1a\x1c.files.v1.DeleteFileResponse\x12G\n" +
+	"DeleteFile\x12\x1b.files.v1.DeleteFileRequest\x1a\x16.files.v1.EmptyMessage\x12A\n" +
 	"\n" +
-	"RenameFile\x12\x1b.files.v1.RenameFileRequest\x1a\x1c.files.v1.RenameFileResponseB\x11Z\x0f/gen/MMS/v1;MMSb\x06proto3"
+	"RenameFile\x12\x1b.files.v1.RenameFileRequest\x1a\x16.files.v1.EmptyMessageB\x11Z\x0f/gen/MMS/v1;MMSb\x06proto3"
 
 var (
 	file_MMS_v1_MMS_proto_rawDescOnce sync.Once
@@ -609,7 +533,7 @@ func file_MMS_v1_MMS_proto_rawDescGZIP() []byte {
 	return file_MMS_v1_MMS_proto_rawDescData
 }
 
-var file_MMS_v1_MMS_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_MMS_v1_MMS_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_MMS_v1_MMS_proto_goTypes = []any{
 	(*File)(nil),                 // 0: files.v1.File
 	(*UploadFileRequest)(nil),    // 1: files.v1.UploadFileRequest
@@ -617,30 +541,28 @@ var file_MMS_v1_MMS_proto_goTypes = []any{
 	(*DownloadFileRequest)(nil),  // 3: files.v1.DownloadFileRequest
 	(*DownloadFileResponse)(nil), // 4: files.v1.DownloadFileResponse
 	(*DeleteFileRequest)(nil),    // 5: files.v1.DeleteFileRequest
-	(*DeleteFileResponse)(nil),   // 6: files.v1.DeleteFileResponse
-	(*RenameFileRequest)(nil),    // 7: files.v1.RenameFileRequest
-	(*RenameFileResponse)(nil),   // 8: files.v1.RenameFileResponse
-	(*ListFilesRequest)(nil),     // 9: files.v1.ListFilesRequest
-	(*ListFilesResponse)(nil),    // 10: files.v1.ListFilesResponse
+	(*RenameFileRequest)(nil),    // 6: files.v1.RenameFileRequest
+	(*ListFilesResponse)(nil),    // 7: files.v1.ListFilesResponse
+	(*EmptyMessage)(nil),         // 8: files.v1.EmptyMessage
 }
 var file_MMS_v1_MMS_proto_depIdxs = []int32{
-	0,  // 0: files.v1.UploadFileResponse.file:type_name -> files.v1.File
-	0,  // 1: files.v1.ListFilesResponse.file:type_name -> files.v1.File
-	1,  // 2: files.v1.Files.UploadFile:input_type -> files.v1.UploadFileRequest
-	3,  // 3: files.v1.Files.DownloadFile:input_type -> files.v1.DownloadFileRequest
-	9,  // 4: files.v1.Files.ListFiles:input_type -> files.v1.ListFilesRequest
-	5,  // 5: files.v1.Files.DeleteFile:input_type -> files.v1.DeleteFileRequest
-	7,  // 6: files.v1.Files.RenameFile:input_type -> files.v1.RenameFileRequest
-	2,  // 7: files.v1.Files.UploadFile:output_type -> files.v1.UploadFileResponse
-	4,  // 8: files.v1.Files.DownloadFile:output_type -> files.v1.DownloadFileResponse
-	10, // 9: files.v1.Files.ListFiles:output_type -> files.v1.ListFilesResponse
-	6,  // 10: files.v1.Files.DeleteFile:output_type -> files.v1.DeleteFileResponse
-	8,  // 11: files.v1.Files.RenameFile:output_type -> files.v1.RenameFileResponse
-	7,  // [7:12] is the sub-list for method output_type
-	2,  // [2:7] is the sub-list for method input_type
-	2,  // [2:2] is the sub-list for extension type_name
-	2,  // [2:2] is the sub-list for extension extendee
-	0,  // [0:2] is the sub-list for field type_name
+	0, // 0: files.v1.UploadFileResponse.file:type_name -> files.v1.File
+	0, // 1: files.v1.ListFilesResponse.file:type_name -> files.v1.File
+	1, // 2: files.v1.Files.UploadFile:input_type -> files.v1.UploadFileRequest
+	3, // 3: files.v1.Files.DownloadFile:input_type -> files.v1.DownloadFileRequest
+	8, // 4: files.v1.Files.ListFiles:input_type -> files.v1.EmptyMessage
+	5, // 5: files.v1.Files.DeleteFile:input_type -> files.v1.DeleteFileRequest
+	6, // 6: files.v1.Files.RenameFile:input_type -> files.v1.RenameFileRequest
+	2, // 7: files.v1.Files.UploadFile:output_type -> files.v1.UploadFileResponse
+	4, // 8: files.v1.Files.DownloadFile:output_type -> files.v1.DownloadFileResponse
+	7, // 9: files.v1.Files.ListFiles:output_type -> files.v1.ListFilesResponse
+	8, // 10: files.v1.Files.DeleteFile:output_type -> files.v1.EmptyMessage
+	8, // 11: files.v1.Files.RenameFile:output_type -> files.v1.EmptyMessage
+	7, // [7:12] is the sub-list for method output_type
+	2, // [2:7] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_MMS_v1_MMS_proto_init() }
@@ -654,7 +576,7 @@ func file_MMS_v1_MMS_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_MMS_v1_MMS_proto_rawDesc), len(file_MMS_v1_MMS_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

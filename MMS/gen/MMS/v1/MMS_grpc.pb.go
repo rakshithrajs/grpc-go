@@ -37,11 +37,11 @@ type FilesClient interface {
 	// DownloadFile downloads a file from the cloud.
 	DownloadFile(ctx context.Context, in *DownloadFileRequest, opts ...grpc.CallOption) (*DownloadFileResponse, error)
 	// ListFiles returns the list of files for the authenticated user.
-	ListFiles(ctx context.Context, in *ListFilesRequest, opts ...grpc.CallOption) (*ListFilesResponse, error)
+	ListFiles(ctx context.Context, in *EmptyMessage, opts ...grpc.CallOption) (*ListFilesResponse, error)
 	// DeleteFile deletes the intended file from the cloud.
-	DeleteFile(ctx context.Context, in *DeleteFileRequest, opts ...grpc.CallOption) (*DeleteFileResponse, error)
+	DeleteFile(ctx context.Context, in *DeleteFileRequest, opts ...grpc.CallOption) (*EmptyMessage, error)
 	// RenameFile renames the intended file in the cloud.
-	RenameFile(ctx context.Context, in *RenameFileRequest, opts ...grpc.CallOption) (*RenameFileResponse, error)
+	RenameFile(ctx context.Context, in *RenameFileRequest, opts ...grpc.CallOption) (*EmptyMessage, error)
 }
 
 type filesClient struct {
@@ -72,7 +72,7 @@ func (c *filesClient) DownloadFile(ctx context.Context, in *DownloadFileRequest,
 	return out, nil
 }
 
-func (c *filesClient) ListFiles(ctx context.Context, in *ListFilesRequest, opts ...grpc.CallOption) (*ListFilesResponse, error) {
+func (c *filesClient) ListFiles(ctx context.Context, in *EmptyMessage, opts ...grpc.CallOption) (*ListFilesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListFilesResponse)
 	err := c.cc.Invoke(ctx, Files_ListFiles_FullMethodName, in, out, cOpts...)
@@ -82,9 +82,9 @@ func (c *filesClient) ListFiles(ctx context.Context, in *ListFilesRequest, opts 
 	return out, nil
 }
 
-func (c *filesClient) DeleteFile(ctx context.Context, in *DeleteFileRequest, opts ...grpc.CallOption) (*DeleteFileResponse, error) {
+func (c *filesClient) DeleteFile(ctx context.Context, in *DeleteFileRequest, opts ...grpc.CallOption) (*EmptyMessage, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteFileResponse)
+	out := new(EmptyMessage)
 	err := c.cc.Invoke(ctx, Files_DeleteFile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -92,9 +92,9 @@ func (c *filesClient) DeleteFile(ctx context.Context, in *DeleteFileRequest, opt
 	return out, nil
 }
 
-func (c *filesClient) RenameFile(ctx context.Context, in *RenameFileRequest, opts ...grpc.CallOption) (*RenameFileResponse, error) {
+func (c *filesClient) RenameFile(ctx context.Context, in *RenameFileRequest, opts ...grpc.CallOption) (*EmptyMessage, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RenameFileResponse)
+	out := new(EmptyMessage)
 	err := c.cc.Invoke(ctx, Files_RenameFile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -113,11 +113,11 @@ type FilesServer interface {
 	// DownloadFile downloads a file from the cloud.
 	DownloadFile(context.Context, *DownloadFileRequest) (*DownloadFileResponse, error)
 	// ListFiles returns the list of files for the authenticated user.
-	ListFiles(context.Context, *ListFilesRequest) (*ListFilesResponse, error)
+	ListFiles(context.Context, *EmptyMessage) (*ListFilesResponse, error)
 	// DeleteFile deletes the intended file from the cloud.
-	DeleteFile(context.Context, *DeleteFileRequest) (*DeleteFileResponse, error)
+	DeleteFile(context.Context, *DeleteFileRequest) (*EmptyMessage, error)
 	// RenameFile renames the intended file in the cloud.
-	RenameFile(context.Context, *RenameFileRequest) (*RenameFileResponse, error)
+	RenameFile(context.Context, *RenameFileRequest) (*EmptyMessage, error)
 	mustEmbedUnimplementedFilesServer()
 }
 
@@ -134,13 +134,13 @@ func (UnimplementedFilesServer) UploadFile(context.Context, *UploadFileRequest) 
 func (UnimplementedFilesServer) DownloadFile(context.Context, *DownloadFileRequest) (*DownloadFileResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DownloadFile not implemented")
 }
-func (UnimplementedFilesServer) ListFiles(context.Context, *ListFilesRequest) (*ListFilesResponse, error) {
+func (UnimplementedFilesServer) ListFiles(context.Context, *EmptyMessage) (*ListFilesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListFiles not implemented")
 }
-func (UnimplementedFilesServer) DeleteFile(context.Context, *DeleteFileRequest) (*DeleteFileResponse, error) {
+func (UnimplementedFilesServer) DeleteFile(context.Context, *DeleteFileRequest) (*EmptyMessage, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteFile not implemented")
 }
-func (UnimplementedFilesServer) RenameFile(context.Context, *RenameFileRequest) (*RenameFileResponse, error) {
+func (UnimplementedFilesServer) RenameFile(context.Context, *RenameFileRequest) (*EmptyMessage, error) {
 	return nil, status.Error(codes.Unimplemented, "method RenameFile not implemented")
 }
 func (UnimplementedFilesServer) mustEmbedUnimplementedFilesServer() {}
@@ -201,7 +201,7 @@ func _Files_DownloadFile_Handler(srv interface{}, ctx context.Context, dec func(
 }
 
 func _Files_ListFiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListFilesRequest)
+	in := new(EmptyMessage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -213,7 +213,7 @@ func _Files_ListFiles_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: Files_ListFiles_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FilesServer).ListFiles(ctx, req.(*ListFilesRequest))
+		return srv.(FilesServer).ListFiles(ctx, req.(*EmptyMessage))
 	}
 	return interceptor(ctx, in, info, handler)
 }

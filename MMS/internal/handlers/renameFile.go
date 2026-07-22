@@ -21,7 +21,7 @@ var (
 	ErrFailedToRenameFile = errors.New("failed to rename file")
 )
 
-func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileRequest) (*MMSpb.RenameFileResponse, error) {
+func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileRequest) (*MMSpb.EmptyMessage, error) {
 	userID, err := UserIDFromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 	file, err := f.fileService.GetFileByID(ctx, req.GetFileID(), userID)
 	if err != nil {
 		if errors.Is(err, storage.ErrFileNotFound) {
-			return &MMSpb.RenameFileResponse{}, nil
+			return &MMSpb.EmptyMessage{}, nil
 		}
 		slog.Error(logPrefix(fnRenameFile)+"failed to get file", slog.Any("error", err))
 		return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
@@ -51,7 +51,7 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 	newPath := filepath.Join(userDir, newName)
 
 	if *file.Name == newName {
-		return &MMSpb.RenameFileResponse{}, nil
+		return &MMSpb.EmptyMessage{}, nil
 	}
 
 	if err := os.Rename(oldPath, newPath); err != nil {
@@ -66,7 +66,7 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 		}
 		switch {
 		case errors.Is(err, storage.ErrFileNotFound):
-			return &MMSpb.RenameFileResponse{}, nil
+			return &MMSpb.EmptyMessage{}, nil
 		case errors.Is(err, storage.ErrFileNameAlreadyExists):
 			return nil, status.Error(codes.AlreadyExists, err.Error())
 		default:
@@ -74,5 +74,5 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 		}
 	}
 
-	return &MMSpb.RenameFileResponse{}, nil
+	return &MMSpb.EmptyMessage{}, nil
 }
