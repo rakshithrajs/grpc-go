@@ -15,7 +15,7 @@ import (
 
 const (
 	fnUploadFile  = "UploadFile"
-	fnGetMMS      = "GetMMS"
+	fnGetFiles    = "GetFiles"
 	fnGetFileByID = "GetFileByID"
 	fnUpdateFile  = "UpdateFile"
 	fnDeleteFile  = "DeleteFile"
@@ -23,16 +23,16 @@ const (
 
 func logPrefix(fn string) string { return "[" + fn + "]: " }
 
-type MMStore struct {
+type FileStore struct {
 	db *sql.DB
 }
 
-func NewMMStore(db *sql.DB) MMService {
-	return &MMStore{db: db}
+func NewFileStore(db *sql.DB) FileService {
+	return &FileStore{db: db}
 }
 
-func (f *MMStore) UploadFile(ctx context.Context, file *models.File) (*models.File, error) {
-	query := `INSERT INTO MMS ("userID", name, path, size, "mimeType") VALUES ($1, $2, $3, $4, $5) RETURNING "ID", "userID", name, path, size, "mimeType", "createdAtUTC", "updatedAtUTC"`
+func (f *FileStore) UploadFile(ctx context.Context, file *models.File) (*models.File, error) {
+	query := `INSERT INTO files ("userID", name, path, size, "mimeType") VALUES ($1, $2, $3, $4, $5) RETURNING "ID", "userID", name, path, size, "mimeType", "createdAtUTC", "updatedAtUTC"`
 
 	stmt, err := f.db.PrepareContext(ctx, query)
 	if err != nil {
@@ -45,16 +45,8 @@ func (f *MMStore) UploadFile(ctx context.Context, file *models.File) (*models.Fi
 	if err := stmt.QueryRowContext(ctx, *file.UserID, *file.Name, *file.Path, *file.Size, *file.MimeType).Scan(
 		&newFile.ID, &newFile.UserID, &newFile.Name, &newFile.Path, &newFile.Size, &newFile.MimeType, &newFile.CreatedAtUTC, &newFile.UpdatedAtUTC); err != nil {
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation {
-			switch pqErr.Constraint {
-			case "MMS_user_name_unique":
-				return nil, ErrFileNameAlreadyExists
-			case "MMS_user_path_unique":
-				return nil, ErrFilePathAlreadyExists
-			default:
-				slog.Error(logPrefix(fnUploadFile)+"unique constraint violation", slog.Any("error", err))
-				return nil, ErrFailedToUploadFile
-			}
+		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == "files_user_name_unique" {
+			return nil, ErrFileNameAlreadyExists
 		}
 		slog.Error(logPrefix(fnUploadFile)+"query row", slog.Any("error", err))
 		return nil, ErrFailedToUploadFile
@@ -63,43 +55,43 @@ func (f *MMStore) UploadFile(ctx context.Context, file *models.File) (*models.Fi
 	return &newFile, nil
 }
 
-func (f *MMStore) GetMMS(ctx context.Context, userID string) ([]*models.ListFileResponse, error) {
-	query := `SELECT "ID", name, size, "mimeType" FROM MMS WHERE "userID" = $1`
+func (f *FileStore) GetFiles(ctx context.Context, userID string) ([]*models.ListFileResponse, error) {
+	query := `SELECT "ID", name, size, "mimeType" FROM files WHERE "userID" = $1`
 
 	stmt, err := f.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error(logPrefix(fnGetMMS)+"prepare statement", slog.Any("error", err))
-		return nil, ErrFailedToGetMMS
+		slog.Error(logPrefix(fnGetFiles)+"prepare statement", slog.Any("error", err))
+		return nil, ErrFailedToGetFiles
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.QueryContext(ctx, userID)
 	if err != nil {
-		slog.Error(logPrefix(fnGetMMS)+"query rows", slog.Any("error", err))
-		return nil, ErrFailedToGetMMS
+		slog.Error(logPrefix(fnGetFiles)+"query rows", slog.Any("error", err))
+		return nil, ErrFailedToGetFiles
 	}
 	defer rows.Close()
 
-	var MMS []*models.ListFileResponse
+	var files []*models.ListFileResponse
 	for rows.Next() {
 		var file models.ListFileResponse
 		if err := rows.Scan(&file.ID, &file.FileName, &file.FileSize, &file.MimeType); err != nil {
-			slog.Error(logPrefix(fnGetMMS)+"scan row", slog.Any("error", err))
-			return nil, ErrFailedToGetMMS
+			slog.Error(logPrefix(fnGetFiles)+"scan row", slog.Any("error", err))
+			return nil, ErrFailedToGetFiles
 		}
-		MMS = append(MMS, &file)
+		files = append(files, &file)
 	}
 
 	if err := rows.Err(); err != nil {
-		slog.Error(logPrefix(fnGetMMS)+"rows error", slog.Any("error", err))
-		return nil, ErrFailedToGetMMS
+		slog.Error(logPrefix(fnGetFiles)+"rows error", slog.Any("error", err))
+		return nil, ErrFailedToGetFiles
 	}
 
-	return MMS, nil
+	return files, nil
 }
 
-func (f *MMStore) GetFileByID(ctx context.Context, id string, userID string) (*models.File, error) {
-	query := `SELECT "ID", "userID", name, path, size, "mimeType", "createdAtUTC", "updatedAtUTC" FROM MMS WHERE "ID" = $1 AND "userID" = $2`
+func (f *FileStore) GetFileByID(ctx context.Context, id string, userID string) (*models.File, error) {
+	query := `SELECT "ID", "userID", name, path, size, "mimeType", "createdAtUTC", "updatedAtUTC" FROM files WHERE "ID" = $1 AND "userID" = $2`
 
 	stmt, err := f.db.PrepareContext(ctx, query)
 	if err != nil {
@@ -121,8 +113,8 @@ func (f *MMStore) GetFileByID(ctx context.Context, id string, userID string) (*m
 	return &file, nil
 }
 
-func (f *MMStore) UpdateFile(ctx context.Context, id string, req models.UpdateFileRequest, userID string) error {
-	fields := make([]utils.UpdateField, 0, 4)
+func (f *FileStore) UpdateFile(ctx context.Context, id string, req models.UpdateFileRequest, userID string) error {
+	fields := make([]utils.UpdateField, 0, 2)
 	if req.Name != nil {
 		fields = append(fields, utils.UpdateField{Column: "name", Value: *req.Name})
 	}
@@ -130,7 +122,7 @@ func (f *MMStore) UpdateFile(ctx context.Context, id string, req models.UpdateFi
 		fields = append(fields, utils.UpdateField{Column: "path", Value: *req.Path})
 	}
 
-	query, args := utils.BuildUpdateSQL("MMS", fields, []string{"ID", "userID"})
+	query, args := utils.BuildUpdateSQL("files", fields, []string{"ID", "userID"})
 	args[0] = id
 	args[1] = userID
 
@@ -144,16 +136,8 @@ func (f *MMStore) UpdateFile(ctx context.Context, id string, req models.UpdateFi
 	result, err := stmt.ExecContext(ctx, args...)
 	if err != nil {
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation {
-			switch pqErr.Constraint {
-			case "MMS_user_name_unique":
-				return ErrFileNameAlreadyExists
-			case "MMS_user_path_unique":
-				return ErrFilePathAlreadyExists
-			default:
-				slog.Error(logPrefix(fnUpdateFile)+"unique constraint violation", slog.Any("error", err))
-				return ErrFailedToUpdateFile
-			}
+		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == "files_user_name_unique" {
+			return ErrFileNameAlreadyExists
 		}
 		slog.Error(logPrefix(fnUpdateFile)+"execute statement", slog.Any("error", err))
 		return ErrFailedToUpdateFile
@@ -172,8 +156,8 @@ func (f *MMStore) UpdateFile(ctx context.Context, id string, req models.UpdateFi
 	return nil
 }
 
-func (f *MMStore) DeleteFile(ctx context.Context, id string, userID string) error {
-	query := `DELETE FROM MMS WHERE "ID" = $1 AND "userID" = $2`
+func (f *FileStore) DeleteFile(ctx context.Context, id string, userID string) error {
+	query := `DELETE FROM files WHERE "ID" = $1 AND "userID" = $2`
 
 	stmt, err := f.db.PrepareContext(ctx, query)
 	if err != nil {

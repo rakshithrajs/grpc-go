@@ -25,10 +25,10 @@ migrate-MMS-up:
 	@migrate -path $(MMS_DIR)/internal/storage/migrations -database $(MMS_MIGRATE_DB_URL) -verbose up
 
 migrate-UMS-down:
-	@migrate -path $(UMS_DIR)/internal/storage/migrations -database $(UMS_MIGRATE_DB_URL) -verbose down 1
+	@migrate -path $(UMS_DIR)/internal/storage/migrations -database $(UMS_MIGRATE_DB_URL) -verbose down
 
 migrate-MMS-down:
-	@migrate -path $(MMS_DIR)/internal/storage/migrations -database $(MMS_MIGRATE_DB_URL) -verbose down 1
+	@migrate -path $(MMS_DIR)/internal/storage/migrations -database $(MMS_MIGRATE_DB_URL) -verbose down
 
 UMS-version:
 	@migrate -path ${UMS_DIR}/internal/storage/migrations -database ${UMS_MIGRATE_DB_URL} version

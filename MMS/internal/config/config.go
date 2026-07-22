@@ -46,7 +46,6 @@ const (
 
 type Config struct {
 	GRPCAddress     string
-	UMSGRPCAddress  string
 	DSN             string
 	UserStoragePath string
 }
@@ -91,15 +90,6 @@ func Load() (*Config, error) {
 		return nil, ErrMissingEnvVariable
 	}
 
-	UMSGRPCConf := &gRPCConfig{
-		Host: env["UMS_GRPC_HOST"],
-		Port: env["UMS_GRPC_PORT"],
-	}
-	if UMSGRPCConf.Host == nullString || UMSGRPCConf.Port == nullString {
-		slog.Error(logPrefix, slog.Any("error", ErrMissingEnvVariable))
-		return nil, ErrMissingEnvVariable
-	}
-
 	dbConf := &DbConfig{
 		Host:     env["MMS_DB_HOST"],
 		Port:     env["MMS_DB_PORT"],
@@ -121,7 +111,6 @@ func Load() (*Config, error) {
 
 	cfg = &Config{
 		GRPCAddress:     grpcConf.Address(),
-		UMSGRPCAddress:  UMSGRPCConf.Address(),
 		DSN:             dbConf.DSN(),
 		UserStoragePath: userStoragePath,
 	}

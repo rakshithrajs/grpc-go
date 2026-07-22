@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS MMS (
+CREATE TABLE IF NOT EXISTS files (
     "ID" UUID PRIMARY KEY DEFAULT gen_random_uuid (),
     "userID" UUID NOT NULL,
     "name" VARCHAR(150) NOT NULL,
@@ -7,9 +7,8 @@ CREATE TABLE IF NOT EXISTS MMS (
     "mimeType" VARCHAR(30) NOT NULL,
     "createdAtUTC" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     "updatedAtUTC" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT MMS_user_name_unique UNIQUE ("userID", "name"),
-    CONSTRAINT MMS_user_path_unique UNIQUE ("userID", "path")
+    CONSTRAINT files_user_name_unique UNIQUE ("userID", "name")
 );
 
-CREATE INDEX IF NOT EXISTS idx_MMS_userID ON MMS ("userID");
-CREATE INDEX IF NOT EXISTS idx_MMS_name ON MMS ("name");
+CREATE INDEX IF NOT EXISTS idx_files_userID ON files ("userID");
+CREATE INDEX IF NOT EXISTS idx_files_name ON files ("name");

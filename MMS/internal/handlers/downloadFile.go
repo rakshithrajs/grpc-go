@@ -28,7 +28,7 @@ func (f *FileHandler) DownloadFile(ctx context.Context, req *MMSpb.DownloadFileR
 		return nil, status.Error(codes.InvalidArgument, ErrFileIDRequired.Error())
 	}
 
-	file, err := f.MMService.GetFileByID(ctx, req.GetFileID(), userID)
+	file, err := f.fileService.GetFileByID(ctx, req.GetFileID(), userID)
 	if err != nil {
 		if errors.Is(err, storage.ErrFileNotFound) {
 			return &MMSpb.DownloadFileResponse{}, nil

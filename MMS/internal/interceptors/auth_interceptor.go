@@ -3,7 +3,6 @@ package interceptors
 import (
 	"context"
 
-	UMSpb "github.com/rakshithrajs/cloud/UMS/gen/UMS/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -11,39 +10,23 @@ import (
 )
 
 var (
-	ErrMissingAuthHeader  = status.Error(codes.Unauthenticated, "missing authorization header")
-	ErrSomethingWentWrong = status.Error(codes.Internal, "something went wrong")
+	ErrMissingMetadata    = status.Error(codes.Unauthenticated, "missing metadata")
+	ErrMissingUserID      = status.Error(codes.Unauthenticated, "missing user id in metadata")
 )
 
-func NewAuthInterceptor(UMSClient UMSpb.UMSClient) grpc.UnaryServerInterceptor {
+func AuthInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
-			return nil, ErrMissingAuthHeader
+			return nil, ErrMissingMetadata
 		}
 
-		authHeaders := md.Get("authorization")
-		if len(authHeaders) == 0 {
-			return nil, ErrMissingAuthHeader
+		userIDs := md.Get("x-user-id")
+		if len(userIDs) == 0 || userIDs[0] == "" {
+			return nil, ErrMissingUserID
 		}
 
-		UMSCtx := metadata.NewOutgoingContext(ctx, metadata.Pairs("authorization", authHeaders[0]))
-
-		resp, err := UMSClient.GetUserProfile(UMSCtx, &UMSpb.GetUserProfileRequest{})
-		if err != nil {
-			st, ok := status.FromError(err)
-			if ok {
-				return nil, st.Err()
-			}
-			return nil, ErrSomethingWentWrong
-		}
-
-		user := resp.GetUser()
-		if user == nil || user.GetId() == "" {
-			return nil, ErrSomethingWentWrong
-		}
-
-		ctx = metadata.NewIncomingContext(ctx, metadata.Pairs("user_id", user.GetId()))
+		ctx = metadata.NewIncomingContext(ctx, metadata.Pairs("x-user-id", userIDs[0]))
 
 		return handler(ctx, req)
 	}

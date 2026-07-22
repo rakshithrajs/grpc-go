@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
+	"github.com/rakshithrajs/cloud/UMS/internal/handlers"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
 	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 
@@ -15,7 +16,7 @@ import (
 func (a *UMSHandler) RegisterUserHandler(ctx *gin.Context) {
 	var payload models.RegisterUserRequest
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: ErrInvalidJSON.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: handlers.ErrInvalidJSON.Error()})
 		return
 	}
 
@@ -28,8 +29,8 @@ func (a *UMSHandler) RegisterUserHandler(ctx *gin.Context) {
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
 	if err != nil {
-		slog.Error(logPrefix(fnRegisterUser)+"failed to generate password hash", slog.Any(config.ErrorKey, err))
-		ctx.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: ErrSomethingWentWrong.Error()})
+		slog.Error(handlers.LogPrefix(fnRegisterUser)+"failed to generate password hash", slog.Any(config.ErrorKey, err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrSomethingWentWrong.Error()})
 		return
 	}
 
@@ -41,7 +42,7 @@ func (a *UMSHandler) RegisterUserHandler(ctx *gin.Context) {
 		Phone:    payload.Phone,
 	})
 	if err != nil {
-		if HandleDomainError(ctx, err) {
+		if handlers.HandleDomainError(ctx, err) {
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: err.Error()})

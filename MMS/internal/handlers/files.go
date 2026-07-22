@@ -19,7 +19,7 @@ func logPrefix(fn string) string { return "[" + fn + "]: " }
 const (
 	fnUploadFile        = "UploadFile"
 	fnDownloadFile      = "DownloadFile"
-	fnListMMS           = "ListMMS"
+	fnListFiles         = "ListFiles"
 	fnRenameFile        = "RenameFile"
 	fnDeleteFile        = "DeleteFile"
 	fnUserIDFromContext = "UserIDFromContext"
@@ -27,7 +27,7 @@ const (
 
 var (
 	ErrMissingMetadata = errors.New("missing metadata")
-	ErrMissingUserID   = errors.New("missing user_id in metadata")
+	ErrMissingUserID   = errors.New("missing user id in metadata")
 )
 
 func UserIDFromContext(ctx context.Context) (string, error) {
@@ -36,7 +36,7 @@ func UserIDFromContext(ctx context.Context) (string, error) {
 		return nullString, status.Error(codes.Unauthenticated, ErrMissingMetadata.Error())
 	}
 
-	userIDs := md.Get("user_id")
+	userIDs := md.Get("x-user-id")
 	if len(userIDs) == 0 || userIDs[0] == nullString {
 		return nullString, status.Error(codes.Unauthenticated, ErrMissingUserID.Error())
 	}
@@ -46,9 +46,9 @@ func UserIDFromContext(ctx context.Context) (string, error) {
 
 type FileHandler struct {
 	MMSpb.UnimplementedFilesServer
-	MMService storage.MMService
+	fileService storage.FileService
 }
 
-func NewFileHandler(MMService storage.MMService) *FileHandler {
-	return &FileHandler{MMService: MMService}
+func NewFileHandler(fileService storage.FileService) *FileHandler {
+	return &FileHandler{fileService: fileService}
 }

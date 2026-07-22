@@ -38,3 +38,7 @@ type UserFiles struct {
 	UserID   string `json:"userId"`
 	FileName string `json:"fileName"`
 }
+
+type RenameFileRequest struct {
+	NewName string `json:"newName" validate:"required,isValueEmpty,max=255"`
+}

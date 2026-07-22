@@ -45,7 +45,7 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 		return nil, status.Error(codes.Internal, ErrFailedToUploadFile.Error())
 	}
 
-	MMSize := int64(len(payload.Contents))
+	fileSize := int64(len(payload.Contents))
 	mimeType := http.DetectContentType(payload.Contents)
 
 	userDir := filepath.Join(cfg.UserStoragePath, userID)
@@ -81,16 +81,17 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 		UserID:   &userID,
 		Name:     &cleanedName,
 		Path:     &filePath,
-		Size:     &MMSize,
+		Size:     &fileSize,
 		MimeType: &mimeType,
 	}
 
-	savedFile, err := f.MMService.UploadFile(ctx, file)
+	savedFile, err := f.fileService.UploadFile(ctx, file)
 	if err != nil {
-		if errors.Is(err, storage.ErrFileNameAlreadyExists) || errors.Is(err, storage.ErrFilePathAlreadyExists) {
+		os.Remove(filePath)
+		if errors.Is(err, storage.ErrFileNameAlreadyExists) {
 			return nil, status.Error(codes.AlreadyExists, err.Error())
 		}
-		slog.Error(logPrefix(fnUploadFile)+"failed to save file", slog.Any("error", err))
+		slog.Error(logPrefix(fnUploadFile)+"failed to save file metadata", slog.Any("error", err))
 		return nil, status.Error(codes.Internal, ErrFailedToUploadFile.Error())
 	}
 

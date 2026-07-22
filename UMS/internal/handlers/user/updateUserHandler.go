@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
+	"github.com/rakshithrajs/cloud/UMS/internal/handlers"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"
 	"github.com/rakshithrajs/cloud/UMS/internal/utils"
@@ -20,7 +21,7 @@ var (
 )
 
 func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
-	_, err := GetUser(c, "UpdateUserHandler")
+	_, err := handlers.GetUserIDFromGin(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{config.ErrorKey: err.Error()})
 		return
@@ -28,18 +29,18 @@ func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
 
 	id := strings.TrimSpace(c.Param("id"))
 	if err := utils.Validate.Var(id, "required,uuid"); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: ErrInvalidID.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: handlers.ErrInvalidID.Error()})
 		return
 	}
 
 	var req models.UpdateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: ErrInvalidJSON.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: handlers.ErrInvalidJSON.Error()})
 		return
 	}
 
 	if req.Password == config.NullString && req.Phone == config.NullString {
-		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: ErrNoFieldsToUpdate.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: handlers.ErrNoFieldsToUpdate.Error()})
 		return
 	}
 
@@ -49,7 +50,7 @@ func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
 	}
 
 	if req.Name == config.NullString && req.Email == config.NullString && req.Phone == config.NullString && req.Password == config.NullString {
-		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: ErrNoFieldsToUpdate.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: handlers.ErrNoFieldsToUpdate.Error()})
 		return
 	}
 
@@ -60,8 +61,8 @@ func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
 				c.JSON(http.StatusOK, gin.H{"message": userUpdatedMessage})
 				return
 			}
-			slog.Error(logPrefix(fnUpdateUserProfile)+"failed to get user by id", slog.Any(config.ErrorKey, err))
-			c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: ErrSomethingWentWrong.Error()})
+			slog.Error(handlers.LogPrefix(fnUpdateUserProfile)+"failed to get user by id", slog.Any(config.ErrorKey, err))
+			c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrSomethingWentWrong.Error()})
 			return
 		}
 
@@ -72,8 +73,8 @@ func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
 
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
-			slog.Error(logPrefix(fnUpdateUserProfile)+"failed to hash password", slog.Any(config.ErrorKey, err))
-			c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: ErrSomethingWentWrong.Error()})
+			slog.Error(handlers.LogPrefix(fnUpdateUserProfile)+"failed to hash password", slog.Any(config.ErrorKey, err))
+			c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrSomethingWentWrong.Error()})
 			return
 		}
 		hashed := string(hashedPassword)
@@ -81,10 +82,10 @@ func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
 	}
 
 	if err := a.storage.UpdateUser(c.Request.Context(), id, req); err != nil {
-		if HandleDomainError(c, err) {
+		if handlers.HandleDomainError(c, err) {
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: ErrSomethingWentWrong.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrSomethingWentWrong.Error()})
 		return
 	}
 

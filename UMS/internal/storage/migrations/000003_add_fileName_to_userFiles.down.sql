@@ -1,0 +1,1 @@
+ALTER TABLE "userFiles" DROP COLUMN IF EXISTS "fileName";

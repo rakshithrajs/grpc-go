@@ -9,10 +9,8 @@ import (
 	"github.com/rakshithrajs/cloud/MMS/internal/handlers"
 	"github.com/rakshithrajs/cloud/MMS/internal/interceptors"
 	"github.com/rakshithrajs/cloud/MMS/internal/storage"
-	UMSpb "github.com/rakshithrajs/cloud/UMS/gen/UMS/v1"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -34,24 +32,15 @@ func main() {
 	}
 	defer db.Close()
 
-	UMSConn, err := grpc.NewClient(cfg.UMSGRPCAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		slog.Error(logPrefix+"failed to connect to UMS service", slog.Any("error", err))
-		return
-	}
-	defer UMSConn.Close()
-
-	UMSClient := UMSpb.NewUMSClient(UMSConn)
-
 	listen, err := net.Listen("tcp", cfg.GRPCAddress)
 	if err != nil {
 		slog.Error(logPrefix+"failed to listen", slog.Any("error", err))
 		return
 	}
 
-	server := grpc.NewServer(grpc.UnaryInterceptor(interceptors.NewAuthInterceptor(UMSClient)))
+	server := grpc.NewServer(grpc.UnaryInterceptor(interceptors.AuthInterceptor()))
 
-	store := storage.NewMMStore(db)
+	store := storage.NewFileStore(db)
 	fileHandler := handlers.NewFileHandler(store)
 	MMSpb.RegisterFilesServer(server, fileHandler)
 

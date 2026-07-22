@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -16,12 +15,19 @@ var (
 	ErrMissingEnvVariable = errors.New("missing environment variable")
 )
 
-type gRPCConfig struct {
+const (
+	functionName = "Load"
+	logPrefix    = "[" + functionName + "]: "
+	NullString   = ""
+	ErrorKey     = "error"
+)
+
+type ServerConfig struct {
 	Host string
 	Port string
 }
 
-func (g *gRPCConfig) Address() string {
+func (g *ServerConfig) Address() string {
 	return g.Host + ":" + g.Port
 }
 
@@ -38,19 +44,11 @@ func (d *DbConfig) DSN() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", d.Host, d.Port, d.User, d.Password, d.DbName, d.SSLMode)
 }
 
-const (
-	functionName = "Load"
-	logPrefix    = "[" + functionName + "]: "
-	NullString   = ""
-	ErrorKey     = "error"
-)
-
 type Config struct {
-	GRPCAddress     string
-	MMSGRPCAddress  string
-	MMSServiceKey   string
-	DSN             string
-	JWTSecret       string
+	ServerAddress  string
+	MMSGRPCAddress string
+	DSN            string
+	JWTSecret      string
 }
 
 var cfg *Config
@@ -61,35 +59,31 @@ func moduleRoot() string {
 		panic(err)
 	}
 	root := strings.TrimSpace(string(out))
+	fmt.Println("Module root:", root)
 	return root[:len(root)-len("go.mod")]
 }
 
-func envRoot() string {
-	dir := moduleRoot()
-	for {
-		if _, err := os.Stat(filepath.Join(dir, ".env")); err == nil {
-			return dir
-		}
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			return moduleRoot()
-		}
-		dir = parent
-	}
-}
-
 func Load() (*Config, error) {
-	env, err := godotenv.Read(filepath.Join(envRoot(), ".env"))
+	env, err := godotenv.Read(filepath.Join(moduleRoot(), "..", ".env"))
 	if err != nil {
 		slog.Error(logPrefix+"failed to read .env file", slog.Any("error", err))
 	}
 
-	grpcConf := &gRPCConfig{
-		Host: env["UMS_GRPC_HOST"],
-		Port: env["UMS_GRPC_PORT"],
+	ServerConf := &ServerConfig{
+		Host: env["UMS_HOST"],
+		Port: env["UMS_PORT"],
 	}
-	if grpcConf.Host == NullString || grpcConf.Port == NullString {
-		slog.Error(logPrefix+"missing gRPC environment variables", slog.Any("error", ErrMissingEnvVariable))
+	if ServerConf.Host == NullString || ServerConf.Port == NullString {
+		slog.Error(logPrefix+"missing UMS gRPC environment variables", slog.Any("error", ErrMissingEnvVariable))
+		return nil, ErrMissingEnvVariable
+	}
+
+	MMSGRPCConf := &ServerConfig{
+		Host: env["MMS_GRPC_HOST"],
+		Port: env["MMS_GRPC_PORT"],
+	}
+	if MMSGRPCConf.Host == NullString || MMSGRPCConf.Port == NullString {
+		slog.Error(logPrefix+"missing MMS gRPC environment variables", slog.Any("error", ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
 
@@ -113,9 +107,10 @@ func Load() (*Config, error) {
 	}
 
 	cfg = &Config{
-		GRPCAddress: grpcConf.Address(),
-		DSN:         dbConf.DSN(),
-		JWTSecret:   jwtSecret,
+		ServerAddress:  ServerConf.Address(),
+		MMSGRPCAddress: MMSGRPCConf.Address(),
+		DSN:            dbConf.DSN(),
+		JWTSecret:      jwtSecret,
 	}
 
 	return cfg, nil

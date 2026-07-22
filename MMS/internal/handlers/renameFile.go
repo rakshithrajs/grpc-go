@@ -37,7 +37,7 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 		return nil, status.Error(codes.InvalidArgument, strings.Join(utils.Errors(err), "; "))
 	}
 
-	file, err := f.MMService.GetFileByID(ctx, req.GetFileID(), userID)
+	file, err := f.fileService.GetFileByID(ctx, req.GetFileID(), userID)
 	if err != nil {
 		if errors.Is(err, storage.ErrFileNotFound) {
 			return &MMSpb.RenameFileResponse{}, nil
@@ -50,15 +50,8 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 	userDir := filepath.Dir(oldPath)
 	newPath := filepath.Join(userDir, newName)
 
-	if oldPath == newPath {
+	if *file.Name == newName {
 		return &MMSpb.RenameFileResponse{}, nil
-	}
-
-	if _, err := os.Stat(newPath); err == nil {
-		return nil, status.Error(codes.AlreadyExists, storage.ErrFilePathAlreadyExists.Error())
-	} else if !errors.Is(err, os.ErrNotExist) {
-		slog.Error(logPrefix(fnRenameFile)+"failed to check target path", slog.Any("error", err), slog.String("path", newPath))
-		return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 	}
 
 	if err := os.Rename(oldPath, newPath); err != nil {
@@ -66,23 +59,17 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 		return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 	}
 
-	updateReq := models.UpdateFileRequest{
-		Name: &newName,
-		Path: &newPath,
-	}
-
-	if err := f.MMService.UpdateFile(ctx, req.GetFileID(), updateReq, userID); err != nil {
+	if err := f.fileService.UpdateFile(ctx, req.GetFileID(), models.UpdateFileRequest{Name: &newName, Path: &newPath}, userID); err != nil {
+		slog.Error(logPrefix(fnRenameFile)+"failed to update file record", slog.Any("error", err))
 		if rbErr := os.Rename(newPath, oldPath); rbErr != nil {
 			slog.Error(logPrefix(fnRenameFile)+"failed to rollback disk rename", slog.Any("error", rbErr), slog.String("oldPath", oldPath), slog.String("newPath", newPath))
 		}
-
 		switch {
 		case errors.Is(err, storage.ErrFileNotFound):
 			return &MMSpb.RenameFileResponse{}, nil
-		case errors.Is(err, storage.ErrFileNameAlreadyExists), errors.Is(err, storage.ErrFilePathAlreadyExists):
+		case errors.Is(err, storage.ErrFileNameAlreadyExists):
 			return nil, status.Error(codes.AlreadyExists, err.Error())
 		default:
-			slog.Error(logPrefix(fnRenameFile)+"failed to update file record", slog.Any("error", err))
 			return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 		}
 	}

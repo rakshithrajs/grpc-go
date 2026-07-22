@@ -103,9 +103,9 @@ func validateEmail(fl validator.FieldLevel) bool {
 	}
 
 	const (
-		minLocalLength  = 1
+		minLocalLength  = 2
 		maxLocalLength  = 64
-		minDomainLength = 1
+		minDomainLength = 3
 		maxDomainLength = 253
 	)
 
