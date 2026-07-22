@@ -14,13 +14,13 @@ service Files {
     rpc DownloadFile (DownloadFileRequest) returns (DownloadFileResponse);
 
     // ListFiles returns the list of files for the authenticated user.
-    rpc ListFiles (ListFilesRequest) returns (ListFilesResponse);
+    rpc ListFiles (EmptyMessage) returns (ListFilesResponse);
 
     // DeleteFile deletes the intended file from the cloud.
-    rpc DeleteFile (DeleteFileRequest) returns (DeleteFileResponse);
+    rpc DeleteFile (DeleteFileRequest) returns (EmptyMessage);
 
     // RenameFile renames the intended file in the cloud.
-    rpc RenameFile (RenameFileRequest) returns (RenameFileResponse);
+    rpc RenameFile (RenameFileRequest) returns (EmptyMessage);
 }
 
 message File {
@@ -72,9 +72,6 @@ message DeleteFileRequest {
     string fileID = 1;
 }
 
-// DeleteFileResponse is empty.
-message DeleteFileResponse {}
-
 // RenameFileRequest contains the file's new name.
 message RenameFileRequest {
 
@@ -85,13 +82,10 @@ message RenameFileRequest {
     string newName = 2;
 }
 
-// RenameFileResponse is empty.
-message RenameFileResponse {}
-
-// ListFilesRequest is empty.
-message ListFilesRequest {}
-
 // ListFilesResponse contains the list of files.
 message ListFilesResponse {
     repeated File file = 1;
 }
+
+// EmptyMessage has an empty body.
+message EmptyMessage {}
