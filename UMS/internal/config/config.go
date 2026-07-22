@@ -41,13 +41,16 @@ func (d *DbConfig) DSN() string {
 const (
 	functionName = "Load"
 	logPrefix    = "[" + functionName + "]: "
-	nullString   = ""
+	NullString   = ""
+	ErrorKey     = "error"
 )
 
 type Config struct {
-	GRPCAddress string
-	DSN         string
-	JWTSecret   string
+	GRPCAddress     string
+	MMSGRPCAddress  string
+	MMSServiceKey   string
+	DSN             string
+	JWTSecret       string
 }
 
 var cfg *Config
@@ -85,7 +88,7 @@ func Load() (*Config, error) {
 		Host: env["UMS_GRPC_HOST"],
 		Port: env["UMS_GRPC_PORT"],
 	}
-	if grpcConf.Host == nullString || grpcConf.Port == nullString {
+	if grpcConf.Host == NullString || grpcConf.Port == NullString {
 		slog.Error(logPrefix+"missing gRPC environment variables", slog.Any("error", ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
@@ -98,13 +101,13 @@ func Load() (*Config, error) {
 		Password: env["UMS_DB_PASSWORD"],
 		SSLMode:  env["UMS_DB_SSLMODE"],
 	}
-	if dbConf.Host == nullString || dbConf.Port == nullString || dbConf.DbName == nullString || dbConf.User == nullString || dbConf.Password == nullString || dbConf.SSLMode == nullString {
+	if dbConf.Host == NullString || dbConf.Port == NullString || dbConf.DbName == NullString || dbConf.User == NullString || dbConf.Password == NullString || dbConf.SSLMode == NullString {
 		slog.Error(logPrefix+"missing database environment variables", slog.Any("error", ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
 
 	jwtSecret := env["JWT_SECRET"]
-	if jwtSecret == nullString {
+	if jwtSecret == NullString {
 		slog.Error(logPrefix+"missing JWT environment variable", slog.Any("error", ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}

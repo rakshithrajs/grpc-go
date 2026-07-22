@@ -2,7 +2,6 @@ package utils
 
 import (
 	"errors"
-	"fmt"
 	"net"
 	"regexp"
 	"strings"
@@ -16,6 +15,7 @@ import (
 var (
 	ErrEmailRequired           = errors.New("email is required")
 	ErrInvalidEmail            = errors.New("email is invalid")
+	ErrInvalidEmailLength      = errors.New("email must be at most 254 characters")
 	ErrPasswordRequired        = errors.New("password is required")
 	ErrInvalidPassword         = errors.New("password must be 8-64 characters long and contain at least one uppercase letter, one lowercase letter, one number, one special character (!@#$&_) and no spaces")
 	ErrPhoneRequired           = errors.New("phone number is required")
@@ -130,51 +130,70 @@ func validateName(fl validator.FieldLevel) bool {
 	return nameRegex.MatchString(fl.Field().String())
 }
 
-func Errors(err error) []string {
-	var verrs validator.ValidationErrors
-	if !errors.As(err, &verrs) {
-		return []string{err.Error()}
-	}
-
-	messages := make([]string, 0, len(verrs))
-	for _, e := range verrs {
-		messages = append(messages, fmt.Sprintf("%s: %s", e.StructField(), fieldErrorMessage(e.StructField(), e.Tag())))
-	}
-
-	return messages
+var fieldNames = map[string]string{
+	"Email":           "email",
+	"Password":        "password",
+	"ConfirmPassword": "confirmPassword",
+	"Phone":           "phone",
+	"Title":           "title",
 }
 
-func fieldErrorMessage(field, tag string) string {
-	switch field {
-	case "Name":
-		if tag == "required" || tag == "isValueEmpty" {
-			return ErrNameRequired.Error()
+func fieldError(e validator.FieldError) error {
+	if e.StructField() == "Email" {
+		switch e.Tag() {
+		case "required", "isValueEmpty":
+			return ErrEmailRequired
+		case "min", "max":
+			return ErrInvalidEmailLength
+		default:
+			return ErrInvalidEmail
 		}
-		if tag == "max" {
-			return ErrNameTooLong.Error()
+	}
+	if e.StructField() == "Password" {
+		switch e.Tag() {
+		case "required", "isValueEmpty":
+			return ErrPasswordRequired
+		default:
+			return ErrInvalidPassword
 		}
-		return ErrInvalidName.Error()
-	case "Email":
-		if tag == "required" || tag == "isValueEmpty" {
-			return ErrEmailRequired.Error()
+	}
+	if e.StructField() == "ConfirmPassword" {
+		switch e.Tag() {
+		case "required":
+			return ErrPasswordConfirmRequired
+		default:
+			return ErrPasswordMismatch
 		}
-		return ErrInvalidEmail.Error()
-	case "Password":
-		if tag == "required" {
-			return ErrPasswordRequired.Error()
+	}
+	if e.StructField() == "Phone" {
+		switch e.Tag() {
+		case "required", "isValueEmpty":
+			return ErrPhoneRequired
+		default:
+			return ErrInvalidPhoneNumber
 		}
-		return ErrInvalidPassword.Error()
-	case "ConfirmPassword":
-		if tag == "required" {
-			return ErrPasswordConfirmRequired.Error()
-		}
-		return ErrPasswordMismatch.Error()
-	case "Phone":
-		if tag == "required" || tag == "isValueEmpty" {
-			return ErrPhoneRequired.Error()
-		}
-		return ErrInvalidPhoneNumber.Error()
+	}
+	return e
+}
+
+func FieldErrors(err error) map[string]string {
+	var verrs validator.ValidationErrors
+	if !errors.As(err, &verrs) || len(verrs) == 0 {
+		return map[string]string{"": err.Error()}
 	}
 
-	return fmt.Sprintf("failed %s validation on %s", tag, field)
+	seen := map[string]bool{}
+	result := map[string]string{}
+	for _, e := range verrs {
+		name := fieldNames[e.StructField()]
+		if name == "" {
+			name = strings.ToLower(e.StructField())
+		}
+		if seen[name] {
+			continue
+		}
+		seen[name] = true
+		result[name] = fieldError(e).Error()
+	}
+	return result
 }

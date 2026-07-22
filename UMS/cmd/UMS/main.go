@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net"
 
+	"github.com/gin-gonic/gin"
 	UMSpb "github.com/rakshithrajs/cloud/UMS/gen/UMS/v1"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
@@ -17,6 +18,7 @@ import (
 const (
 	functionName = "main"
 	logPrefix    = "[" + functionName + "]: "
+	apiPrefix    = "/api"
 )
 
 func main() {
@@ -33,6 +35,18 @@ func main() {
 	}
 	defer db.Close()
 
+	gin.SetMode(gin.DebugMode)
+	router := gin.New()
+	router.SetTrustedProxies(nil)
+
+	router.Use(gin.Logger())
+
+	store := storage.NewUserStore(db)
+	UMSHandler := handlers.NewUMSHandler(store)
+
+	UMSRouterGroup := router.Group(apiPrefix + "/user")
+	handlers.RegisterRoutes(UMSRouterGroup, UMSHandler)
+
 	listen, err := net.Listen("tcp", cfg.GRPCAddress)
 	if err != nil {
 		slog.Error(logPrefix+"failed to listen", slog.Any("error", err))
@@ -40,9 +54,6 @@ func main() {
 	}
 
 	server := grpc.NewServer(grpc.UnaryInterceptor(interceptors.AuthInterceptor))
-
-	store := storage.NewUserStore(db)
-	UMSHandler := handlers.NewUMSHandler(store)
 	UMSpb.RegisterUMSServer(server, UMSHandler)
 
 	slog.Info(logPrefix+"starting UMS gRPC server", slog.String("address", cfg.GRPCAddress))

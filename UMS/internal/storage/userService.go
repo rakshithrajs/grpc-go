@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log/slog"
 
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
 	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 
@@ -41,7 +42,7 @@ func (u *userStore) CreateUser(ctx context.Context, user *models.User) (*models.
 	defer stmt.Close()
 
 	var newUser models.User
-	if err := stmt.QueryRowContext(ctx, *user.Name, *user.Email, *user.Password, *user.Phone).Scan(&newUser.ID, &newUser.Name, &newUser.Email, &newUser.Phone); err != nil {
+	if err := stmt.QueryRowContext(ctx, user.Name, user.Email, user.Password, user.Phone).Scan(&newUser.ID, &newUser.Name, &newUser.Email, &newUser.Phone); err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation {
 			switch pqErr.Constraint {
@@ -107,17 +108,17 @@ func (u *userStore) GetUserByEmail(ctx context.Context, email string) (*models.U
 
 func (u *userStore) UpdateUser(ctx context.Context, id string, req models.UpdateUserRequest) error {
 	fields := make([]utils.UpdateField, 0, 4)
-	if req.Name != nil {
-		fields = append(fields, utils.UpdateField{Column: "name", Value: *req.Name})
+	if req.Name != config.NullString {
+		fields = append(fields, utils.UpdateField{Column: "name", Value: req.Name})
 	}
-	if req.Password != nil {
-		fields = append(fields, utils.UpdateField{Column: "password", Value: *req.Password})
+	if req.Password != config.NullString {
+		fields = append(fields, utils.UpdateField{Column: "password", Value: req.Password})
 	}
-	if req.Phone != nil {
-		fields = append(fields, utils.UpdateField{Column: "phone", Value: *req.Phone})
+	if req.Phone != config.NullString {
+		fields = append(fields, utils.UpdateField{Column: "phone", Value: req.Phone})
 	}
-	if req.Email != nil {
-		fields = append(fields, utils.UpdateField{Column: "email", Value: *req.Email})
+	if req.Email != config.NullString {
+		fields = append(fields, utils.UpdateField{Column: "email", Value: req.Email})
 	}
 
 	query, args := utils.BuildUpdateSQL("users", fields, []string{"ID"})
