@@ -44,7 +44,7 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 		return
 	}
 
-	ctx = metadata.AppendToOutgoingContext(ctx, "x-user-id", userID)
+	ctx = metadata.AppendToOutgoingContext(ctx, "userID", userID)
 	resp, err := h.MMSClient.UploadFile(ctx, &MMSpb.UploadFileRequest{
 		FileName: fileHeader.Filename,
 		Content:  content,

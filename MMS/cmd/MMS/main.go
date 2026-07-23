@@ -7,7 +7,6 @@ import (
 	MMSpb "github.com/rakshithrajs/cloud/MMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/MMS/internal/config"
 	"github.com/rakshithrajs/cloud/MMS/internal/handlers"
-	"github.com/rakshithrajs/cloud/MMS/internal/interceptors"
 	"github.com/rakshithrajs/cloud/MMS/internal/storage"
 
 	"google.golang.org/grpc"
@@ -38,7 +37,7 @@ func main() {
 		return
 	}
 
-	server := grpc.NewServer(grpc.UnaryInterceptor(interceptors.AuthInterceptor()))
+	server := grpc.NewServer()
 
 	store := storage.NewFileStore(db)
 	fileHandler := handlers.NewFileHandler(store)

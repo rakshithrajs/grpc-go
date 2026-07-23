@@ -36,7 +36,7 @@ func UserIDFromContext(ctx context.Context) (string, error) {
 		return nullString, status.Error(codes.Unauthenticated, ErrMissingMetadata.Error())
 	}
 
-	userIDs := md.Get("x-user-id")
+	userIDs := md.Get("userID")
 	if len(userIDs) == 0 || userIDs[0] == nullString {
 		return nullString, status.Error(codes.Unauthenticated, ErrMissingUserID.Error())
 	}
