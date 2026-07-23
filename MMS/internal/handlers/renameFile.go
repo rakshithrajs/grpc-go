@@ -11,7 +11,6 @@ import (
 	MMSpb "github.com/rakshithrajs/cloud/MMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/MMS/internal/models"
 	"github.com/rakshithrajs/cloud/MMS/internal/storage"
-	"github.com/rakshithrajs/cloud/MMS/internal/utils"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -32,10 +31,6 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 	}
 
 	newName := strings.TrimSpace(req.GetNewName())
-	payload := models.RenameFileRequest{Name: &newName}
-	if err := utils.Validate.Struct(payload); err != nil {
-		return nil, status.Error(codes.InvalidArgument, strings.Join(utils.Errors(err), "; "))
-	}
 
 	file, err := f.fileService.GetFileByID(ctx, req.GetFileID(), userID)
 	if err != nil {

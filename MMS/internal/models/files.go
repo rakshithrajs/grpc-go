@@ -14,12 +14,12 @@ type File struct {
 }
 
 type UploadFileRequest struct {
-	Name     *string `json:"name" validate:"required,isValueEmpty,isValidFileName,max=150"`
-	Contents []byte  `json:"contents" validate:"required"`
+	Name     *string `json:"name"`
+	Contents []byte  `json:"contents"`
 }
 
 type RenameFileRequest struct {
-	Name *string `json:"name" validate:"required,isValueEmpty,isValidFileName,max=150"`
+	Name *string `json:"name"`
 }
 
 type UpdateFileRequest struct {

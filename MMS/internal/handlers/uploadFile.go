@@ -13,7 +13,6 @@ import (
 	"github.com/rakshithrajs/cloud/MMS/internal/config"
 	"github.com/rakshithrajs/cloud/MMS/internal/models"
 	"github.com/rakshithrajs/cloud/MMS/internal/storage"
-	"github.com/rakshithrajs/cloud/MMS/internal/utils"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -33,10 +32,6 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 	payload := models.UploadFileRequest{
 		Name:     &cleanedName,
 		Contents: req.GetContent(),
-	}
-
-	if err := utils.Validate.Struct(payload); err != nil {
-		return nil, status.Error(codes.InvalidArgument, strings.Join(utils.Errors(err), "; "))
 	}
 
 	cfg, err := config.GetConfig()
