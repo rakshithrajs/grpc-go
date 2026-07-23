@@ -21,6 +21,8 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 		return
 	}
 
+	ctx := c.Request.Context()
+
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: handlers.ErrFileIsRequired.Error()})
@@ -42,7 +44,7 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 		return
 	}
 
-	ctx := metadata.AppendToOutgoingContext(c.Request.Context(), "x-user-id", userID)
+	ctx = metadata.AppendToOutgoingContext(ctx, "x-user-id", userID)
 	resp, err := h.MMSClient.UploadFile(ctx, &MMSpb.UploadFileRequest{
 		FileName: fileHeader.Filename,
 		Content:  content,
@@ -61,7 +63,7 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 	}
 
 	fileID := resp.GetFile().GetID()
-	if err := h.storage.CreateUserFile(c.Request.Context(), userID, fileID, resp.File.FileName); err != nil {
+	if err := h.storage.CreateUserFile(ctx, userID, fileID, resp.File.FileName); err != nil {
 		slog.Error(handlers.LogPrefix(fnUploadFile)+"failed to save user file mapping", slog.Any(config.ErrorKey, err))
 		if _, delErr := h.MMSClient.DeleteFile(ctx, &MMSpb.DeleteFileRequest{FileID: fileID}); delErr != nil {
 			slog.Error(handlers.LogPrefix(fnUploadFile)+"failed to compensate MMS upload", slog.Any(config.ErrorKey, delErr))

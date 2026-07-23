@@ -109,11 +109,11 @@ func validateEmail(fl validator.FieldLevel) bool {
 		maxDomainLength = 253
 	)
 
-	local := parts[0]
-	domain := parts[1]
-	if len(local) < minLocalLength || len(local) > maxLocalLength {
+	if len(parts[0]) < minLocalLength || len(parts[0]) > maxLocalLength {
 		return false
 	}
+	
+	domain := parts[1]
 	if len(domain) < minDomainLength || len(domain) > maxDomainLength {
 		return false
 	}

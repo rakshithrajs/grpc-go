@@ -26,7 +26,9 @@ func (h *UserFilesHandler) DownloadFileHandler(c *gin.Context) {
 		return
 	}
 
-	ctx := metadata.AppendToOutgoingContext(c.Request.Context(), "x-user-id", userID)
+	ctx := c.Request.Context()
+
+	ctx = metadata.AppendToOutgoingContext(ctx, "x-user-id", userID)
 	resp, err := h.MMSClient.DownloadFile(ctx, &MMSpb.DownloadFileRequest{FileID: fileID})
 	if err != nil {
 		status, msg := handlers.MapGRPCError(err, handlers.ErrFailedToDownloadFile.Error())

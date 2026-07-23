@@ -26,6 +26,8 @@ func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
 		return
 	}
 
+	ctx := c.Request.Context()
+
 	var req models.UpdateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: handlers.ErrInvalidJSON.Error()})
@@ -43,7 +45,7 @@ func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
 	}
 
 	if req.Password != config.NullString {
-		user, err := a.storage.GetUserByID(c.Request.Context(), id)
+		user, err := a.storage.GetUserByID(ctx, id)
 		if err != nil {
 			if errors.Is(err, storage.ErrUserNotFound) {
 				c.JSON(http.StatusOK, gin.H{"message": userUpdatedMessage})
@@ -69,7 +71,7 @@ func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
 		req.Password = hashed
 	}
 
-	if err := a.storage.UpdateUser(c.Request.Context(), id, req); err != nil {
+	if err := a.storage.UpdateUser(ctx, id, req); err != nil {
 		if handlers.HandleDomainError(c, err) {
 			return
 		}

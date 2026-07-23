@@ -27,23 +27,23 @@ func (h *UserFilesHandler) DeleteFileHandler(c *gin.Context) {
 		return
 	}
 
-	_, err = h.storage.GetUserFileName(c.Request.Context(), userID, fileID)
-	if err != nil {
+	ctx := c.Request.Context()
+
+	if _, err = h.storage.GetUserFileName(ctx, userID, fileID); err != nil {
 		slog.Error(handlers.LogPrefix(fnDeleteFile)+"failed to verify user file ownership", slog.Any(config.ErrorKey, err))
 		c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrSomethingWentWrong.Error()})
 		return
 	}
 
-	ctx := metadata.AppendToOutgoingContext(c.Request.Context(), "x-user-id", userID)
+	ctx = metadata.AppendToOutgoingContext(ctx, "x-user-id", userID)
 
-	if err := h.storage.DeleteUserFile(c.Request.Context(), userID, fileID); err != nil {
+	if err := h.storage.DeleteUserFile(ctx, userID, fileID); err != nil {
 		slog.Error(handlers.LogPrefix(fnDeleteFile)+"failed to delete user file mapping", slog.Any(config.ErrorKey, err))
 		c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrSomethingWentWrong.Error()})
 		return
 	}
 
-	_, err = h.MMSClient.DeleteFile(ctx, &MMSpb.DeleteFileRequest{FileID: fileID})
-	if err != nil {
+	if _, err = h.MMSClient.DeleteFile(ctx, &MMSpb.DeleteFileRequest{FileID: fileID}); err != nil {
 		status, msg := handlers.MapGRPCError(err, handlers.ErrFailedToDeleteFile.Error())
 		slog.Error(handlers.LogPrefix(fnDeleteFile)+"failed to delete file in MMS", slog.Any(config.ErrorKey, err))
 		c.JSON(status, gin.H{config.ErrorKey: msg})

@@ -28,6 +28,8 @@ func (h *UserFilesHandler) RenameFileHandler(c *gin.Context) {
 		return
 	}
 
+	ctx := c.Request.Context()
+
 	var payload models.RenameFileRequest
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: handlers.ErrInvalidJSON.Error()})
@@ -36,7 +38,7 @@ func (h *UserFilesHandler) RenameFileHandler(c *gin.Context) {
 
 	newName := strings.TrimSpace(payload.NewName)
 
-	oldName, err := h.storage.GetUserFileName(c.Request.Context(), userID, fileID)
+	oldName, err := h.storage.GetUserFileName(ctx, userID, fileID)
 	if err != nil {
 		slog.Error(handlers.LogPrefix(fnRenameFile)+"failed to get user file name", slog.Any(config.ErrorKey, err))
 		c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrSomethingWentWrong.Error()})
@@ -47,19 +49,20 @@ func (h *UserFilesHandler) RenameFileHandler(c *gin.Context) {
 		return
 	}
 
-	if err := h.storage.UpdateUserFile(c.Request.Context(), userID, fileID, newName); err != nil {
+	if err := h.storage.UpdateUserFile(ctx, userID, fileID, newName); err != nil {
 		slog.Error(handlers.LogPrefix(fnRenameFile)+"failed to update user file mapping", slog.Any(config.ErrorKey, err))
 		c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrSomethingWentWrong.Error()})
 		return
 	}
 
-	ctx := metadata.AppendToOutgoingContext(c.Request.Context(), "x-user-id", userID)
-	_, err = h.MMSClient.RenameFile(ctx, &MMSpb.RenameFileRequest{
+	ctx = metadata.AppendToOutgoingContext(ctx, "x-user-id", userID)
+
+	renameRequest := &MMSpb.RenameFileRequest{
 		FileID:  fileID,
 		NewName: newName,
-	})
-	if err != nil {
-		if rbErr := h.storage.UpdateUserFile(c.Request.Context(), userID, fileID, oldName); rbErr != nil {
+	}
+	if _, err = h.MMSClient.RenameFile(ctx, renameRequest); err != nil {
+		if rbErr := h.storage.UpdateUserFile(ctx, userID, fileID, oldName); rbErr != nil {
 			slog.Error(handlers.LogPrefix(fnRenameFile)+"failed to rollback user file mapping", slog.Any(config.ErrorKey, rbErr))
 		}
 		status, msg := handlers.MapGRPCError(err, handlers.ErrFailedToRenameFile.Error())

@@ -61,8 +61,7 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 	}
 	defer fi.Close()
 
-	written, err := fi.Write(payload.Contents)
-	if err != nil || written != len(payload.Contents) {
+	if written, err := fi.Write(payload.Contents); err != nil || written != len(payload.Contents) {
 		slog.Error(logPrefix(fnUploadFile)+"failed to write file", slog.Any("error", err), slog.Int("written", written), slog.Int("expected", len(payload.Contents)))
 		return nil, status.Error(codes.Internal, ErrFailedToUploadFile.Error())
 	}

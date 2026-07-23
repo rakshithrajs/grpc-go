@@ -19,7 +19,9 @@ func (h *UMSHandler) GetUserProfileHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := h.storage.GetUserByID(c.Request.Context(), userID)
+	ctx := c.Request.Context()
+
+	user, err := h.storage.GetUserByID(ctx, userID)
 	if err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{config.ErrorKey: err.Error()})

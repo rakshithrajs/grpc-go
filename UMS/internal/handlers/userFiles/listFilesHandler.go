@@ -16,7 +16,9 @@ func (h *UserFilesHandler) ListFilesHandler(c *gin.Context) {
 		return
 	}
 
-	files, err := h.storage.ListUserFiles(c.Request.Context(), userID)
+	ctx := c.Request.Context()
+
+	files, err := h.storage.ListUserFiles(ctx, userID)
 	if err != nil {
 		slog.Error(handlers.LogPrefix(fnListFiles)+"failed to list user files", slog.Any(config.ErrorKey, err))
 		c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrFailedToListFiles.Error()})
