@@ -54,7 +54,12 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 		return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 	}
 
-	if err := f.fileService.UpdateFile(ctx, req.GetFileID(), models.UpdateFileRequest{Name: &newName, Path: &newPath}, userID); err != nil {
+	updateBody := models.UpdateFileRequest{
+		Name: &newName,
+		Path: &newPath,
+	}
+
+	if err := f.fileService.UpdateFile(ctx, req.GetFileID(), updateBody, userID); err != nil {
 		slog.Error(logPrefix(fnRenameFile)+"failed to update file record", slog.Any("error", err))
 		if rbErr := os.Rename(newPath, oldPath); rbErr != nil {
 			slog.Error(logPrefix(fnRenameFile)+"failed to rollback disk rename", slog.Any("error", rbErr), slog.String("oldPath", oldPath), slog.String("newPath", newPath))

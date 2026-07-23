@@ -42,8 +42,7 @@ func (f *FileStore) UploadFile(ctx context.Context, file *models.File) (*models.
 	defer stmt.Close()
 
 	var newFile models.File
-	if err := stmt.QueryRowContext(ctx, *file.UserID, *file.Name, *file.Path, *file.Size, *file.MimeType).Scan(
-		&newFile.ID, &newFile.UserID, &newFile.Name, &newFile.Path, &newFile.Size, &newFile.MimeType, &newFile.CreatedAtUTC, &newFile.UpdatedAtUTC); err != nil {
+	if err := stmt.QueryRowContext(ctx, *file.UserID, *file.Name, *file.Path, *file.Size, *file.MimeType).Scan(&newFile.ID, &newFile.UserID, &newFile.Name, &newFile.Path, &newFile.Size, &newFile.MimeType, &newFile.CreatedAtUTC, &newFile.UpdatedAtUTC); err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == "files_user_name_unique" {
 			return nil, ErrFileNameAlreadyExists
