@@ -32,7 +32,7 @@ func NewUserStore(db *sql.DB) UserService {
 }
 
 func (u *userStore) CreateUser(ctx context.Context, user *models.User) (*models.User, error) {
-	query := `INSERT INTO users (name, email, password, phone) VALUES ($1, $2, $3, $4) RETURNING "ID", name, email, phone`
+	query := `INSERT INTO users (name, email, password, phone) VALUES ($1, $2, $3, $4) RETURNING "ID", name, email, phone, "createdAtUTC", "updatedAtUTC"`
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
@@ -42,7 +42,7 @@ func (u *userStore) CreateUser(ctx context.Context, user *models.User) (*models.
 	defer stmt.Close()
 
 	var newUser models.User
-	if err := stmt.QueryRowContext(ctx, user.Name, user.Email, user.Password, user.Phone).Scan(&newUser.ID, &newUser.Name, &newUser.Email, &newUser.Phone); err != nil {
+	if err := stmt.QueryRowContext(ctx, user.Name, user.Email, user.Password, user.Phone).Scan(&newUser.ID, &newUser.Name, &newUser.Email, &newUser.Phone, &newUser.CreatedAtUTC, &newUser.UpdatedAtUTC); err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation {
 			switch pqErr.Constraint {
@@ -63,7 +63,7 @@ func (u *userStore) CreateUser(ctx context.Context, user *models.User) (*models.
 }
 
 func (u *userStore) GetUserByID(ctx context.Context, id string) (*models.User, error) {
-	query := `SELECT "ID", name, email, password, phone FROM users WHERE "ID" = $1`
+	query := `SELECT "ID", name, email, password, phone, "createdAtUTC", "updatedAtUTC" FROM users WHERE "ID" = $1`
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
@@ -73,7 +73,7 @@ func (u *userStore) GetUserByID(ctx context.Context, id string) (*models.User, e
 	defer stmt.Close()
 
 	var user models.User
-	if err := stmt.QueryRowContext(ctx, id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Phone); err != nil {
+	if err := stmt.QueryRowContext(ctx, id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Phone, &user.CreatedAtUTC, &user.UpdatedAtUTC); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrUserNotFound
 		}

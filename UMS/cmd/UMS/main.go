@@ -56,7 +56,7 @@ func main() {
 	userFilesStore := storage.NewUserFilesStore(db)
 	UserFilesHandler := userfiles.NewUserFilesHandler(userFilesStore, MMSClient)
 
-	UMSRouterGroup := router.Group(apiPrefix + "/user")
+	UMSRouterGroup := router.Group(apiPrefix + "/users")
 	user.RegisterRoutes(UMSRouterGroup, UMSHandler)
 
 	filesRouterGroup := router.Group(apiPrefix + "/files")
