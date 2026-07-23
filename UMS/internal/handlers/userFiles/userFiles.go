@@ -8,11 +8,20 @@ import (
 )
 
 const (
-	fnUploadFile   = "UploadFile"
+	// functions name for upload user files
+	fnUploadFile = "UploadFile"
+
+	// functions name for download user files
 	fnDownloadFile = "DownloadFile"
-	fnListFiles    = "ListFiles"
-	fnRenameFile   = "RenameFile"
-	fnDeleteFile   = "DeleteFile"
+
+	// functions name for list user files
+	fnListFiles = "ListFiles"
+
+	// functions name for rename user files
+	fnRenameFile = "RenameFile"
+
+	// functions name for delete user files
+	fnDeleteFile = "DeleteFile"
 )
 
 type UserFilesHandler struct {

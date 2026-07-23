@@ -7,10 +7,18 @@ import (
 )
 
 const (
-	fnLoginUser         = "LoginUserHandler"
-	fnRegisterUser      = "RegisterUserHandler"
+
+	// functions name for login user handler
+	fnLoginUser = "LoginUserHandler"
+
+	// functions name for register user handler
+	fnRegisterUser = "RegisterUserHandler"
+
+	// functions name for update user profile handler
 	fnUpdateUserProfile = "UpdateUserProfileHandler"
-	fnGetUserProfile    = "GetUserProfileHandler"
+
+	// functions name for get user profile handler
+	fnGetUserProfile = "GetUserProfileHandler"
 )
 
 type UMSHandler struct {
