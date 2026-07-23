@@ -9,6 +9,8 @@ import (
 	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/handlers"
+	"github.com/rakshithrajs/cloud/UMS/internal/models"
+	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -68,5 +70,12 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"file": resp.GetFile()})
+	file := models.File{
+		ID:       resp.GetFile().GetID(),
+		FileName: resp.GetFile().GetFileName(),
+		FileSize: resp.GetFile().GetFileSize(),
+		MimeType: utils.MimeTypeToString(resp.GetFile().GetMimeType()),
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"file": file})
 }

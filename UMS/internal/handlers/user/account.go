@@ -26,5 +26,5 @@ func RegisterRoutes(rg *gin.RouterGroup, h *UMSHandler) {
 	rg.POST("/login", h.LoginUserHandler)
 	rg.Use(middleware.AuthMiddleware())
 	rg.GET("/profile", h.GetUserProfileHandler)
-	rg.PATCH("/update/:id", h.UpdateUserHandler)
+	rg.PATCH("/update", h.UpdateUserHandler)
 }

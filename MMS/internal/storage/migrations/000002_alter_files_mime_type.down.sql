@@ -1,0 +1,5 @@
+ALTER TABLE files
+ALTER COLUMN "mimeType" TYPE VARCHAR(30)
+USING "mimeType"::VARCHAR(30);
+
+DROP TYPE IF EXISTS mime_type;

@@ -9,6 +9,7 @@ import (
 	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/handlers"
+	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -34,5 +35,5 @@ func (h *UserFilesHandler) DownloadFileHandler(c *gin.Context) {
 		return
 	}
 
-	c.Data(http.StatusOK, resp.GetMimeType(), resp.GetContent())
+	c.Data(http.StatusOK, utils.MimeTypeToString(resp.GetMimeType()), resp.GetContent())
 }

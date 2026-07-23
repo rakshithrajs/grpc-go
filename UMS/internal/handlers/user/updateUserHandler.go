@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
@@ -21,15 +20,9 @@ var (
 )
 
 func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
-	_, err := handlers.GetUserIDFromGin(c)
+	id, err := handlers.GetUserIDFromGin(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{config.ErrorKey: err.Error()})
-		return
-	}
-
-	id := strings.TrimSpace(c.Param("id"))
-	if err := utils.Validate.Var(id, "required,uuid"); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: handlers.ErrInvalidID.Error()})
 		return
 	}
 
@@ -38,19 +31,14 @@ func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: handlers.ErrInvalidJSON.Error()})
 		return
 	}
-
-	if req.Password == config.NullString && req.Phone == config.NullString {
+	
+	if req.Name == config.NullString && req.Email == config.NullString && req.Phone == config.NullString && req.Password == config.NullString {
 		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: handlers.ErrNoFieldsToUpdate.Error()})
 		return
 	}
 
 	if err := utils.Validate.Struct(req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: utils.FieldErrors(err)})
-		return
-	}
-
-	if req.Name == config.NullString && req.Email == config.NullString && req.Phone == config.NullString && req.Password == config.NullString {
-		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: handlers.ErrNoFieldsToUpdate.Error()})
 		return
 	}
 

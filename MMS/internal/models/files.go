@@ -8,7 +8,7 @@ type File struct {
 	Name         *string    `json:"name"`
 	Path         *string    `json:"path"`
 	Size         *int64     `json:"size"`
-	MimeType     *string    `json:"mimeType"`
+	MimeType     *MimeType  `json:"mimeType"`
 	CreatedAtUTC *time.Time `json:"createdAtUTC"`
 	UpdatedAtUTC *time.Time `json:"updatedAtUTC"`
 }
@@ -28,8 +28,8 @@ type UpdateFileRequest struct {
 }
 
 type ListFileResponse struct {
-	ID       *string `json:"id"`
-	FileName *string `json:"fileName"`
-	FileSize *int64  `json:"fileSize"`
-	MimeType *string `json:"mimeType"`
+	ID       *string   `json:"id"`
+	FileName *string   `json:"fileName"`
+	FileSize *int64    `json:"fileSize"`
+	MimeType *MimeType `json:"mimeType"`
 }

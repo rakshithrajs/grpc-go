@@ -52,7 +52,7 @@ func (f *FileHandler) DownloadFile(ctx context.Context, req *MMSpb.DownloadFileR
 
 	return &MMSpb.DownloadFileResponse{
 		FileName: *file.Name,
-		MimeType: *file.MimeType,
+		MimeType: toProtoMimeType(*file.MimeType),
 		Content:  contents,
 	}, nil
 }

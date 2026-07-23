@@ -18,23 +18,19 @@ create-UMS-migration:
 create-MMS-migration:
 	@migrate create -ext sql -dir $(MMS_DIR)/internal/storage/migrations -seq $(NAME)
 
-migrate-UMS-up:
+up:
 	@migrate -path $(UMS_DIR)/internal/storage/migrations -database $(UMS_MIGRATE_DB_URL) -verbose up
-
-migrate-MMS-up:
 	@migrate -path $(MMS_DIR)/internal/storage/migrations -database $(MMS_MIGRATE_DB_URL) -verbose up
 
-migrate-UMS-down:
+down:
 	@migrate -path $(UMS_DIR)/internal/storage/migrations -database $(UMS_MIGRATE_DB_URL) -verbose down
-
-migrate-MMS-down:
 	@migrate -path $(MMS_DIR)/internal/storage/migrations -database $(MMS_MIGRATE_DB_URL) -verbose down
 
 UMS-version:
 	@migrate -path ${UMS_DIR}/internal/storage/migrations -database ${UMS_MIGRATE_DB_URL} version
 
 MMS-version:
-	@migrate -path ${MMS_DIR}internal/storage/migrations -database ${MMS_MIGRATE_DB_URL} version
+	@migrate -path ${MMS_DIR}/internal/storage/migrations -database ${MMS_MIGRATE_DB_URL} version
 
 force-UMS: 
 	@migrate -path ${UMS_DIR}/internal/storage/migrations -database ${UMS_MIGRATE_DB_URL} force ${VERSION}
@@ -42,4 +38,8 @@ force-UMS:
 force-MMS: 
 	@migrate -path ${MMS_DIR}/internal/storage/migrations -database ${MMS_MIGRATE_DB_URL} force ${VERSION}
 
-.PHONY: check-UMS check-MMS migrate-UMS-up migrate-MMS-up migrate-UMS-down migrate-MMS-down create-UMS-migration create-MMS-migration UMS-version MMS-version force-UMS force-MMS
+proto:
+	@protoc --go_out=paths=source_relative:.. --go-grpc_out=paths=source_relative:.. UMS/proto/MMS/v1/MMS.proto
+	@protoc --go_out=paths=source_relative:.. --go-grpc_out=paths=source_relative:.. MMS/proto/MMS/v1/MMS.proto
+
+.PHONY: check-UMS check-MMS migrate-UMS-up migrate-MMS-up migrate-UMS-down migrate-MMS-down create-UMS-migration create-MMS-migration UMS-version MMS-version force-UMS force-MMS proto

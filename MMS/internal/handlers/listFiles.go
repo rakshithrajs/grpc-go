@@ -28,7 +28,7 @@ func (f *FileHandler) ListFiles(ctx context.Context, req *MMSpb.EmptyMessage) (*
 			ID:       *file.ID,
 			FileName: *file.FileName,
 			FileSize: *file.FileSize,
-			MimeType: *file.MimeType,
+			MimeType: toProtoMimeType(*file.MimeType),
 		}
 		respFiles = append(respFiles, respFile)
 	}

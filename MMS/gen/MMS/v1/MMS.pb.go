@@ -21,12 +21,82 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type MimeType int32
+
+const (
+	MimeType_MIME_TYPE_UNSPECIFIED      MimeType = 0
+	MimeType_MIME_TYPE_IMAGE_PNG        MimeType = 1
+	MimeType_MIME_TYPE_IMAGE_JPEG       MimeType = 2
+	MimeType_MIME_TYPE_IMAGE_GIF        MimeType = 3
+	MimeType_MIME_TYPE_IMAGE_WEBP       MimeType = 4
+	MimeType_MIME_TYPE_IMAGE_SVG        MimeType = 5
+	MimeType_MIME_TYPE_APPLICATION_PDF  MimeType = 6
+	MimeType_MIME_TYPE_TEXT_PLAIN       MimeType = 7
+	MimeType_MIME_TYPE_TEXT_MARKDOWN    MimeType = 8
+	MimeType_MIME_TYPE_APPLICATION_JSON MimeType = 9
+)
+
+// Enum value maps for MimeType.
+var (
+	MimeType_name = map[int32]string{
+		0: "MIME_TYPE_UNSPECIFIED",
+		1: "MIME_TYPE_IMAGE_PNG",
+		2: "MIME_TYPE_IMAGE_JPEG",
+		3: "MIME_TYPE_IMAGE_GIF",
+		4: "MIME_TYPE_IMAGE_WEBP",
+		5: "MIME_TYPE_IMAGE_SVG",
+		6: "MIME_TYPE_APPLICATION_PDF",
+		7: "MIME_TYPE_TEXT_PLAIN",
+		8: "MIME_TYPE_TEXT_MARKDOWN",
+		9: "MIME_TYPE_APPLICATION_JSON",
+	}
+	MimeType_value = map[string]int32{
+		"MIME_TYPE_UNSPECIFIED":      0,
+		"MIME_TYPE_IMAGE_PNG":        1,
+		"MIME_TYPE_IMAGE_JPEG":       2,
+		"MIME_TYPE_IMAGE_GIF":        3,
+		"MIME_TYPE_IMAGE_WEBP":       4,
+		"MIME_TYPE_IMAGE_SVG":        5,
+		"MIME_TYPE_APPLICATION_PDF":  6,
+		"MIME_TYPE_TEXT_PLAIN":       7,
+		"MIME_TYPE_TEXT_MARKDOWN":    8,
+		"MIME_TYPE_APPLICATION_JSON": 9,
+	}
+)
+
+func (x MimeType) Enum() *MimeType {
+	p := new(MimeType)
+	*p = x
+	return p
+}
+
+func (x MimeType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (MimeType) Descriptor() protoreflect.EnumDescriptor {
+	return file_MMS_v1_MMS_proto_enumTypes[0].Descriptor()
+}
+
+func (MimeType) Type() protoreflect.EnumType {
+	return &file_MMS_v1_MMS_proto_enumTypes[0]
+}
+
+func (x MimeType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use MimeType.Descriptor instead.
+func (MimeType) EnumDescriptor() ([]byte, []int) {
+	return file_MMS_v1_MMS_proto_rawDescGZIP(), []int{0}
+}
+
 type File struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ID            string                 `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	FileName      string                 `protobuf:"bytes,2,opt,name=fileName,proto3" json:"fileName,omitempty"`
 	FileSize      int64                  `protobuf:"varint,3,opt,name=fileSize,proto3" json:"fileSize,omitempty"`
-	MimeType      string                 `protobuf:"bytes,4,opt,name=mimeType,proto3" json:"mimeType,omitempty"`
+	MimeType      MimeType               `protobuf:"varint,4,opt,name=mimeType,proto3,enum=files.v1.MimeType" json:"mimeType,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -82,11 +152,11 @@ func (x *File) GetFileSize() int64 {
 	return 0
 }
 
-func (x *File) GetMimeType() string {
+func (x *File) GetMimeType() MimeType {
 	if x != nil {
 		return x.MimeType
 	}
-	return ""
+	return MimeType_MIME_TYPE_UNSPECIFIED
 }
 
 // UploadFileRequest contains file metadata.
@@ -241,7 +311,7 @@ type DownloadFileResponse struct {
 	// file's name
 	FileName string `protobuf:"bytes,1,opt,name=fileName,proto3" json:"fileName,omitempty"`
 	// file's type
-	MimeType string `protobuf:"bytes,2,opt,name=mimeType,proto3" json:"mimeType,omitempty"`
+	MimeType MimeType `protobuf:"varint,2,opt,name=mimeType,proto3,enum=files.v1.MimeType" json:"mimeType,omitempty"`
 	// file's content
 	Content       []byte `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -285,11 +355,11 @@ func (x *DownloadFileResponse) GetFileName() string {
 	return ""
 }
 
-func (x *DownloadFileResponse) GetMimeType() string {
+func (x *DownloadFileResponse) GetMimeType() MimeType {
 	if x != nil {
 		return x.MimeType
 	}
-	return ""
+	return MimeType_MIME_TYPE_UNSPECIFIED
 }
 
 func (x *DownloadFileResponse) GetContent() []byte {
@@ -486,22 +556,22 @@ var File_MMS_v1_MMS_proto protoreflect.FileDescriptor
 
 const file_MMS_v1_MMS_proto_rawDesc = "" +
 	"\n" +
-	"\x10MMS/v1/MMS.proto\x12\bfiles.v1\"j\n" +
+	"\x10MMS/v1/MMS.proto\x12\bfiles.v1\"~\n" +
 	"\x04File\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\tR\x02ID\x12\x1a\n" +
 	"\bfileName\x18\x02 \x01(\tR\bfileName\x12\x1a\n" +
-	"\bfileSize\x18\x03 \x01(\x03R\bfileSize\x12\x1a\n" +
-	"\bmimeType\x18\x04 \x01(\tR\bmimeType\"I\n" +
+	"\bfileSize\x18\x03 \x01(\x03R\bfileSize\x12.\n" +
+	"\bmimeType\x18\x04 \x01(\x0e2\x12.files.v1.MimeTypeR\bmimeType\"I\n" +
 	"\x11UploadFileRequest\x12\x1a\n" +
 	"\bfileName\x18\x01 \x01(\tR\bfileName\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\fR\acontent\"8\n" +
 	"\x12UploadFileResponse\x12\"\n" +
 	"\x04file\x18\x01 \x01(\v2\x0e.files.v1.FileR\x04file\"-\n" +
 	"\x13DownloadFileRequest\x12\x16\n" +
-	"\x06fileID\x18\x01 \x01(\tR\x06fileID\"h\n" +
+	"\x06fileID\x18\x01 \x01(\tR\x06fileID\"|\n" +
 	"\x14DownloadFileResponse\x12\x1a\n" +
-	"\bfileName\x18\x01 \x01(\tR\bfileName\x12\x1a\n" +
-	"\bmimeType\x18\x02 \x01(\tR\bmimeType\x12\x18\n" +
+	"\bfileName\x18\x01 \x01(\tR\bfileName\x12.\n" +
+	"\bmimeType\x18\x02 \x01(\x0e2\x12.files.v1.MimeTypeR\bmimeType\x12\x18\n" +
 	"\acontent\x18\x03 \x01(\fR\acontent\"+\n" +
 	"\x11DeleteFileRequest\x12\x16\n" +
 	"\x06fileID\x18\x01 \x01(\tR\x06fileID\"E\n" +
@@ -510,7 +580,18 @@ const file_MMS_v1_MMS_proto_rawDesc = "" +
 	"\anewName\x18\x02 \x01(\tR\anewName\"7\n" +
 	"\x11ListFilesResponse\x12\"\n" +
 	"\x04file\x18\x01 \x03(\v2\x0e.files.v1.FileR\x04file\"\x0e\n" +
-	"\fEmptyMessage2\xe7\x02\n" +
+	"\fEmptyMessage*\x9a\x02\n" +
+	"\bMimeType\x12\x19\n" +
+	"\x15MIME_TYPE_UNSPECIFIED\x10\x00\x12\x17\n" +
+	"\x13MIME_TYPE_IMAGE_PNG\x10\x01\x12\x18\n" +
+	"\x14MIME_TYPE_IMAGE_JPEG\x10\x02\x12\x17\n" +
+	"\x13MIME_TYPE_IMAGE_GIF\x10\x03\x12\x18\n" +
+	"\x14MIME_TYPE_IMAGE_WEBP\x10\x04\x12\x17\n" +
+	"\x13MIME_TYPE_IMAGE_SVG\x10\x05\x12\x1d\n" +
+	"\x19MIME_TYPE_APPLICATION_PDF\x10\x06\x12\x18\n" +
+	"\x14MIME_TYPE_TEXT_PLAIN\x10\a\x12\x1b\n" +
+	"\x17MIME_TYPE_TEXT_MARKDOWN\x10\b\x12\x1e\n" +
+	"\x1aMIME_TYPE_APPLICATION_JSON\x10\t2\xe7\x02\n" +
 	"\x05Files\x12G\n" +
 	"\n" +
 	"UploadFile\x12\x1b.files.v1.UploadFileRequest\x1a\x1c.files.v1.UploadFileResponse\x12M\n" +
@@ -533,36 +614,40 @@ func file_MMS_v1_MMS_proto_rawDescGZIP() []byte {
 	return file_MMS_v1_MMS_proto_rawDescData
 }
 
+var file_MMS_v1_MMS_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_MMS_v1_MMS_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_MMS_v1_MMS_proto_goTypes = []any{
-	(*File)(nil),                 // 0: files.v1.File
-	(*UploadFileRequest)(nil),    // 1: files.v1.UploadFileRequest
-	(*UploadFileResponse)(nil),   // 2: files.v1.UploadFileResponse
-	(*DownloadFileRequest)(nil),  // 3: files.v1.DownloadFileRequest
-	(*DownloadFileResponse)(nil), // 4: files.v1.DownloadFileResponse
-	(*DeleteFileRequest)(nil),    // 5: files.v1.DeleteFileRequest
-	(*RenameFileRequest)(nil),    // 6: files.v1.RenameFileRequest
-	(*ListFilesResponse)(nil),    // 7: files.v1.ListFilesResponse
-	(*EmptyMessage)(nil),         // 8: files.v1.EmptyMessage
+	(MimeType)(0),                // 0: files.v1.MimeType
+	(*File)(nil),                 // 1: files.v1.File
+	(*UploadFileRequest)(nil),    // 2: files.v1.UploadFileRequest
+	(*UploadFileResponse)(nil),   // 3: files.v1.UploadFileResponse
+	(*DownloadFileRequest)(nil),  // 4: files.v1.DownloadFileRequest
+	(*DownloadFileResponse)(nil), // 5: files.v1.DownloadFileResponse
+	(*DeleteFileRequest)(nil),    // 6: files.v1.DeleteFileRequest
+	(*RenameFileRequest)(nil),    // 7: files.v1.RenameFileRequest
+	(*ListFilesResponse)(nil),    // 8: files.v1.ListFilesResponse
+	(*EmptyMessage)(nil),         // 9: files.v1.EmptyMessage
 }
 var file_MMS_v1_MMS_proto_depIdxs = []int32{
-	0, // 0: files.v1.UploadFileResponse.file:type_name -> files.v1.File
-	0, // 1: files.v1.ListFilesResponse.file:type_name -> files.v1.File
-	1, // 2: files.v1.Files.UploadFile:input_type -> files.v1.UploadFileRequest
-	3, // 3: files.v1.Files.DownloadFile:input_type -> files.v1.DownloadFileRequest
-	8, // 4: files.v1.Files.ListFiles:input_type -> files.v1.EmptyMessage
-	5, // 5: files.v1.Files.DeleteFile:input_type -> files.v1.DeleteFileRequest
-	6, // 6: files.v1.Files.RenameFile:input_type -> files.v1.RenameFileRequest
-	2, // 7: files.v1.Files.UploadFile:output_type -> files.v1.UploadFileResponse
-	4, // 8: files.v1.Files.DownloadFile:output_type -> files.v1.DownloadFileResponse
-	7, // 9: files.v1.Files.ListFiles:output_type -> files.v1.ListFilesResponse
-	8, // 10: files.v1.Files.DeleteFile:output_type -> files.v1.EmptyMessage
-	8, // 11: files.v1.Files.RenameFile:output_type -> files.v1.EmptyMessage
-	7, // [7:12] is the sub-list for method output_type
-	2, // [2:7] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0, // 0: files.v1.File.mimeType:type_name -> files.v1.MimeType
+	1, // 1: files.v1.UploadFileResponse.file:type_name -> files.v1.File
+	0, // 2: files.v1.DownloadFileResponse.mimeType:type_name -> files.v1.MimeType
+	1, // 3: files.v1.ListFilesResponse.file:type_name -> files.v1.File
+	2, // 4: files.v1.Files.UploadFile:input_type -> files.v1.UploadFileRequest
+	4, // 5: files.v1.Files.DownloadFile:input_type -> files.v1.DownloadFileRequest
+	9, // 6: files.v1.Files.ListFiles:input_type -> files.v1.EmptyMessage
+	6, // 7: files.v1.Files.DeleteFile:input_type -> files.v1.DeleteFileRequest
+	7, // 8: files.v1.Files.RenameFile:input_type -> files.v1.RenameFileRequest
+	3, // 9: files.v1.Files.UploadFile:output_type -> files.v1.UploadFileResponse
+	5, // 10: files.v1.Files.DownloadFile:output_type -> files.v1.DownloadFileResponse
+	8, // 11: files.v1.Files.ListFiles:output_type -> files.v1.ListFilesResponse
+	9, // 12: files.v1.Files.DeleteFile:output_type -> files.v1.EmptyMessage
+	9, // 13: files.v1.Files.RenameFile:output_type -> files.v1.EmptyMessage
+	9, // [9:14] is the sub-list for method output_type
+	4, // [4:9] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_MMS_v1_MMS_proto_init() }
@@ -575,13 +660,14 @@ func file_MMS_v1_MMS_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_MMS_v1_MMS_proto_rawDesc), len(file_MMS_v1_MMS_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_MMS_v1_MMS_proto_goTypes,
 		DependencyIndexes: file_MMS_v1_MMS_proto_depIdxs,
+		EnumInfos:         file_MMS_v1_MMS_proto_enumTypes,
 		MessageInfos:      file_MMS_v1_MMS_proto_msgTypes,
 	}.Build()
 	File_MMS_v1_MMS_proto = out.File

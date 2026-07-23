@@ -46,7 +46,7 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 	}
 
 	fileSize := int64(len(payload.Contents))
-	mimeType := http.DetectContentType(payload.Contents)
+	mimeType := models.ParseMimeType(http.DetectContentType(payload.Contents))
 
 	userDir := filepath.Join(cfg.UserStoragePath, userID)
 	if err := os.MkdirAll(userDir, 0o755); err != nil {
@@ -100,7 +100,7 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 			ID:       *savedFile.ID,
 			FileName: *savedFile.Name,
 			FileSize: *savedFile.Size,
-			MimeType: *savedFile.MimeType,
+			MimeType: toProtoMimeType(*savedFile.MimeType),
 		},
 	}, nil
 }

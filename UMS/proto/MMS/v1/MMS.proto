@@ -23,11 +23,24 @@ service Files {
     rpc RenameFile (RenameFileRequest) returns (EmptyMessage);
 }
 
+enum MimeType {
+    MIME_TYPE_UNSPECIFIED = 0;
+    MIME_TYPE_IMAGE_PNG = 1;
+    MIME_TYPE_IMAGE_JPEG = 2;
+    MIME_TYPE_IMAGE_GIF = 3;
+    MIME_TYPE_IMAGE_WEBP = 4;
+    MIME_TYPE_IMAGE_SVG = 5;
+    MIME_TYPE_APPLICATION_PDF = 6;
+    MIME_TYPE_TEXT_PLAIN = 7;
+    MIME_TYPE_TEXT_MARKDOWN = 8;
+    MIME_TYPE_APPLICATION_JSON = 9;
+}
+
 message File {
     string ID = 1;
     string fileName = 2;
     int64 fileSize = 3;
-    string mimeType = 4;
+    MimeType mimeType = 4;
 }
 
 // UploadFileRequest contains file metadata.
@@ -59,7 +72,7 @@ message DownloadFileResponse {
     string fileName = 1;
 
     // file's type
-    string mimeType = 2;
+    MimeType mimeType = 2;
 
     // file's content
     bytes content = 3;
