@@ -23,7 +23,7 @@ func TestUploadFile(t *testing.T) {
 	const userID = "user-123"
 
 	ctxWithUser := func() context.Context {
-		return metadata.NewIncomingContext(context.Background(), metadata.Pairs("userID", userID))
+		return metadata.NewIncomingContext(context.Background(), metadata.Pairs(config.UserIDMetadataKey, userID))
 	}
 
 	userDir := filepath.Join(tempDir, userID)

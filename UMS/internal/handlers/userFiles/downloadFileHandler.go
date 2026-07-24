@@ -26,7 +26,7 @@ func (h *UserFilesHandler) DownloadFileHandler(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	_, mimeType, content, err := h.client.DownloadFileGrpcHandler(ctx, userID, fileID)
+	resp, err := h.client.DownloadFileGrpcHandler(ctx, userID, fileID)
 	if err != nil {
 		status, msg := handlers.MapGRPCError(err, utils.ErrFailedToDownloadFile.Error())
 		slog.Error(handlers.LogPrefix(fnDownloadFile)+"failed to download file", slog.Any(config.ErrorKey, err))
@@ -34,5 +34,5 @@ func (h *UserFilesHandler) DownloadFileHandler(c *gin.Context) {
 		return
 	}
 
-	c.Data(http.StatusOK, utils.MimeTypeToString(mimeType), content)
+	c.Data(http.StatusOK, utils.MimeTypeToString(resp.GetMimeType()), resp.GetContent())
 }

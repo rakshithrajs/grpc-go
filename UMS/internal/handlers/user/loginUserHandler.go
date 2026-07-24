@@ -14,7 +14,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (a *UMSHandler) LoginUserHandler(ctx *gin.Context) {
+func (h *UserHandler) LoginUserHandler(ctx *gin.Context) {
 
 	var req models.LoginUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -30,7 +30,7 @@ func (a *UMSHandler) LoginUserHandler(ctx *gin.Context) {
 		return
 	}
 
-	user, err := a.storage.GetUserByEmail(ctx.Request.Context(), req.Email)
+	user, err := h.storage.GetUserByEmail(ctx.Request.Context(), req.Email)
 	if err != nil {
 		utils.ReturnErrorResponse(ctx, err, FnLoginUser, utils.ErrFailedToLoginUser, "")
 		return

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 
 	"google.golang.org/grpc/codes"
@@ -15,7 +16,7 @@ var LogPrefix = func(fnName string) string {
 }
 
 func GetUserIDFromGin(c *gin.Context) (string, error) {
-	userID, exists := c.Get("userID")
+	userID, exists := c.Get(config.UserIDMetadataKey)
 	if !exists {
 		return "", utils.ErrUnauthorized
 	}

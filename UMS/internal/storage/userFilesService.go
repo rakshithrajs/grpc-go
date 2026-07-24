@@ -13,11 +13,12 @@ import (
 )
 
 const (
-	fnCreateUserFile  = "CreateUserFile"
-	fnDeleteUserFile  = "DeleteUserFile"
-	fnListUserFiles   = "ListUserFiles"
-	fnUpdateUserFile  = "UpdateUserFile"
-	fnGetUserFileName = "GetUserFileName"
+	fnCreateUserFile = "CreateUserFile"
+	fnDeleteUserFile = "DeleteUserFile"
+	fnListUserFiles  = "ListUserFiles"
+	fnUpdateUserFile = "UpdateUserFile"
+
+	uniqueConstraintUserFilesUserIDFileID = "userFiles_userID_fileID_unique"
 )
 
 type userFilesStore struct {
@@ -40,7 +41,7 @@ func (u *userFilesStore) CreateUserFile(ctx context.Context, userID, fileID, fil
 
 	if _, err := stmt.ExecContext(ctx, userID, fileID, fileName); err != nil {
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == "userFiles_userID_fileID_unique" {
+		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == uniqueConstraintUserFilesUserIDFileID {
 			return utils.ErrUserFileAlreadyExists
 		}
 		slog.Error(logPrefix(fnCreateUserFile)+"execute statement", slog.Any("error", err))
@@ -128,26 +129,4 @@ func (u *userFilesStore) UpdateUserFile(ctx context.Context, userID, fileID, fil
 	}
 
 	return oldFileName, nil
-}
-
-func (u *userFilesStore) GetUserFileName(ctx context.Context, userID, fileID string) (string, error) {
-	query := `SELECT "fileName" FROM "userFiles" WHERE "userID" = $1 AND "fileID" = $2`
-
-	stmt, err := u.db.PrepareContext(ctx, query)
-	if err != nil {
-		slog.Error(logPrefix(fnGetUserFileName)+"prepare statement", slog.Any("error", err))
-		return "", ErrFailedToListUserFiles
-	}
-	defer stmt.Close()
-
-	var fileName string
-	if err := stmt.QueryRowContext(ctx, userID, fileID).Scan(&fileName); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return "", nil
-		}
-		slog.Error(logPrefix(fnGetUserFileName)+"execute statement", slog.Any("error", err))
-		return "", ErrFailedToListUserFiles
-	}
-
-	return fileName, nil
 }

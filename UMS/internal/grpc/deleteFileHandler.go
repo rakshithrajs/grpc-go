@@ -4,6 +4,7 @@ import (
 	"context"
 
 	MMS "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -19,7 +20,7 @@ func (c *Client) DeleteFileGrpcHandler(ctx context.Context, userID, fileID strin
 		return nil
 	}
 
-	ctx = metadata.AppendToOutgoingContext(ctx, "userID", userID)
+	ctx = metadata.AppendToOutgoingContext(ctx, config.UserIDMetadataKey, userID)
 
 	if _, err := c.mmsClient.DeleteFile(ctx, &MMS.DeleteFileRequest{FileID: fileID}); err != nil {
 		if rbErr := c.storage.CreateUserFile(ctx, userID, fileID, fileName); rbErr != nil {

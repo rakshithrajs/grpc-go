@@ -16,7 +16,7 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 		mockGrpcErr  mocks.GrpcOperationError
 		expectedCode codes.Code
 		expectedErr  string
-		expectedData MMSpb.DownloadFileResponse
+		expectedData *MMSpb.DownloadFileResponse
 	}{
 		{
 			name:         "file download fails as missing metadata",
@@ -35,7 +35,7 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			mockGrpcErr:  mocks.GrpcOpNotFound,
 			expectedCode: codes.OK,
 			expectedErr:  "",
-			expectedData: MMSpb.DownloadFileResponse{},
+			expectedData: &MMSpb.DownloadFileResponse{},
 		},
 		{
 			name:         "file download fails due to internal error",
@@ -48,7 +48,7 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			mockGrpcErr:  mocks.GrpcOpSuccess,
 			expectedCode: codes.OK,
 			expectedErr:  "",
-			expectedData: MMSpb.DownloadFileResponse{
+			expectedData: &MMSpb.DownloadFileResponse{
 				FileName: "test-file.txt",
 				MimeType: MMSpb.MimeType_MIME_TYPE_TEXT_PLAIN,
 				Content:  []byte("test content"),
@@ -62,28 +62,20 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			svc := &mocks.MockUserFilesService{}
 			c := NewClient(mmsClient, svc)
 
-			name, mimeType, content, err := c.DownloadFileGrpcHandler(context.Background(), "user-123", "file-id-123")
+			resp, err := c.DownloadFileGrpcHandler(context.Background(), "user-123", "file-id-123")
 
-			status, _ := status.FromError(err)
+			st, _ := status.FromError(err)
 
-			if tt.expectedCode != status.Code() {
-				t.Errorf("expected %v got %v", tt.expectedCode, status.Code())
+			if tt.expectedCode != st.Code() {
+				t.Errorf("expected %v got %v", tt.expectedCode, st.Code())
 			}
 
 			if tt.expectedCode == codes.OK {
-				if name != tt.expectedData.FileName {
-					t.Errorf("expected filename %v got %v", tt.expectedData.FileName, name)
-				}
-				if mimeType != tt.expectedData.MimeType {
-					t.Errorf("expected mime type %v got %v", tt.expectedData.MimeType, mimeType)
-				}
-				if string(content) != string(tt.expectedData.Content) {
-					t.Errorf("expected content %v got %v", tt.expectedData.Content, content)
-				}
+				mocks.CheckData(t, &resp, tt.expectedData)
 			}
 
-			if tt.expectedErr != status.Message() {
-				t.Errorf("expected error %v got %v", tt.expectedErr, status.Message())
+			if tt.expectedErr != st.Message() {
+				t.Errorf("expected error %v got %v", tt.expectedErr, st.Message())
 			}
 		})
 	}

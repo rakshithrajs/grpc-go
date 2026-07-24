@@ -1,8 +1,8 @@
 package models
 
 type UserFiles struct {
-	FileID   string `json:"fileId"`
-	UserID   string `json:"userId"`
+	FileID   string `json:"fileID"`
+	UserID   string `json:"userID"`
 	FileName string `json:"fileName"`
 }
 
@@ -15,9 +15,4 @@ type File struct {
 
 type RenameFileRequest struct {
 	NewName string `json:"newName" validate:"required,isValueEmpty,max=255"`
-}
-
-type UploadRequest struct {
-	UserID   string `validate:"required,isValueEmpty"`
-	FileName string `validate:"required,isValueEmpty"`
 }

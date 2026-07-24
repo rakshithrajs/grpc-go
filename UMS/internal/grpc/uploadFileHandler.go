@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	MMS "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
 	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 	"google.golang.org/grpc/codes"
@@ -17,7 +18,7 @@ func (c *Client) UploadFileGrpcHandler(ctx context.Context, userID, fileName str
 		return nil, status.Error(codes.InvalidArgument, utils.ErrFileIsRequired.Error())
 	}
 
-	ctx = metadata.AppendToOutgoingContext(ctx, "userID", userID)
+	ctx = metadata.AppendToOutgoingContext(ctx, config.UserIDMetadataKey, userID)
 
 	resp, err := c.mmsClient.UploadFile(ctx, &MMS.UploadFileRequest{
 		FileName: fileName,

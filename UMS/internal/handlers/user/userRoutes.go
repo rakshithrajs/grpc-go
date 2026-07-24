@@ -21,15 +21,15 @@ const (
 	FnGetUserProfile = "GetUserProfileHandler"
 )
 
-type UMSHandler struct {
+type UserHandler struct {
 	storage storage.UserService
 }
 
-func NewUMSHandler(store storage.UserService) *UMSHandler {
-	return &UMSHandler{storage: store}
+func NewUserHandler(store storage.UserService) *UserHandler {
+	return &UserHandler{storage: store}
 }
 
-func RegisterRoutes(rg *gin.RouterGroup, h *UMSHandler) {
+func RegisterRoutes(rg *gin.RouterGroup, h *UserHandler) {
 	rg.POST("/register", h.RegisterUserHandler)
 	rg.POST("/login", h.LoginUserHandler)
 	rg.Use(middleware.AuthMiddleware())

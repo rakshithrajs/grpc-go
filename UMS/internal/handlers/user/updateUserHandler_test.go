@@ -98,7 +98,7 @@ func TestUpdateUserHandler(t *testing.T) {
 			c, w := mocks.SetUpGinTest(http.MethodPatch, "/api/users/update", tt.body, tt.auth)
 
 			svc := &mocks.MockUserService{MockErr: tt.mockErr}
-			handler := NewUMSHandler(svc)
+			handler := NewUserHandler(svc)
 
 			handler.UpdateUserHandler(c)
 

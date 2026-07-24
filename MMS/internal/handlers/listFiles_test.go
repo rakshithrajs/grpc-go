@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	MMSpb "github.com/rakshithrajs/cloud/MMS/gen/MMS/v1"
+	"github.com/rakshithrajs/cloud/MMS/internal/config"
 	"github.com/rakshithrajs/cloud/MMS/internal/mocks"
 	"github.com/rakshithrajs/cloud/MMS/internal/storage"
 
@@ -15,7 +16,7 @@ import (
 
 func TestListFiles(t *testing.T) {
 	ctxWithUser := func() context.Context {
-		return metadata.NewIncomingContext(context.Background(), metadata.Pairs("userID", "user-123"))
+		return metadata.NewIncomingContext(context.Background(), metadata.Pairs(config.UserIDMetadataKey, "user-123"))
 	}
 
 	tests := []struct {

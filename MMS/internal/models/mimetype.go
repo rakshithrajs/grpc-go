@@ -43,4 +43,3 @@ func ParseMimeType(s string) MimeType {
 		return ""
 	}
 }
-

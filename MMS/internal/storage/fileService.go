@@ -19,6 +19,8 @@ const (
 	fnGetFileByID = "GetFileByID"
 	fnUpdateFile  = "UpdateFile"
 	fnDeleteFile  = "DeleteFile"
+
+	uniqueConstraintFilesUserName = "files_user_name_unique"
 )
 
 func logPrefix(fn string) string { return "[" + fn + "]: " }
@@ -44,7 +46,7 @@ func (f *FileStore) UploadFile(ctx context.Context, file *models.File) (*models.
 	var newFile models.File
 	if err := stmt.QueryRowContext(ctx, file.UserID, file.Name, file.Path, file.Size, file.MimeType).Scan(&newFile.ID, &newFile.UserID, &newFile.Name, &newFile.Path, &newFile.Size, &newFile.MimeType, &newFile.CreatedAtUTC, &newFile.UpdatedAtUTC); err != nil {
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == "files_user_name_unique" {
+		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == uniqueConstraintFilesUserName {
 			return nil, ErrFileNameAlreadyExists
 		}
 		slog.Error(logPrefix(fnUploadFile)+"query row", slog.Any("error", err))
@@ -140,7 +142,7 @@ func (f *FileStore) UpdateFile(ctx context.Context, id string, req models.Update
 			return nil, ErrFileNotFound
 		}
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == "files_user_name_unique" {
+		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == uniqueConstraintFilesUserName {
 			return nil, ErrFileNameAlreadyExists
 		}
 		slog.Error(logPrefix(fnUpdateFile)+"query row", slog.Any("error", err))

@@ -61,7 +61,7 @@ func TestGetUserProfileHandler(t *testing.T) {
 			c, w := mocks.SetUpGinTest(http.MethodGet, "/api/users/profile", "", tt.auth)
 
 			svc := &mocks.MockUserService{MockErr: tt.mockErr}
-			handler := NewUMSHandler(svc)
+			handler := NewUserHandler(svc)
 
 			handler.GetUserProfileHandler(c)
 

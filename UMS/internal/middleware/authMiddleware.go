@@ -30,7 +30,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		userID := claims.Subject
 
-		c.Set("userID", userID)
+		c.Set(config.UserIDMetadataKey, userID)
 		c.Next()
 	}
 }

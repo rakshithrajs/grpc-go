@@ -16,10 +16,11 @@ var (
 )
 
 const (
-	functionName = "Load"
-	logPrefix    = "[" + functionName + "]: "
-	NullString   = ""
-	ErrorKey     = "error"
+	functionName      = "Load"
+	logPrefix         = "[" + functionName + "]: "
+	NullString        = ""
+	ErrorKey          = "error"
+	UserIDMetadataKey = "userID"
 )
 
 type ServerConfig struct {

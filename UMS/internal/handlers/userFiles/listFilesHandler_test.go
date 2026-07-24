@@ -45,8 +45,8 @@ func TestListFilesHandler(t *testing.T) {
 			expectedCode: http.StatusOK,
 			expectedData: map[string]any{
 				"files": []any{
-					map[string]any{"fileId": "file-1", "fileName": "file1.txt", "userId": "test-user-id"},
-					map[string]any{"fileId": "file-2", "fileName": "file2.txt", "userId": "test-user-id"},
+					map[string]any{"fileID": "file-1", "fileName": "file1.txt", "userID": "test-user-id"},
+					map[string]any{"fileID": "file-2", "fileName": "file2.txt", "userID": "test-user-id"},
 				},
 			},
 		},

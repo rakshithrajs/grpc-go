@@ -28,7 +28,7 @@ func TestRenameFile(t *testing.T) {
 	)
 
 	ctxWithUser := func() context.Context {
-		return metadata.NewIncomingContext(context.Background(), metadata.Pairs("userID", userID))
+		return metadata.NewIncomingContext(context.Background(), metadata.Pairs(config.UserIDMetadataKey, userID))
 	}
 
 	userDir := filepath.Join(tempDir, userID)

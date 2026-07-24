@@ -39,9 +39,10 @@ func (d *DbConfig) DSN() string {
 }
 
 const (
-	functionName = "Load"
-	logPrefix    = "[" + functionName + "]: "
-	nullString   = ""
+	functionName      = "Load"
+	logPrefix         = "[" + functionName + "]: "
+	nullString        = ""
+	UserIDMetadataKey = "userID"
 )
 
 type Config struct {

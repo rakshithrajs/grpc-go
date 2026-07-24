@@ -13,7 +13,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (a *UMSHandler) RegisterUserHandler(ctx *gin.Context) {
+func (h *UserHandler) RegisterUserHandler(ctx *gin.Context) {
 	var payload models.RegisterUserRequest
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
 		utils.ReturnErrorResponse(ctx, utils.ErrInvalidJSON, FnRegisterUser, utils.ErrSomethingWentWrong, "")
@@ -35,7 +35,7 @@ func (a *UMSHandler) RegisterUserHandler(ctx *gin.Context) {
 	}
 
 	password := string(hashedPassword)
-	newUser, err := a.storage.CreateUser(ctx, &models.User{
+	newUser, err := h.storage.CreateUser(ctx, &models.User{
 		Name:     payload.Name,
 		Email:    payload.Email,
 		Password: password,

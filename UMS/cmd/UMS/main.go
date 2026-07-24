@@ -52,14 +52,14 @@ func main() {
 	router.Use(gin.Logger())
 
 	store := storage.NewUserStore(db)
-	UMSHandler := user.NewUMSHandler(store)
+	UserHandler := user.NewUserHandler(store)
 
 	userFilesStore := storage.NewUserFilesStore(db)
 	mmsClient := mmsGrpc.NewClient(MMSClient, userFilesStore)
 	UserFilesHandler := userfiles.NewUserFilesHandler(mmsClient, userFilesStore)
 
 	UMSRouterGroup := router.Group(apiPrefix + "/users")
-	user.RegisterRoutes(UMSRouterGroup, UMSHandler)
+	user.RegisterRoutes(UMSRouterGroup, UserHandler)
 
 	filesRouterGroup := router.Group(apiPrefix + "/files")
 	userfiles.RegisterRoutes(filesRouterGroup, UserFilesHandler)

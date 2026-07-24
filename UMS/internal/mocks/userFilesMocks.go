@@ -9,18 +9,17 @@ import (
 )
 
 type MockUserFilesService struct {
-	CreateUserFileError  DbOperationError
-	DeleteUserFileError  DbOperationError
-	ListUserFilesError   DbOperationError
-	UpdateUserFileError  DbOperationError
-	UpdateRollbackError  DbOperationError
-	GetUserFileNameError DbOperationError
-	ReturnEmptyList      bool
-	UserID               string
-	FileID               string
-	FileName             string
-	Files                []models.UserFiles
-	updateCallCount      int
+	CreateUserFileError DbOperationError
+	DeleteUserFileError DbOperationError
+	ListUserFilesError  DbOperationError
+	UpdateUserFileError DbOperationError
+	UpdateRollbackError DbOperationError
+	ReturnEmptyList     bool
+	UserID              string
+	FileID              string
+	FileName            string
+	Files               []models.UserFiles
+	updateCallCount     int
 }
 
 func (m *MockUserFilesService) CreateUserFile(ctx context.Context, userID, fileID, fileName string) error {
@@ -94,18 +93,4 @@ func (m *MockUserFilesService) UpdateUserFile(ctx context.Context, userID, fileI
 	}
 
 	return "old-file-name.txt", nil
-}
-
-func (m *MockUserFilesService) GetUserFileName(ctx context.Context, userID, fileID string) (string, error) {
-	m.UserID = userID
-	m.FileID = fileID
-
-	switch m.GetUserFileNameError {
-	case DbOpInternalError:
-		return "", storage.ErrFailedToListUserFiles
-	case DbOpNotFound:
-		return "", nil
-	}
-
-	return "test-file-name.txt", nil
 }

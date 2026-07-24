@@ -32,6 +32,15 @@ var Validate = validator.New()
 
 const nullString = ""
 
+const (
+	fieldEmail           = "Email"
+	fieldPassword        = "Password"
+	fieldConfirmPassword = "ConfirmPassword"
+	fieldPhone           = "Phone"
+	fieldName            = "Name"
+	fieldNewName         = "NewName"
+)
+
 var (
 	nameRegex  = regexp.MustCompile(`^[a-zA-Z]+$`)
 	phoneRegex = regexp.MustCompile(`^[0-9]{10}$`)
@@ -132,17 +141,16 @@ func validateName(fl validator.FieldLevel) bool {
 }
 
 var fieldNames = map[string]string{
-	"Email":           "email",
-	"Password":        "password",
-	"ConfirmPassword": "confirmPassword",
-	"Phone":           "phone",
-	"Name":            "name",
-	"Title":           "title",
-	"NewName":         "newName",
+	fieldEmail:           "email",
+	fieldPassword:        "password",
+	fieldConfirmPassword: "confirmPassword",
+	fieldPhone:           "phone",
+	fieldName:            "name",
+	fieldNewName:         "newName",
 }
 
 func fieldError(e validator.FieldError) error {
-	if e.StructField() == "Email" {
+	if e.StructField() == fieldEmail {
 		switch e.Tag() {
 		case "required", "isValueEmpty":
 			return ErrEmailRequired
@@ -152,7 +160,7 @@ func fieldError(e validator.FieldError) error {
 			return ErrInvalidEmail
 		}
 	}
-	if e.StructField() == "Password" {
+	if e.StructField() == fieldPassword {
 		switch e.Tag() {
 		case "required", "isValueEmpty":
 			return ErrPasswordRequired
@@ -160,7 +168,7 @@ func fieldError(e validator.FieldError) error {
 			return ErrInvalidPassword
 		}
 	}
-	if e.StructField() == "ConfirmPassword" {
+	if e.StructField() == fieldConfirmPassword {
 		switch e.Tag() {
 		case "required":
 			return ErrPasswordConfirmRequired
@@ -168,7 +176,7 @@ func fieldError(e validator.FieldError) error {
 			return ErrPasswordMismatch
 		}
 	}
-	if e.StructField() == "Phone" {
+	if e.StructField() == fieldPhone {
 		switch e.Tag() {
 		case "required", "isValueEmpty":
 			return ErrPhoneRequired
@@ -176,7 +184,7 @@ func fieldError(e validator.FieldError) error {
 			return ErrInvalidPhoneNumber
 		}
 	}
-	if e.StructField() == "Name" {
+	if e.StructField() == fieldName {
 		switch e.Tag() {
 		case "required", "isValueEmpty":
 			return ErrNameRequired
@@ -186,7 +194,7 @@ func fieldError(e validator.FieldError) error {
 			return ErrInvalidName
 		}
 	}
-	if e.StructField() == "NewName" {
+	if e.StructField() == fieldNewName {
 		switch e.Tag() {
 		case "required", "isValueEmpty":
 			return ErrNewNameRequired

@@ -32,6 +32,18 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			expectedErr:  "",
 		},
 		{
+			name:         "file deleted failed due to missing metadata",
+			GrpcErr:      mocks.GrpcOpMissingMetadata,
+			expectedCode: codes.Unauthenticated,
+			expectedErr:  mocks.ErrMissingMetadata.Error(),
+		},
+		{
+			name:         "file deleted failed due to missing user id",
+			GrpcErr:      mocks.GrpcOpMissingUserID,
+			expectedCode: codes.Unauthenticated,
+			expectedErr:  mocks.ErrMissingUserID.Error(),
+		},
+		{
 			name:         "file deletion failed due to grpc internal error",
 			GrpcErr:      mocks.GrpcOpInternalError,
 			expectedCode: codes.Internal,

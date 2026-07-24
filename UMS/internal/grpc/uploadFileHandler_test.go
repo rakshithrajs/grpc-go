@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"reflect"
 	"testing"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
@@ -130,9 +129,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 				return
 			}
 
-			if !reflect.DeepEqual(file, tt.expectedFile) {
-				t.Errorf("expected file %+v got %+v", tt.expectedFile, file)
-			}
+			mocks.CheckData(t, file, tt.expectedFile)
 		})
 	}
 }

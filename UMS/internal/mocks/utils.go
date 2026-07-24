@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 )
 
 type ErrorResponse struct {
@@ -77,7 +78,7 @@ func SetUpGinTest(method, url string, body string, authWorks bool) (*gin.Context
 	c.Request = req
 
 	if authWorks {
-		c.Set("userID", "test-user-id")
+		c.Set(config.UserIDMetadataKey, "test-user-id")
 	}
 
 	return c, w
@@ -98,34 +99,42 @@ func SetUpGinTestMultipart(fileContent string, authWorks bool) (*gin.Context, *h
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	c.Request = req
 	if authWorks {
-		c.Set("userID", "test-user-id")
+		c.Set(config.UserIDMetadataKey, "test-user-id")
 	}
 	return c, w
 }
 
-func CheckData(t *testing.T, w *httptest.ResponseRecorder, expected any) {
+func CheckData(t *testing.T, actual any, expected any) {
 	t.Helper()
 
-	body := w.Body.Bytes()
-
-	switch want := expected.(type) {
-	case map[string]any:
-		var got map[string]any
+	var got any
+	switch v := actual.(type) {
+	case *httptest.ResponseRecorder:
+		body := v.Body.Bytes()
 		if err := json.Unmarshal(body, &got); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
-		}
-		if !reflect.DeepEqual(want, got) {
-			t.Errorf("expected %v, got %v", want, got)
-		}
-	case map[string]string:
-		var got map[string]string
-		if err := json.Unmarshal(body, &got); err != nil {
-			t.Fatalf("failed to decode response: %v", err)
-		}
-		if !reflect.DeepEqual(want, got) {
-			t.Errorf("expected %v, got %v", want, got)
 		}
 	default:
-		t.Fatalf("unsupported expected data type %T", expected)
+		actualJSON, err := json.Marshal(actual)
+		if err != nil {
+			t.Fatalf("failed to marshal actual data: %v", err)
+		}
+		if err := json.Unmarshal(actualJSON, &got); err != nil {
+			t.Fatalf("failed to unmarshal actual data: %v", err)
+		}
+	}
+
+	expectedJSON, err := json.Marshal(expected)
+	if err != nil {
+		t.Fatalf("failed to marshal expected data: %v", err)
+	}
+
+	var want any
+	if err := json.Unmarshal(expectedJSON, &want); err != nil {
+		t.Fatalf("failed to unmarshal expected data: %v", err)
+	}
+
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("expected %v, got %v", want, got)
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	MMSpb "github.com/rakshithrajs/cloud/MMS/gen/MMS/v1"
+	"github.com/rakshithrajs/cloud/MMS/internal/config"
 	"github.com/rakshithrajs/cloud/MMS/internal/storage"
 
 	"google.golang.org/grpc/codes"
@@ -36,7 +37,7 @@ func UserIDFromContext(ctx context.Context) (string, error) {
 		return nullString, status.Error(codes.Unauthenticated, ErrMissingMetadata.Error())
 	}
 
-	userIDs := md.Get("userID")
+	userIDs := md.Get(config.UserIDMetadataKey)
 	if len(userIDs) == 0 || userIDs[0] == nullString {
 		return nullString, status.Error(codes.Unauthenticated, ErrMissingUserID.Error())
 	}

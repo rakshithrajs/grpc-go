@@ -19,6 +19,9 @@ const (
 	fnGetUserByID    = "GetUserByID"
 	fnGetUserByEmail = "GetUserByEmail"
 	fnUpdateUser     = "UpdateUser"
+
+	uniqueConstraintUsersEmailKey = "users_email_key"
+	uniqueConstraintUsersPhoneKey = "users_phone_key"
 )
 
 func logPrefix(fn string) string { return "[" + fn + "]: " }
@@ -46,9 +49,9 @@ func (u *userStore) CreateUser(ctx context.Context, user *models.User) (*models.
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation {
 			switch pqErr.Constraint {
-			case "users_email_key":
+			case uniqueConstraintUsersEmailKey:
 				return nil, utils.ErrUserEmailAlreadyExists
-			case "users_phone_key":
+			case uniqueConstraintUsersPhoneKey:
 				return nil, utils.ErrPhoneNumberAlreadyExists
 			default:
 				slog.Error(logPrefix(fnCreateUser)+"unique constraint violation", slog.Any("error", err))
@@ -135,9 +138,9 @@ func (u *userStore) UpdateUser(ctx context.Context, id string, req models.Update
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation {
 			switch pqErr.Constraint {
-			case "users_email_key":
+			case uniqueConstraintUsersEmailKey:
 				return utils.ErrUserEmailAlreadyExists
-			case "users_phone_key":
+			case uniqueConstraintUsersPhoneKey:
 				return utils.ErrPhoneNumberAlreadyExists
 			default:
 				slog.Error(logPrefix(fnUpdateUser)+"unique constraint violation", slog.Any("error", err))

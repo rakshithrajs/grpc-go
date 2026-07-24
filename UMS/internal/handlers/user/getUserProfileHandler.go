@@ -11,7 +11,7 @@ import (
 	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 )
 
-func (h *UMSHandler) GetUserProfileHandler(c *gin.Context) {
+func (h *UserHandler) GetUserProfileHandler(c *gin.Context) {
 	userID, err := handlers.GetUserIDFromGin(c)
 	if err != nil {
 		utils.ReturnErrorResponse(c, err, FnGetUserProfile, storage.ErrFailedToGetUserByID, "")

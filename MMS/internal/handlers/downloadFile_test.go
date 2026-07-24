@@ -42,18 +42,18 @@ func TestDownloadFile(t *testing.T) {
 	}
 
 	ctxWithUser := func() context.Context {
-		return metadata.NewIncomingContext(context.Background(), metadata.Pairs("userID", userID))
+		return metadata.NewIncomingContext(context.Background(), metadata.Pairs(config.UserIDMetadataKey, userID))
 	}
 
 	tests := []struct {
-		name        string
-		setupCtx    func() context.Context
-		fileID      string
-		mockDbErr   mocks.DbOperationError
-		beforeCall  func()
+		name         string
+		setupCtx     func() context.Context
+		fileID       string
+		mockDbErr    mocks.DbOperationError
+		beforeCall   func()
 		expectedCode codes.Code
-		expectedErr string
-		expectedData MMSpb.DownloadFileResponse
+		expectedErr  string
+		expectedData *MMSpb.DownloadFileResponse
 	}{
 		{
 			name: "download fails due to missing metadata",
@@ -80,7 +80,7 @@ func TestDownloadFile(t *testing.T) {
 			mockDbErr:    mocks.DbOpNotFound,
 			expectedCode: codes.OK,
 			expectedErr:  "",
-			expectedData: MMSpb.DownloadFileResponse{},
+			expectedData: &MMSpb.DownloadFileResponse{},
 		},
 		{
 			name:         "download fails due to db internal error",
@@ -91,12 +91,12 @@ func TestDownloadFile(t *testing.T) {
 			expectedErr:  ErrFailedToDownloadFile.Error(),
 		},
 		{
-			name:        "download fails when file cannot be opened",
-			setupCtx:    ctxWithUser,
-			fileID:      fileID,
-			beforeCall: func() { _ = os.Remove(filePath) },
+			name:         "download fails when file cannot be opened",
+			setupCtx:     ctxWithUser,
+			fileID:       fileID,
+			beforeCall:   func() { _ = os.Remove(filePath) },
 			expectedCode: codes.Internal,
-			expectedErr: ErrFailedToDownloadFile.Error(),
+			expectedErr:  ErrFailedToDownloadFile.Error(),
 		},
 		{
 			name:     "download fails when file cannot be read",
@@ -117,7 +117,7 @@ func TestDownloadFile(t *testing.T) {
 			fileID:       fileID,
 			expectedCode: codes.OK,
 			expectedErr:  "",
-			expectedData: MMSpb.DownloadFileResponse{
+			expectedData: &MMSpb.DownloadFileResponse{
 				FileName: fileName,
 				MimeType: MMSpb.MimeType_MIME_TYPE_TEXT_PLAIN,
 				Content:  []byte("test content"),

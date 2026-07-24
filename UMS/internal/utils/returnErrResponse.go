@@ -37,7 +37,6 @@ var (
 	ErrFailedToDeleteUserFile    = errors.New("failed to delete user file mapping")
 	ErrFailedToUpdateUserFile    = errors.New("failed to update user file mapping")
 	ErrFailedToListUserFiles     = errors.New("failed to list user files")
-	ErrFailedToGetUserFileName   = errors.New("failed to get user file name")
 	ErrFailedToCreateUser        = errors.New("failed to create user")
 	ErrFailedToGetUserByID       = errors.New("failed to get user by ID")
 	ErrFailedToGetUserByEmail    = errors.New("failed to get user by email")
@@ -47,30 +46,30 @@ var (
 
 func ReturnErrorResponse(c *gin.Context, err any, source string, defaultMsg error, data any) {
 	if e, ok := err.(error); ok {
-		switch e {
-		case ErrMissingAuthHeader, ErrMissingBearerToken, ErrInvalidToken, ErrTokenExpired, ErrUnauthorized:
+		switch {
+		case errors.Is(e, ErrMissingAuthHeader), errors.Is(e, ErrMissingBearerToken), errors.Is(e, ErrInvalidToken), errors.Is(e, ErrTokenExpired), errors.Is(e, ErrUnauthorized):
 			c.JSON(http.StatusUnauthorized, gin.H{config.ErrorKey: e.Error()})
 			return
-		case ErrInvalidJSON, ErrNoFieldsToUpdate, ErrPasswordSameAsOldPassword, ErrFileIDRequired, ErrFileIsRequired:
+		case errors.Is(e, ErrInvalidJSON), errors.Is(e, ErrNoFieldsToUpdate), errors.Is(e, ErrPasswordSameAsOldPassword), errors.Is(e, ErrFileIDRequired), errors.Is(e, ErrFileIsRequired):
 			c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: e.Error()})
 			return
-		case ErrInvalidCredentials, ErrEmailNotFound:
+		case errors.Is(e, ErrInvalidCredentials), errors.Is(e, ErrEmailNotFound):
 			c.JSON(http.StatusUnauthorized, gin.H{config.ErrorKey: ErrInvalidCredentials.Error()})
 			return
-		case ErrUserEmailAlreadyExists, ErrPhoneNumberAlreadyExists, ErrUserFileAlreadyExists:
+		case errors.Is(e, ErrUserEmailAlreadyExists), errors.Is(e, ErrPhoneNumberAlreadyExists), errors.Is(e, ErrUserFileAlreadyExists):
 			c.JSON(http.StatusConflict, gin.H{config.ErrorKey: e.Error()})
 			return
-		case ErrUserNotFound:
+		case errors.Is(e, ErrUserNotFound):
 			c.JSON(http.StatusOK, gin.H{"user": data})
 			return
-		case ErrFailedToRollback:
+		case errors.Is(e, ErrFailedToRollback):
 			c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: ErrFailedToRollback.Error()})
 			return
-		case ErrFailedToCreateUser, ErrFailedToGetUserByID, ErrFailedToGetUserByEmail,
-			ErrFailedToUpdateUser, ErrFailedToCreateUserFile, ErrFailedToDeleteUserFile,
-			ErrFailedToUpdateUserFile, ErrFailedToListUserFiles, ErrFailedToGetUserFileName,
-			ErrFailedToUploadFile, ErrFailedToDownloadFile, ErrFailedToRenameFile,
-			ErrFailedToDeleteFile, ErrFailedToListFiles, ErrFailedToRegisterUser:
+		case errors.Is(e, ErrFailedToCreateUser), errors.Is(e, ErrFailedToGetUserByID), errors.Is(e, ErrFailedToGetUserByEmail),
+			errors.Is(e, ErrFailedToUpdateUser), errors.Is(e, ErrFailedToCreateUserFile), errors.Is(e, ErrFailedToDeleteUserFile),
+			errors.Is(e, ErrFailedToUpdateUserFile), errors.Is(e, ErrFailedToListUserFiles),
+			errors.Is(e, ErrFailedToUploadFile), errors.Is(e, ErrFailedToDownloadFile), errors.Is(e, ErrFailedToRenameFile),
+			errors.Is(e, ErrFailedToDeleteFile), errors.Is(e, ErrFailedToListFiles), errors.Is(e, ErrFailedToRegisterUser):
 			c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: e.Error()})
 			return
 		default:

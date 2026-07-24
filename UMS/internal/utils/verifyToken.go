@@ -56,21 +56,21 @@ func VerifyToken(tokenString string) (*Claims, error) {
 		return nil, ErrInvalidToken
 	}
 
-	if iss, ok := claims["iss"].(string); !ok || iss != "cloud-app" {
+	if iss, ok := claims[config.JWTClaimIssuer].(string); !ok || iss != config.JWTIssuer {
 		return nil, ErrInvalidToken
 	}
 
-	userID, ok := claims["sub"].(string)
+	userID, ok := claims[config.JWTClaimSubject].(string)
 	if !ok || userID == config.NullString {
 		return nil, ErrInvalidToken
 	}
 
-	if iat, ok := claims["iat"].(float64); !ok || int64(iat) <= 0 || time.Unix(int64(iat), 0).After(time.Now()) {
+	if iat, ok := claims[config.JWTClaimIssuedAt].(float64); !ok || int64(iat) <= 0 || time.Unix(int64(iat), 0).After(time.Now()) {
 		return nil, ErrInvalidToken
 	}
 	return &Claims{
-		Issuer:   claims["iss"].(string),
-		Subject:  claims["sub"].(string),
-		IssuedAt: int64(claims["iat"].(float64)),
+		Issuer:   claims[config.JWTClaimIssuer].(string),
+		Subject:  claims[config.JWTClaimSubject].(string),
+		IssuedAt: int64(claims[config.JWTClaimIssuedAt].(float64)),
 	}, nil
 }

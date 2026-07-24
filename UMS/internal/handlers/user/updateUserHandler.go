@@ -17,7 +17,7 @@ var (
 	userUpdatedMessage = "User profile updated successfully"
 )
 
-func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
+func (h *UserHandler) UpdateUserHandler(c *gin.Context) {
 	id, err := handlers.GetUserIDFromGin(c)
 	if err != nil {
 		utils.ReturnErrorResponse(c, err, FnUpdateUserProfile, utils.ErrSomethingWentWrong, "")
@@ -43,7 +43,7 @@ func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
 	}
 
 	if req.Password != config.NullString {
-		user, err := a.storage.GetUserByID(ctx, id)
+		user, err := h.storage.GetUserByID(ctx, id)
 		if err != nil {
 			utils.ReturnErrorResponse(c, err, FnUpdateUserProfile, utils.ErrSomethingWentWrong, user)
 			return
@@ -64,7 +64,7 @@ func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
 		req.Password = hashed
 	}
 
-	if err := a.storage.UpdateUser(ctx, id, req); err != nil {
+	if err := h.storage.UpdateUser(ctx, id, req); err != nil {
 		utils.ReturnErrorResponse(c, err, FnUpdateUserProfile, utils.ErrSomethingWentWrong, "")
 		return
 	}
