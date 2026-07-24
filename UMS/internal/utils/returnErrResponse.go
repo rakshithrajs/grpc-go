@@ -42,6 +42,7 @@ var (
 	ErrFailedToGetUserByID       = errors.New("failed to get user by ID")
 	ErrFailedToGetUserByEmail    = errors.New("failed to get user by email")
 	ErrFailedToUpdateUser        = errors.New("failed to update user")
+	ErrFailedToRollback          = errors.New("failed to rollback changes")
 )
 
 func ReturnErrorResponse(c *gin.Context, err any, source string, defaultMsg error, data any) {
@@ -61,6 +62,9 @@ func ReturnErrorResponse(c *gin.Context, err any, source string, defaultMsg erro
 			return
 		case ErrUserNotFound:
 			c.JSON(http.StatusOK, gin.H{"user": data})
+			return
+		case ErrFailedToRollback:
+			c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: ErrFailedToRollback.Error()})
 			return
 		case ErrFailedToCreateUser, ErrFailedToGetUserByID, ErrFailedToGetUserByEmail,
 			ErrFailedToUpdateUser, ErrFailedToCreateUserFile, ErrFailedToDeleteUserFile,

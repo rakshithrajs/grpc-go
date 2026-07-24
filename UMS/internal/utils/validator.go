@@ -25,6 +25,7 @@ var (
 	ErrNameTooLong             = errors.New("name must be at most 100 characters")
 	ErrPasswordMismatch        = errors.New("passwords do not match")
 	ErrPasswordConfirmRequired = errors.New("password confirmation is required")
+	ErrNewNameRequired         = errors.New("new name is required")
 )
 
 var Validate = validator.New()
@@ -137,6 +138,7 @@ var fieldNames = map[string]string{
 	"Phone":           "phone",
 	"Name":            "name",
 	"Title":           "title",
+	"NewName":         "newName",
 }
 
 func fieldError(e validator.FieldError) error {
@@ -184,11 +186,22 @@ func fieldError(e validator.FieldError) error {
 			return ErrInvalidName
 		}
 	}
+	if e.StructField() == "NewName" {
+		switch e.Tag() {
+		case "required", "isValueEmpty":
+			return ErrNewNameRequired
+		default:
+			return e
+		}
+	}
 	return e
 }
 
 func FieldErrors(err error) map[string]string {
 	var verrs validator.ValidationErrors
+	if err == nil {
+		return map[string]string{"": "validation error"}
+	}
 	if !errors.As(err, &verrs) || len(verrs) == 0 {
 		return map[string]string{"": err.Error()}
 	}

@@ -30,7 +30,7 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 
 	cleanedName := strings.TrimSpace(req.GetFileName())
 	payload := models.UploadFileRequest{
-		Name:     &cleanedName,
+		Name:     cleanedName,
 		Contents: req.GetContent(),
 	}
 
@@ -72,11 +72,11 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 	}
 
 	file := &models.File{
-		UserID:   &userID,
-		Name:     &cleanedName,
-		Path:     &filePath,
-		Size:     &fileSize,
-		MimeType: &mimeType,
+		UserID:   userID,
+		Name:     cleanedName,
+		Path:     filePath,
+		Size:     fileSize,
+		MimeType: mimeType,
 	}
 
 	savedFile, err := f.fileService.UploadFile(ctx, file)
@@ -91,10 +91,10 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 
 	return &MMSpb.UploadFileResponse{
 		File: &MMSpb.File{
-			ID:       *savedFile.ID,
-			FileName: *savedFile.Name,
-			FileSize: *savedFile.Size,
-			MimeType: toProtoMimeType(*savedFile.MimeType),
+			ID:       savedFile.ID,
+			FileName: savedFile.Name,
+			FileSize: savedFile.Size,
+			MimeType: toProtoMimeType(savedFile.MimeType),
 		},
 	}, nil
 }

@@ -26,14 +26,10 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 		return nil, err
 	}
 
-	if req.GetFileID() == nullString {
-		return nil, status.Error(codes.InvalidArgument, ErrFileIDRequired.Error())
-	}
-
 	newName := strings.TrimSpace(req.GetNewName())
 
 	updateBody := models.UpdateFileRequest{
-		Name: &newName,
+		Name: newName,
 	}
 
 	file, err := f.fileService.UpdateFile(ctx, req.GetFileID(), updateBody, userID)
@@ -48,14 +44,14 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 		return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 	}
 
-	if *file.Name == newName {
+	if file.Name == newName {
 		return &MMSpb.EmptyMessage{}, nil
 	}
 
-	oldPath := *file.Path
+	oldPath := file.Path
 	userDir := filepath.Dir(oldPath)
 	newPath := filepath.Join(userDir, newName)
-	updateBody.Path = &newPath
+	updateBody.Path = newPath
 
 	if _, err := f.fileService.UpdateFile(ctx, req.GetFileID(), updateBody, userID); err != nil {
 		slog.Error(logPrefix(fnRenameFile)+"failed to update file path", slog.Any("error", err))

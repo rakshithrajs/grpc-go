@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 
-	"github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
+	MMS "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"google.golang.org/grpc/metadata"
 )
 

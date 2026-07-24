@@ -124,3 +124,7 @@ func GetConfig() (*Config, error) {
 	}
 	return cfg, nil
 }
+
+func SetConfig(c *Config) {
+	cfg = c
+}

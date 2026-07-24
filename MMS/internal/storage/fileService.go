@@ -42,7 +42,7 @@ func (f *FileStore) UploadFile(ctx context.Context, file *models.File) (*models.
 	defer stmt.Close()
 
 	var newFile models.File
-	if err := stmt.QueryRowContext(ctx, *file.UserID, *file.Name, *file.Path, *file.Size, *file.MimeType).Scan(&newFile.ID, &newFile.UserID, &newFile.Name, &newFile.Path, &newFile.Size, &newFile.MimeType, &newFile.CreatedAtUTC, &newFile.UpdatedAtUTC); err != nil {
+	if err := stmt.QueryRowContext(ctx, file.UserID, file.Name, file.Path, file.Size, file.MimeType).Scan(&newFile.ID, &newFile.UserID, &newFile.Name, &newFile.Path, &newFile.Size, &newFile.MimeType, &newFile.CreatedAtUTC, &newFile.UpdatedAtUTC); err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == "files_user_name_unique" {
 			return nil, ErrFileNameAlreadyExists
@@ -114,11 +114,11 @@ func (f *FileStore) GetFileByID(ctx context.Context, id string, userID string) (
 
 func (f *FileStore) UpdateFile(ctx context.Context, id string, req models.UpdateFileRequest, userID string) (*models.File, error) {
 	fields := make([]utils.UpdateField, 0, 2)
-	if req.Name != nil {
-		fields = append(fields, utils.UpdateField{Column: "name", Value: *req.Name})
+	if req.Name != "" {
+		fields = append(fields, utils.UpdateField{Column: "name", Value: req.Name})
 	}
-	if req.Path != nil {
-		fields = append(fields, utils.UpdateField{Column: "path", Value: *req.Path})
+	if req.Path != "" {
+		fields = append(fields, utils.UpdateField{Column: "path", Value: req.Path})
 	}
 
 	query, args := utils.BuildUpdateSQL("files", fields, []string{"ID", "userID"})

@@ -19,10 +19,6 @@ func (f *FileHandler) DeleteFile(ctx context.Context, req *MMSpb.DeleteFileReque
 		return nil, err
 	}
 
-	if req.GetFileID() == nullString {
-		return nil, status.Error(codes.InvalidArgument, ErrFileIDRequired.Error())
-	}
-
 	file, err := f.fileService.DeleteFile(ctx, req.GetFileID(), userID)
 	if err != nil {
 		if errors.Is(err, storage.ErrFileNotFound) {
@@ -32,9 +28,9 @@ func (f *FileHandler) DeleteFile(ctx context.Context, req *MMSpb.DeleteFileReque
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	if err := os.Remove(*file.Path); err != nil {
+	if err := os.Remove(file.Path); err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			slog.Error(logPrefix(fnDeleteFile)+"failed to remove file from disk", slog.Any("error", err), slog.String("path", *file.Path))
+			slog.Error(logPrefix(fnDeleteFile)+"failed to remove file from disk", slog.Any("error", err), slog.String("path", file.Path))
 		}
 	}
 

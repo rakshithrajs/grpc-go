@@ -31,6 +31,11 @@ func (h *UserFilesHandler) RenameFileHandler(c *gin.Context) {
 
 	var payload models.RenameFileRequest
 	if err := c.ShouldBindJSON(&payload); err != nil {
+		utils.ReturnErrorResponse(c, utils.ErrInvalidJSON, fnRenameFile, utils.ErrSomethingWentWrong, "")
+		return
+	}
+
+	if err := utils.Validate.Struct(&payload); err != nil {
 		utils.ReturnErrorResponse(c, utils.FieldErrors(err), fnRenameFile, utils.ErrSomethingWentWrong, "")
 		return
 	}

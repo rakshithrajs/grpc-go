@@ -3,15 +3,17 @@ package grpc
 import (
 	"context"
 
-	"github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
+	MMS "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 func (c *Client) RenameFileGrpcHandler(ctx context.Context, userID, fileID, newName string) error {
 	oldName, err := c.storage.UpdateUserFile(ctx, userID, fileID, newName)
 	if err != nil {
-		return utils.ErrSomethingWentWrong
+		return status.Error(codes.Internal, utils.ErrFailedToUpdateUserFile.Error())
 	}
 	if oldName == "" {
 		return nil
@@ -24,7 +26,7 @@ func (c *Client) RenameFileGrpcHandler(ctx context.Context, userID, fileID, newN
 		NewName: newName,
 	}); err != nil {
 		if _, rbErr := c.storage.UpdateUserFile(ctx, userID, fileID, oldName); rbErr != nil {
-			return rbErr
+			return status.Error(codes.Internal, utils.ErrFailedToRollback.Error())
 		}
 		return err
 	}

@@ -24,10 +24,6 @@ func (f *FileHandler) DownloadFile(ctx context.Context, req *MMSpb.DownloadFileR
 		return nil, err
 	}
 
-	if req.GetFileID() == nullString {
-		return nil, status.Error(codes.InvalidArgument, ErrFileIDRequired.Error())
-	}
-
 	file, err := f.fileService.GetFileByID(ctx, req.GetFileID(), userID)
 	if err != nil {
 		if errors.Is(err, storage.ErrFileNotFound) {
@@ -37,22 +33,22 @@ func (f *FileHandler) DownloadFile(ctx context.Context, req *MMSpb.DownloadFileR
 		return nil, status.Error(codes.Internal, ErrFailedToDownloadFile.Error())
 	}
 
-	fi, err := os.Open(*file.Path)
+	fi, err := os.Open(file.Path)
 	if err != nil {
-		slog.Error(logPrefix(fnDownloadFile)+"failed to open file", slog.Any("error", err), slog.String("path", *file.Path))
+		slog.Error(logPrefix(fnDownloadFile)+"failed to open file", slog.Any("error", err), slog.String("path", file.Path))
 		return nil, status.Error(codes.Internal, ErrFailedToDownloadFile.Error())
 	}
 	defer fi.Close()
 
-	contents := make([]byte, *file.Size)
+	contents := make([]byte, file.Size)
 	if _, err := fi.Read(contents); err != nil {
-		slog.Error(logPrefix(fnDownloadFile)+"failed to read file", slog.Any("error", err), slog.String("path", *file.Path))
+		slog.Error(logPrefix(fnDownloadFile)+"failed to read file", slog.Any("error", err), slog.String("path", file.Path))
 		return nil, status.Error(codes.Internal, ErrFailedToDownloadFile.Error())
 	}
 
 	return &MMSpb.DownloadFileResponse{
-		FileName: *file.Name,
-		MimeType: toProtoMimeType(*file.MimeType),
+		FileName: file.Name,
+		MimeType: toProtoMimeType(file.MimeType),
 		Content:  contents,
 	}, nil
 }

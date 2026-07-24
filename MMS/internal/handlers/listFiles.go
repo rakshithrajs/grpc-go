@@ -25,10 +25,10 @@ func (f *FileHandler) ListFiles(ctx context.Context, req *MMSpb.EmptyMessage) (*
 	respFiles := make([]*MMSpb.File, 0, len(files))
 	for _, file := range files {
 		respFile := &MMSpb.File{
-			ID:       *file.ID,
-			FileName: *file.FileName,
-			FileSize: *file.FileSize,
-			MimeType: toProtoMimeType(*file.MimeType),
+			ID:       file.ID,
+			FileName: file.FileName,
+			FileSize: file.FileSize,
+			MimeType: toProtoMimeType(file.MimeType),
 		}
 		respFiles = append(respFiles, respFile)
 	}
