@@ -32,20 +32,3 @@ type LoginUserRequest struct {
 	Email    string `json:"email" validate:"required,email,min=5,max=254,isValidEmail"`
 	Password string `json:"password" validate:"required,min=8,max=64,isValidPassword"`
 }
-
-type UserFiles struct {
-	FileID   string `json:"fileId"`
-	UserID   string `json:"userId"`
-	FileName string `json:"fileName"`
-}
-
-type File struct {
-	ID       string `json:"id"`
-	FileName string `json:"fileName"`
-	FileSize int64  `json:"fileSize"`
-	MimeType string `json:"mimeType"`
-}
-
-type RenameFileRequest struct {
-	NewName string `json:"newName" validate:"required,isValueEmpty,max=255"`
-}

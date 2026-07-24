@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
+	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
 	"github.com/rakshithrajs/cloud/UMS/internal/middleware"
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"
 )
@@ -25,12 +25,12 @@ const (
 )
 
 type UserFilesHandler struct {
-	storage   storage.UserFilesService
-	MMSClient MMSpb.FilesClient
+	client  *grpc.Client
+	storage storage.UserFilesService
 }
 
-func NewUserFilesHandler(storage storage.UserFilesService, MMSClient MMSpb.FilesClient) *UserFilesHandler {
-	return &UserFilesHandler{storage: storage, MMSClient: MMSClient}
+func NewUserFilesHandler(client *grpc.Client, storage storage.UserFilesService) *UserFilesHandler {
+	return &UserFilesHandler{client: client, storage: storage}
 }
 
 func RegisterRoutes(rg *gin.RouterGroup, h *UserFilesHandler) {

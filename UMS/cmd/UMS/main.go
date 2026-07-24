@@ -7,6 +7,7 @@ import (
 
 	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
+	mmsGrpc "github.com/rakshithrajs/cloud/UMS/internal/grpc"
 	user "github.com/rakshithrajs/cloud/UMS/internal/handlers/user"
 	userfiles "github.com/rakshithrajs/cloud/UMS/internal/handlers/userFiles"
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"
@@ -54,7 +55,8 @@ func main() {
 	UMSHandler := user.NewUMSHandler(store)
 
 	userFilesStore := storage.NewUserFilesStore(db)
-	UserFilesHandler := userfiles.NewUserFilesHandler(userFilesStore, MMSClient)
+	mmsClient := mmsGrpc.NewClient(MMSClient, userFilesStore)
+	UserFilesHandler := userfiles.NewUserFilesHandler(mmsClient, userFilesStore)
 
 	UMSRouterGroup := router.Group(apiPrefix + "/users")
 	user.RegisterRoutes(UMSRouterGroup, UMSHandler)

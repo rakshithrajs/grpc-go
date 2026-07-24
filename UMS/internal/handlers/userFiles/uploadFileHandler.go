@@ -6,12 +6,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/handlers"
-	"github.com/rakshithrajs/cloud/UMS/internal/models"
 	"github.com/rakshithrajs/cloud/UMS/internal/utils"
-	"google.golang.org/grpc/metadata"
 )
 
 func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
@@ -44,39 +41,12 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 		return
 	}
 
-	ctx = metadata.AppendToOutgoingContext(ctx, "userID", userID)
-	resp, err := h.MMSClient.UploadFile(ctx, &MMSpb.UploadFileRequest{
-		FileName: fileHeader.Filename,
-		Content:  content,
-	})
+	file, err := h.client.UploadFileGrpcHandler(ctx, userID, fileHeader.Filename, content)
 	if err != nil {
 		status, msg := handlers.MapGRPCError(err, utils.ErrFailedToUploadFile.Error())
-		slog.Error(handlers.LogPrefix(fnUploadFile)+"failed to upload file to MMS", slog.Any(config.ErrorKey, err))
+		slog.Error(handlers.LogPrefix(fnUploadFile)+"failed to upload file", slog.Any(config.ErrorKey, err))
 		c.JSON(status, gin.H{config.ErrorKey: msg})
 		return
-	}
-
-	if resp.GetFile() == nil || resp.GetFile().GetID() == "" {
-		slog.Error(handlers.LogPrefix(fnUploadFile) + "MMS returned empty file response")
-		utils.ReturnErrorResponse(c, utils.ErrFailedToUploadFile, fnUploadFile, utils.ErrSomethingWentWrong, "")
-		return
-	}
-
-	fileID := resp.GetFile().GetID()
-	if err := h.storage.CreateUserFile(ctx, userID, fileID, resp.File.FileName); err != nil {
-		slog.Error(handlers.LogPrefix(fnUploadFile)+"failed to save user file mapping", slog.Any(config.ErrorKey, err))
-		if _, delErr := h.MMSClient.DeleteFile(ctx, &MMSpb.DeleteFileRequest{FileID: fileID}); delErr != nil {
-			slog.Error(handlers.LogPrefix(fnUploadFile)+"failed to compensate MMS upload", slog.Any(config.ErrorKey, delErr))
-		}
-		utils.ReturnErrorResponse(c, err, fnUploadFile, utils.ErrFailedToUploadFile, "")
-		return
-	}
-
-	file := models.File{
-		ID:       resp.GetFile().GetID(),
-		FileName: resp.GetFile().GetFileName(),
-		FileSize: resp.GetFile().GetFileSize(),
-		MimeType: utils.MimeTypeToString(resp.GetFile().GetMimeType()),
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"file": file})

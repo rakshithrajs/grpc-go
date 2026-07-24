@@ -116,7 +116,7 @@ func (u *userFilesStore) ListUserFiles(ctx context.Context, userID string) ([]mo
 }
 
 func (u *userFilesStore) UpdateUserFile(ctx context.Context, userID, fileID, fileName string) error {
-	query := `UPDATE "userFiles" SET "fileName" = $1 WHERE "userID" = $2 AND "fileID" = $3`
+	query := `UPDATE "userFiles" SET "fileName" = $1, "updatedAtUTC" = NOW() WHERE "userID" = $2 AND "fileID" = $3`
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {

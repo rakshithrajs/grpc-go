@@ -79,7 +79,7 @@ func ReturnErrorResponse(c *gin.Context, err any, source string, defaultMsg erro
 	returnMultipleErrorResponse(c, errs, source, defaultMsg)
 }
 
-func returnMultipleErrorResponse(c *gin.Context, errs map[string]string, source string, defaultMsg error) {
+func returnMultipleErrorResponse(c *gin.Context, errs map[string]string, source string, _ error) {
 	isLogin := source == "LoginUserHandler"
 	isRequiredField := errs["email"] == ErrEmailRequired.Error() || errs["password"] == ErrPasswordRequired.Error()
 
