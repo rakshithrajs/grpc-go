@@ -7,12 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/handlers"
+	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 )
 
 func (h *UserFilesHandler) ListFilesHandler(c *gin.Context) {
 	userID, err := handlers.GetUserIDFromGin(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{config.ErrorKey: err.Error()})
+		utils.ReturnErrorResponse(c, err, fnListFiles, utils.ErrSomethingWentWrong, "")
 		return
 	}
 
@@ -21,7 +22,7 @@ func (h *UserFilesHandler) ListFilesHandler(c *gin.Context) {
 	files, err := h.storage.ListUserFiles(ctx, userID)
 	if err != nil {
 		slog.Error(handlers.LogPrefix(fnListFiles)+"failed to list user files", slog.Any(config.ErrorKey, err))
-		c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrFailedToListFiles.Error()})
+		utils.ReturnErrorResponse(c, err, fnListFiles, utils.ErrFailedToListFiles, "")
 		return
 	}
 

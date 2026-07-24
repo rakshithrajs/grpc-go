@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"log/slog"
 	"net/http"
 
@@ -9,7 +8,6 @@ import (
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/handlers"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
-	"github.com/rakshithrajs/cloud/UMS/internal/storage"
 	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 
 	"golang.org/x/crypto/bcrypt"
@@ -22,7 +20,7 @@ var (
 func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
 	id, err := handlers.GetUserIDFromGin(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{config.ErrorKey: err.Error()})
+		utils.ReturnErrorResponse(c, err, FnUpdateUserProfile, utils.ErrSomethingWentWrong, "")
 		return
 	}
 
@@ -30,41 +28,36 @@ func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
 
 	var req models.UpdateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: handlers.ErrInvalidJSON.Error()})
+		utils.ReturnErrorResponse(c, utils.ErrInvalidJSON, FnUpdateUserProfile, utils.ErrSomethingWentWrong, "")
 		return
 	}
-	
+
 	if req.Name == config.NullString && req.Email == config.NullString && req.Phone == config.NullString && req.Password == config.NullString {
-		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: handlers.ErrNoFieldsToUpdate.Error()})
+		utils.ReturnErrorResponse(c, utils.ErrNoFieldsToUpdate, FnUpdateUserProfile, utils.ErrSomethingWentWrong, "")
 		return
 	}
 
 	if err := utils.Validate.Struct(req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: utils.FieldErrors(err)})
+		utils.ReturnErrorResponse(c, utils.FieldErrors(err), FnUpdateUserProfile, utils.ErrSomethingWentWrong, "")
 		return
 	}
 
 	if req.Password != config.NullString {
 		user, err := a.storage.GetUserByID(ctx, id)
 		if err != nil {
-			if errors.Is(err, storage.ErrUserNotFound) {
-				c.JSON(http.StatusOK, gin.H{"message": userUpdatedMessage})
-				return
-			}
-			slog.Error(handlers.LogPrefix(fnUpdateUserProfile)+"failed to get user by id", slog.Any(config.ErrorKey, err))
-			c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrSomethingWentWrong.Error()})
+			utils.ReturnErrorResponse(c, err, FnUpdateUserProfile, utils.ErrSomethingWentWrong, user)
 			return
 		}
 
 		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err == nil {
-			c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: storage.ErrPasswordSameAsOldPassword.Error()})
+			utils.ReturnErrorResponse(c, utils.ErrPasswordSameAsOldPassword, FnUpdateUserProfile, utils.ErrSomethingWentWrong, "")
 			return
 		}
 
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
-			slog.Error(handlers.LogPrefix(fnUpdateUserProfile)+"failed to hash password", slog.Any(config.ErrorKey, err))
-			c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrSomethingWentWrong.Error()})
+			slog.Error(handlers.LogPrefix(FnUpdateUserProfile)+"failed to hash password", slog.Any(config.ErrorKey, err))
+			utils.ReturnErrorResponse(c, err, FnUpdateUserProfile, utils.ErrSomethingWentWrong, "")
 			return
 		}
 		hashed := string(hashedPassword)
@@ -72,10 +65,7 @@ func (a *UMSHandler) UpdateUserHandler(c *gin.Context) {
 	}
 
 	if err := a.storage.UpdateUser(ctx, id, req); err != nil {
-		if handlers.HandleDomainError(c, err) {
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrSomethingWentWrong.Error()})
+		utils.ReturnErrorResponse(c, err, FnUpdateUserProfile, utils.ErrSomethingWentWrong, "")
 		return
 	}
 

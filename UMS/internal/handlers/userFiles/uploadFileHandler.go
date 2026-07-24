@@ -17,7 +17,7 @@ import (
 func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 	userID, err := handlers.GetUserIDFromGin(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{config.ErrorKey: err.Error()})
+		utils.ReturnErrorResponse(c, err, fnUploadFile, utils.ErrSomethingWentWrong, "")
 		return
 	}
 
@@ -25,14 +25,14 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: handlers.ErrFileIsRequired.Error()})
+		utils.ReturnErrorResponse(c, utils.ErrFileIsRequired, fnUploadFile, utils.ErrSomethingWentWrong, "")
 		return
 	}
 
 	openedFile, err := fileHeader.Open()
 	if err != nil {
 		slog.Error(handlers.LogPrefix(fnUploadFile)+"failed to open uploaded file", slog.Any(config.ErrorKey, err))
-		c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrSomethingWentWrong.Error()})
+		utils.ReturnErrorResponse(c, err, fnUploadFile, utils.ErrSomethingWentWrong, "")
 		return
 	}
 	defer openedFile.Close()
@@ -40,7 +40,7 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 	content, err := io.ReadAll(openedFile)
 	if err != nil {
 		slog.Error(handlers.LogPrefix(fnUploadFile)+"failed to read uploaded file", slog.Any(config.ErrorKey, err))
-		c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrSomethingWentWrong.Error()})
+		utils.ReturnErrorResponse(c, err, fnUploadFile, utils.ErrSomethingWentWrong, "")
 		return
 	}
 
@@ -50,7 +50,7 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 		Content:  content,
 	})
 	if err != nil {
-		status, msg := handlers.MapGRPCError(err, handlers.ErrFailedToUploadFile.Error())
+		status, msg := handlers.MapGRPCError(err, utils.ErrFailedToUploadFile.Error())
 		slog.Error(handlers.LogPrefix(fnUploadFile)+"failed to upload file to MMS", slog.Any(config.ErrorKey, err))
 		c.JSON(status, gin.H{config.ErrorKey: msg})
 		return
@@ -58,7 +58,7 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 
 	if resp.GetFile() == nil || resp.GetFile().GetID() == "" {
 		slog.Error(handlers.LogPrefix(fnUploadFile) + "MMS returned empty file response")
-		c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrSomethingWentWrong.Error()})
+		utils.ReturnErrorResponse(c, utils.ErrFailedToUploadFile, fnUploadFile, utils.ErrSomethingWentWrong, "")
 		return
 	}
 
@@ -68,7 +68,7 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 		if _, delErr := h.MMSClient.DeleteFile(ctx, &MMSpb.DeleteFileRequest{FileID: fileID}); delErr != nil {
 			slog.Error(handlers.LogPrefix(fnUploadFile)+"failed to compensate MMS upload", slog.Any(config.ErrorKey, delErr))
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrFailedToUploadFile.Error()})
+		utils.ReturnErrorResponse(c, err, fnUploadFile, utils.ErrFailedToUploadFile, "")
 		return
 	}
 

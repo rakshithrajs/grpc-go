@@ -112,7 +112,7 @@ func validateEmail(fl validator.FieldLevel) bool {
 	if len(parts[0]) < minLocalLength || len(parts[0]) > maxLocalLength {
 		return false
 	}
-	
+
 	domain := parts[1]
 	if len(domain) < minDomainLength || len(domain) > maxDomainLength {
 		return false
@@ -135,6 +135,7 @@ var fieldNames = map[string]string{
 	"Password":        "password",
 	"ConfirmPassword": "confirmPassword",
 	"Phone":           "phone",
+	"Name":            "name",
 	"Title":           "title",
 }
 
@@ -171,6 +172,16 @@ func fieldError(e validator.FieldError) error {
 			return ErrPhoneRequired
 		default:
 			return ErrInvalidPhoneNumber
+		}
+	}
+	if e.StructField() == "Name" {
+		switch e.Tag() {
+		case "required", "isValueEmpty":
+			return ErrNameRequired
+		case "max":
+			return ErrNameTooLong
+		default:
+			return ErrInvalidName
 		}
 	}
 	return e

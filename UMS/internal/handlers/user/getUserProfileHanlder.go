@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"errors"
-	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,12 +8,13 @@ import (
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/handlers"
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"
+	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 )
 
 func (h *UMSHandler) GetUserProfileHandler(c *gin.Context) {
 	userID, err := handlers.GetUserIDFromGin(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{config.ErrorKey: err.Error()})
+		utils.ReturnErrorResponse(c, err, FnGetUserProfile, storage.ErrFailedToGetUserByID, "")
 		return
 	}
 
@@ -23,12 +22,7 @@ func (h *UMSHandler) GetUserProfileHandler(c *gin.Context) {
 
 	user, err := h.storage.GetUserByID(ctx, userID)
 	if err != nil {
-		if errors.Is(err, storage.ErrUserNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{config.ErrorKey: err.Error()})
-			return
-		}
-		slog.Error(handlers.LogPrefix(fnGetUserProfile)+"failed to get user by id", slog.Any(config.ErrorKey, err))
-		c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: handlers.ErrSomethingWentWrong.Error()})
+		utils.ReturnErrorResponse(c, err, FnGetUserProfile, utils.ErrSomethingWentWrong, user)
 		return
 	}
 

@@ -9,16 +9,16 @@ import (
 const (
 
 	// functions name for login user handler
-	fnLoginUser = "LoginUserHandler"
+	FnLoginUser = "LoginUserHandler"
 
 	// functions name for register user handler
-	fnRegisterUser = "RegisterUserHandler"
+	FnRegisterUser = "RegisterUserHandler"
 
 	// functions name for update user profile handler
-	fnUpdateUserProfile = "UpdateUserProfileHandler"
+	FnUpdateUserProfile = "UpdateUserProfileHandler"
 
 	// functions name for get user profile handler
-	fnGetUserProfile = "GetUserProfileHandler"
+	FnGetUserProfile = "GetUserProfileHandler"
 )
 
 type UMSHandler struct {

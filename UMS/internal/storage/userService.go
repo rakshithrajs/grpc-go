@@ -47,9 +47,9 @@ func (u *userStore) CreateUser(ctx context.Context, user *models.User) (*models.
 		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation {
 			switch pqErr.Constraint {
 			case "users_email_key":
-				return nil, ErrUserEmailAlreadyExists
+				return nil, utils.ErrUserEmailAlreadyExists
 			case "users_phone_key":
-				return nil, ErrPhoneNumberAlreadyExists
+				return nil, utils.ErrPhoneNumberAlreadyExists
 			default:
 				slog.Error(logPrefix(fnCreateUser)+"unique constraint violation", slog.Any("error", err))
 				return nil, ErrFailedToCreateUser
@@ -75,7 +75,7 @@ func (u *userStore) GetUserByID(ctx context.Context, id string) (*models.User, e
 	var user models.User
 	if err := stmt.QueryRowContext(ctx, id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Phone, &user.CreatedAtUTC, &user.UpdatedAtUTC); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrUserNotFound
+			return nil, utils.ErrUserNotFound
 		}
 		slog.Error(logPrefix(fnGetUserByID)+"query", slog.Any("error", err))
 		return nil, ErrFailedToGetUserByID
@@ -97,7 +97,7 @@ func (u *userStore) GetUserByEmail(ctx context.Context, email string) (*models.U
 	var user models.User
 	if err := stmt.QueryRowContext(ctx, email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Phone); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrEmailNotFound
+			return nil, utils.ErrEmailNotFound
 		}
 		slog.Error(logPrefix(fnGetUserByEmail)+"query", slog.Any("error", err))
 		return nil, ErrFailedToGetUserByEmail
@@ -136,9 +136,9 @@ func (u *userStore) UpdateUser(ctx context.Context, id string, req models.Update
 		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation {
 			switch pqErr.Constraint {
 			case "users_email_key":
-				return ErrUserEmailAlreadyExists
+				return utils.ErrUserEmailAlreadyExists
 			case "users_phone_key":
-				return ErrPhoneNumberAlreadyExists
+				return utils.ErrPhoneNumberAlreadyExists
 			default:
 				slog.Error(logPrefix(fnUpdateUser)+"unique constraint violation", slog.Any("error", err))
 				return ErrFailedToUpdateUser

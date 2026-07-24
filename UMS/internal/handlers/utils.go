@@ -1,12 +1,10 @@
 package handlers
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	"github.com/rakshithrajs/cloud/UMS/internal/storage"
+	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -19,7 +17,7 @@ var LogPrefix = func(fnName string) string {
 func GetUserIDFromGin(c *gin.Context) (string, error) {
 	userID, exists := c.Get("userID")
 	if !exists {
-		return "", ErrUnauthorized
+		return "", utils.ErrUnauthorized
 	}
 	return userID.(string), nil
 }
@@ -36,26 +34,8 @@ func MapGRPCError(err error, defaultMsg string) (int, string) {
 	case codes.AlreadyExists:
 		return http.StatusConflict, st.Message()
 	case codes.Unauthenticated:
-		return http.StatusUnauthorized, ErrUnauthorized.Error()
+		return http.StatusUnauthorized, utils.ErrUnauthorized.Error()
 	default:
 		return http.StatusInternalServerError, defaultMsg
 	}
-}
-
-func HandleDomainError(c *gin.Context, err error) bool {
-	status, ok := domainErrorStatus(err)
-	if !ok {
-		return false
-	}
-	c.JSON(status, gin.H{config.ErrorKey: err.Error()})
-	return true
-}
-
-func domainErrorStatus(err error) (int, bool) {
-	switch {
-	case errors.Is(err, storage.ErrUserEmailAlreadyExists),
-		errors.Is(err, storage.ErrPhoneNumberAlreadyExists):
-		return http.StatusConflict, true
-	}
-	return 0, false
 }
