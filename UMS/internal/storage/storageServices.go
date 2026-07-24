@@ -15,8 +15,8 @@ type UserService interface {
 
 type UserFilesService interface {
 	CreateUserFile(ctx context.Context, userID, fileID, fileName string) error
-	DeleteUserFile(ctx context.Context, userID, fileID string) error
+	DeleteUserFile(ctx context.Context, userID, fileID string) (string, error)
 	ListUserFiles(ctx context.Context, userID string) ([]models.UserFiles, error)
-	UpdateUserFile(ctx context.Context, userID, fileID, fileName string) error
+	UpdateUserFile(ctx context.Context, userID, fileID, fileName string) (string, error)
 	GetUserFileName(ctx context.Context, userID, fileID string) (string, error)
 }

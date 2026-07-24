@@ -9,20 +9,19 @@ import (
 )
 
 func (c *Client) DeleteFileGrpcHandler(ctx context.Context, userID, fileID string) error {
-	fileName, err := c.storage.GetUserFileName(ctx, userID, fileID)
+	fileName, err := c.storage.DeleteUserFile(ctx, userID, fileID)
 	if err != nil {
 		return utils.ErrSomethingWentWrong
 	}
-
-	if err := c.storage.DeleteUserFile(ctx, userID, fileID); err != nil {
-		return utils.ErrSomethingWentWrong
+	if fileName == "" {
+		return nil
 	}
 
 	ctx = metadata.AppendToOutgoingContext(ctx, "userID", userID)
 
 	if _, err := c.mmsClient.DeleteFile(ctx, &MMS.DeleteFileRequest{FileID: fileID}); err != nil {
 		if rbErr := c.storage.CreateUserFile(ctx, userID, fileID, fileName); rbErr != nil {
-			_ = rbErr
+			return rbErr
 		}
 		return err
 	}

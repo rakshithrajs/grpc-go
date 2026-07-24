@@ -50,33 +50,26 @@ func (u *userFilesStore) CreateUserFile(ctx context.Context, userID, fileID, fil
 	return nil
 }
 
-func (u *userFilesStore) DeleteUserFile(ctx context.Context, userID, fileID string) error {
-	query := `DELETE FROM "userFiles" WHERE "userID" = $1 AND "fileID" = $2`
+func (u *userFilesStore) DeleteUserFile(ctx context.Context, userID, fileID string) (string, error) {
+	query := `DELETE FROM "userFiles" WHERE "userID" = $1 AND "fileID" = $2 RETURNING "fileName"`
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
 		slog.Error(logPrefix(fnDeleteUserFile)+"prepare statement", slog.Any("error", err))
-		return ErrFailedToDeleteUserFile
+		return "", ErrFailedToDeleteUserFile
 	}
 	defer stmt.Close()
 
-	result, err := stmt.ExecContext(ctx, userID, fileID)
-	if err != nil {
-		slog.Error(logPrefix(fnDeleteUserFile)+"execute statement", slog.Any("error", err))
-		return ErrFailedToDeleteUserFile
+	var fileName string
+	if err := stmt.QueryRowContext(ctx, userID, fileID).Scan(&fileName); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", nil
+		}
+		slog.Error(logPrefix(fnDeleteUserFile)+"query row", slog.Any("error", err))
+		return "", ErrFailedToDeleteUserFile
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		slog.Error(logPrefix(fnDeleteUserFile)+"getting rows affected", slog.Any("error", err))
-		return ErrFailedToDeleteUserFile
-	}
-
-	if rowsAffected == 0 {
-		slog.Warn(logPrefix(fnDeleteUserFile)+"no user file mapping found", slog.String("userID", userID), slog.String("fileID", fileID))
-	}
-
-	return nil
+	return fileName, nil
 }
 
 func (u *userFilesStore) ListUserFiles(ctx context.Context, userID string) ([]models.UserFiles, error) {
@@ -115,33 +108,26 @@ func (u *userFilesStore) ListUserFiles(ctx context.Context, userID string) ([]mo
 	return files, nil
 }
 
-func (u *userFilesStore) UpdateUserFile(ctx context.Context, userID, fileID, fileName string) error {
-	query := `UPDATE "userFiles" SET "fileName" = $1, "updatedAtUTC" = NOW() WHERE "userID" = $2 AND "fileID" = $3`
+func (u *userFilesStore) UpdateUserFile(ctx context.Context, userID, fileID, fileName string) (string, error) {
+	query := `UPDATE "userFiles" SET "fileName" = $1, "updatedAtUTC" = NOW() WHERE "userID" = $2 AND "fileID" = $3 RETURNING "fileName"`
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
 		slog.Error(logPrefix(fnUpdateUserFile)+"prepare statement", slog.Any("error", err))
-		return ErrFailedToUpdateUserFile
+		return "", ErrFailedToUpdateUserFile
 	}
 	defer stmt.Close()
 
-	result, err := stmt.ExecContext(ctx, fileName, userID, fileID)
-	if err != nil {
-		slog.Error(logPrefix(fnUpdateUserFile)+"execute statement", slog.Any("error", err))
-		return ErrFailedToUpdateUserFile
+	var oldFileName string
+	if err := stmt.QueryRowContext(ctx, fileName, userID, fileID).Scan(&oldFileName); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", nil
+		}
+		slog.Error(logPrefix(fnUpdateUserFile)+"query row", slog.Any("error", err))
+		return "", ErrFailedToUpdateUserFile
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		slog.Error(logPrefix(fnUpdateUserFile)+"getting rows affected", slog.Any("error", err))
-		return ErrFailedToUpdateUserFile
-	}
-
-	if rowsAffected == 0 {
-		slog.Warn(logPrefix(fnUpdateUserFile)+"no user file mapping found", slog.String("userID", userID), slog.String("fileID", fileID))
-	}
-
-	return nil
+	return oldFileName, nil
 }
 
 func (u *userFilesStore) GetUserFileName(ctx context.Context, userID, fileID string) (string, error) {

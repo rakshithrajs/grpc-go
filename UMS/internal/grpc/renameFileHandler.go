@@ -9,16 +9,12 @@ import (
 )
 
 func (c *Client) RenameFileGrpcHandler(ctx context.Context, userID, fileID, newName string) error {
-	oldName, err := c.storage.GetUserFileName(ctx, userID, fileID)
+	oldName, err := c.storage.UpdateUserFile(ctx, userID, fileID, newName)
 	if err != nil {
 		return utils.ErrSomethingWentWrong
 	}
 	if oldName == "" {
 		return nil
-	}
-
-	if err := c.storage.UpdateUserFile(ctx, userID, fileID, newName); err != nil {
-		return utils.ErrSomethingWentWrong
 	}
 
 	ctx = metadata.AppendToOutgoingContext(ctx, "userID", userID)
@@ -27,8 +23,8 @@ func (c *Client) RenameFileGrpcHandler(ctx context.Context, userID, fileID, newN
 		FileID:  fileID,
 		NewName: newName,
 	}); err != nil {
-		if rbErr := c.storage.UpdateUserFile(ctx, userID, fileID, oldName); rbErr != nil {
-			_ = rbErr
+		if _, rbErr := c.storage.UpdateUserFile(ctx, userID, fileID, oldName); rbErr != nil {
+			return rbErr
 		}
 		return err
 	}
