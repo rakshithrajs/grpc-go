@@ -23,16 +23,8 @@ func (f *FileHandler) DeleteFile(ctx context.Context, req *MMSpb.DeleteFileReque
 		return nil, status.Error(codes.InvalidArgument, ErrFileIDRequired.Error())
 	}
 
-	file, err := f.fileService.GetFileByID(ctx, req.GetFileID(), userID)
+	file, err := f.fileService.DeleteFile(ctx, req.GetFileID(), userID)
 	if err != nil {
-		if errors.Is(err, storage.ErrFileNotFound) {
-			return &MMSpb.EmptyMessage{}, nil
-		}
-		slog.Error(logPrefix(fnDeleteFile)+"failed to get file", slog.Any("error", err))
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	if err := f.fileService.DeleteFile(ctx, req.GetFileID(), userID); err != nil {
 		if errors.Is(err, storage.ErrFileNotFound) {
 			return &MMSpb.EmptyMessage{}, nil
 		}

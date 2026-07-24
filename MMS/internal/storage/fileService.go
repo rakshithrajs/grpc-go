@@ -112,7 +112,7 @@ func (f *FileStore) GetFileByID(ctx context.Context, id string, userID string) (
 	return &file, nil
 }
 
-func (f *FileStore) UpdateFile(ctx context.Context, id string, req models.UpdateFileRequest, userID string) error {
+func (f *FileStore) UpdateFile(ctx context.Context, id string, req models.UpdateFileRequest, userID string) (*models.File, error) {
 	fields := make([]utils.UpdateField, 0, 2)
 	if req.Name != nil {
 		fields = append(fields, utils.UpdateField{Column: "name", Value: *req.Name})
@@ -122,64 +122,53 @@ func (f *FileStore) UpdateFile(ctx context.Context, id string, req models.Update
 	}
 
 	query, args := utils.BuildUpdateSQL("files", fields, []string{"ID", "userID"})
+	query += ` RETURNING "ID", "userID", name, path, size, "mimeType", "createdAtUTC", "updatedAtUTC"`
 	args[0] = id
 	args[1] = userID
 
 	stmt, err := f.db.PrepareContext(ctx, query)
 	if err != nil {
 		slog.Error(logPrefix(fnUpdateFile)+"prepare statement", slog.Any("error", err))
-		return ErrFailedToUpdateFile
+		return nil, ErrFailedToUpdateFile
 	}
 	defer stmt.Close()
 
-	result, err := stmt.ExecContext(ctx, args...)
-	if err != nil {
+	var file models.File
+	if err := stmt.QueryRowContext(ctx, args...).Scan(
+		&file.ID, &file.UserID, &file.Name, &file.Path, &file.Size, &file.MimeType, &file.CreatedAtUTC, &file.UpdatedAtUTC); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrFileNotFound
+		}
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == "files_user_name_unique" {
-			return ErrFileNameAlreadyExists
+			return nil, ErrFileNameAlreadyExists
 		}
-		slog.Error(logPrefix(fnUpdateFile)+"execute statement", slog.Any("error", err))
-		return ErrFailedToUpdateFile
+		slog.Error(logPrefix(fnUpdateFile)+"query row", slog.Any("error", err))
+		return nil, ErrFailedToUpdateFile
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		slog.Error(logPrefix(fnUpdateFile)+"getting rows affected", slog.Any("error", err))
-		return ErrFailedToUpdateFile
-	}
-
-	if rowsAffected == 0 {
-		return ErrFileNotFound
-	}
-
-	return nil
+	return &file, nil
 }
 
-func (f *FileStore) DeleteFile(ctx context.Context, id string, userID string) error {
-	query := `DELETE FROM files WHERE "ID" = $1 AND "userID" = $2`
+func (f *FileStore) DeleteFile(ctx context.Context, id string, userID string) (*models.File, error) {
+	query := `DELETE FROM files WHERE "ID" = $1 AND "userID" = $2 RETURNING "ID", "userID", name, path, size, "mimeType", "createdAtUTC", "updatedAtUTC"`
 
 	stmt, err := f.db.PrepareContext(ctx, query)
 	if err != nil {
 		slog.Error(logPrefix(fnDeleteFile)+"prepare statement", slog.Any("error", err))
-		return ErrFailedToDeleteFile
+		return nil, ErrFailedToDeleteFile
 	}
 	defer stmt.Close()
 
-	result, err := stmt.ExecContext(ctx, id, userID)
-	if err != nil {
-		slog.Error(logPrefix(fnDeleteFile)+"execute statement", slog.Any("error", err))
-		return ErrFailedToDeleteFile
+	var file models.File
+	if err := stmt.QueryRowContext(ctx, id, userID).Scan(
+		&file.ID, &file.UserID, &file.Name, &file.Path, &file.Size, &file.MimeType, &file.CreatedAtUTC, &file.UpdatedAtUTC); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrFileNotFound
+		}
+		slog.Error(logPrefix(fnDeleteFile)+"query row", slog.Any("error", err))
+		return nil, ErrFailedToDeleteFile
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		slog.Error(logPrefix(fnDeleteFile)+"getting rows affected", slog.Any("error", err))
-		return ErrFailedToDeleteFile
-	}
-
-	if rowsAffected == 0 {
-		return ErrFileNotFound
-	}
-
-	return nil
+	return &file, nil
 }
