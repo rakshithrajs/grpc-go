@@ -8,6 +8,7 @@ import (
 	"unicode"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"golang.org/x/net/idna"
 	"golang.org/x/text/unicode/norm"
 )
@@ -30,7 +31,7 @@ var (
 
 var Validate = validator.New()
 
-const nullString = ""
+const nullString = config.NullString
 
 const (
 	fieldEmail           = "Email"
@@ -208,14 +209,14 @@ func fieldError(e validator.FieldError) error {
 func FieldErrors(err error) map[string]string {
 	var verrs validator.ValidationErrors
 	if !errors.As(err, &verrs) || len(verrs) == 0 {
-		return map[string]string{"": err.Error()}
+		return map[string]string{config.NullString: err.Error()}
 	}
 
 	seen := map[string]bool{}
 	result := map[string]string{}
 	for _, e := range verrs {
 		name := fieldNames[e.StructField()]
-		if name == "" {
+		if name == config.NullString {
 			name = strings.ToLower(e.StructField())
 		}
 		if seen[name] {

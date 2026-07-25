@@ -15,7 +15,7 @@ import (
 func (h *UserHandler) GetUserProfileHandler(c *gin.Context) {
 	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		handlerUtils.ReturnErrorResponse(c, err, FnGetUserProfile, storage.ErrFailedToGetUserByID, "")
+		handlerUtils.ReturnErrorResponse(c, err, FnGetUserProfile, storage.ErrFailedToGetUserByID, config.NullString)
 		return
 	}
 

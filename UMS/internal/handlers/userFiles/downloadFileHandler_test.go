@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
@@ -31,7 +32,7 @@ func TestDownloadFileHandler(t *testing.T) {
 		{
 			name:          "download file fails due to missing fileID",
 			auth:          true,
-			fileID:        "",
+			fileID:        config.NullString,
 			expectedCode:  http.StatusBadRequest,
 			expectedError: handlerUtils.ErrFileIDRequired.Error(),
 		},
@@ -72,7 +73,7 @@ func TestDownloadFileHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			mockGrpcErr:  mocks.GrpcOpNotFound,
 			expectedCode: http.StatusOK,
-			expectedBody: "",
+			expectedBody: config.NullString,
 			expectedType: "application/octet-stream",
 		},
 		{
@@ -87,7 +88,7 @@ func TestDownloadFileHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, w := mockUtils.SetUpGinTest(http.MethodGet, "/api/files/:fileID/download", "", tt.auth)
+			c, w := mockUtils.SetUpGinTest(http.MethodGet, "/api/files/:fileID/download", config.NullString, tt.auth)
 			c.Params = []gin.Param{{Key: "fileID", Value: tt.fileID}}
 
 			mmsClient := &mocks.MockMMSClient{MockErr: tt.mockGrpcErr}

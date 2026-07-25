@@ -13,7 +13,7 @@ import (
 )
 
 func (c *Client) DeleteFileGrpcHandler(ctx context.Context, userID, fileID string) error {
-	if strings.TrimSpace(fileID) == "" {
+	if strings.TrimSpace(fileID) == config.NullString {
 		return status.Error(codes.InvalidArgument, handlerUtils.ErrFileIDRequired.Error())
 	}
 
@@ -21,7 +21,7 @@ func (c *Client) DeleteFileGrpcHandler(ctx context.Context, userID, fileID strin
 	if err != nil {
 		return status.Error(codes.Internal, handlerUtils.ErrFailedToDeleteUserFile.Error())
 	}
-	if fileName == "" {
+	if fileName == config.NullString {
 		return nil
 	}
 

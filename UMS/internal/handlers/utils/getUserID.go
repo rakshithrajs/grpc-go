@@ -8,7 +8,7 @@ import (
 func GetUserIDFromGin(c *gin.Context) (string, error) {
 	userID, exists := c.Get(config.UserIDMetadataKey)
 	if !exists {
-		return "", ErrUnauthorized
+		return config.NullString, ErrUnauthorized
 	}
 	return userID.(string), nil
 }

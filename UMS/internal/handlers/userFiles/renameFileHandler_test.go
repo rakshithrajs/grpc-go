@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
@@ -36,7 +37,7 @@ func TestRenameFileHandler(t *testing.T) {
 		{
 			name:          "rename file fails due to missing fileID",
 			auth:          true,
-			fileID:        "",
+			fileID:        config.NullString,
 			body:          `{"newName":"renamed.txt"}`,
 			expectedCode:  http.StatusBadRequest,
 			expectedError: handlerUtils.ErrFileIDRequired.Error(),
@@ -61,7 +62,7 @@ func TestRenameFileHandler(t *testing.T) {
 			name:         "rename file fails due to empty newName",
 			auth:         true,
 			fileID:       "file-id-123",
-			body:         `{"newName":""}`,
+			body:         `{"newName":config.NullString}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
 				"newName": modelUtils.ErrNewNameRequired.Error(),

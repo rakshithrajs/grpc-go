@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
@@ -25,7 +26,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 	}{
 		{
 			name:         "file rename failed as file id is missing",
-			fileID:       "",
+			fileID:       config.NullString,
 			newName:      "renamed.txt",
 			expectedCode: codes.InvalidArgument,
 			expectedErr:  handlerUtils.ErrFileIDRequired.Error(),
@@ -40,7 +41,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 		{
 			name:         "file rename failed as new name is missing",
 			fileID:       "file-id-123",
-			newName:      "",
+			newName:      config.NullString,
 			expectedCode: codes.InvalidArgument,
 			expectedErr:  modelUtils.ErrNewNameRequired.Error(),
 		},
@@ -65,7 +66,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			newName:      "renamed.txt",
 			updateDbErr:  mocks.DbOpNotFound,
 			expectedCode: codes.OK,
-			expectedErr:  "",
+			expectedErr:  config.NullString,
 		},
 		{
 			name:         "file rename failed due to missing metadata",
@@ -89,7 +90,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			newName:      "renamed.txt",
 			grpcErr:      mocks.GrpcOpNotFound,
 			expectedCode: codes.OK,
-			expectedErr:  "",
+			expectedErr:  config.NullString,
 		},
 		{
 			name:         "file rename fails as file name already exists",
@@ -121,7 +122,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			newName:      "renamed.txt",
 			expectedCode: codes.OK,
-			expectedErr:  "",
+			expectedErr:  config.NullString,
 		},
 	}
 

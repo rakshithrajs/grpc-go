@@ -20,7 +20,7 @@ func (h *UserHandler) LoginUserHandler(ctx *gin.Context) {
 
 	var req models.LoginUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		handlerUtils.ReturnErrorResponse(ctx, handlerUtils.ErrInvalidJSON, FnLoginUser, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(ctx, handlerUtils.ErrInvalidJSON, FnLoginUser, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
@@ -28,32 +28,32 @@ func (h *UserHandler) LoginUserHandler(ctx *gin.Context) {
 
 	if err := modelUtils.Validate.Struct(&req); err != nil {
 		fieldErrs := modelUtils.FieldErrors(err)
-		handlerUtils.ReturnErrorResponse(ctx, fieldErrs, FnLoginUser, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(ctx, fieldErrs, FnLoginUser, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
 	user, err := h.storage.GetUserByEmail(ctx.Request.Context(), req.Email)
 	if err != nil {
-		handlerUtils.ReturnErrorResponse(ctx, err, FnLoginUser, handlerUtils.ErrFailedToLoginUser, "")
+		handlerUtils.ReturnErrorResponse(ctx, err, FnLoginUser, handlerUtils.ErrFailedToLoginUser, config.NullString)
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		handlerUtils.ReturnErrorResponse(ctx, handlerUtils.ErrInvalidCredentials, FnLoginUser, handlerUtils.ErrFailedToLoginUser, "")
+		handlerUtils.ReturnErrorResponse(ctx, handlerUtils.ErrInvalidCredentials, FnLoginUser, handlerUtils.ErrFailedToLoginUser, config.NullString)
 		return
 	}
 
 	cfg, err := config.GetConfig()
 	if err != nil {
 		slog.Error(handlerUtils.LogPrefix(FnLoginUser)+"failed to get config", slog.Any(config.ErrorKey, err))
-		handlerUtils.ReturnErrorResponse(ctx, err, FnLoginUser, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(ctx, err, FnLoginUser, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
 	token, err := config.GenerateJWT(*user, cfg.JWTSecret)
 	if err != nil {
 		slog.Error(handlerUtils.LogPrefix(FnLoginUser)+"failed to generate JWT", slog.Any(config.ErrorKey, err))
-		handlerUtils.ReturnErrorResponse(ctx, err, FnLoginUser, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(ctx, err, FnLoginUser, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 

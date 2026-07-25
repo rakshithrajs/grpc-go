@@ -17,13 +17,13 @@ var deleteFileSuccessMsg = "file deleted successfully"
 func (h *UserFilesHandler) DeleteFileHandler(c *gin.Context) {
 	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		handlerUtils.ReturnErrorResponse(c, err, fnDeleteFile, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, err, fnDeleteFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
 	fileID := strings.TrimSpace(c.Param("fileID"))
-	if fileID == "" {
-		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileIDRequired, fnDeleteFile, middlewareUtils.ErrSomethingWentWrong, "")
+	if fileID == config.NullString {
+		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileIDRequired, fnDeleteFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 

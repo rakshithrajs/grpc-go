@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
@@ -23,7 +24,7 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 	}{
 		{
 			name:         "file download fails as file id is missing",
-			fileID:       "",
+			fileID:       config.NullString,
 			expectedCode: codes.InvalidArgument,
 			expectedErr:  handlerUtils.ErrFileIDRequired.Error(),
 		},
@@ -52,7 +53,7 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			mockGrpcErr:  mocks.GrpcOpNotFound,
 			expectedCode: codes.OK,
-			expectedErr:  "",
+			expectedErr:  config.NullString,
 			expectedData: &MMSpb.DownloadFileResponse{},
 		},
 		{
@@ -67,7 +68,7 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			mockGrpcErr:  mocks.GrpcOpSuccess,
 			expectedCode: codes.OK,
-			expectedErr:  "",
+			expectedErr:  config.NullString,
 			expectedData: &MMSpb.DownloadFileResponse{
 				FileName: "test-file.txt",
 				MimeType: MMSpb.MimeType_MIME_TYPE_TEXT_PLAIN,

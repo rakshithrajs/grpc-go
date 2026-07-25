@@ -66,7 +66,7 @@ func moduleRoot() string {
 func Load() (*Config, error) {
 	env, err := godotenv.Read(filepath.Join(moduleRoot(), "..", ".env"))
 	if err != nil {
-		slog.Error(logPrefix+"failed to read .env file", slog.Any("error", err))
+		slog.Error(logPrefix+"failed to read .env file", slog.Any(ErrorKey, err))
 	}
 
 	ServerConf := &ServerConfig{
@@ -74,7 +74,7 @@ func Load() (*Config, error) {
 		Port: env["UMS_PORT"],
 	}
 	if ServerConf.Host == NullString || ServerConf.Port == NullString {
-		slog.Error(logPrefix+"missing UMS gRPC environment variables", slog.Any("error", ErrMissingEnvVariable))
+		slog.Error(logPrefix+"missing UMS gRPC environment variables", slog.Any(ErrorKey, ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
 
@@ -83,7 +83,7 @@ func Load() (*Config, error) {
 		Port: env["MMS_GRPC_PORT"],
 	}
 	if MMSGRPCConf.Host == NullString || MMSGRPCConf.Port == NullString {
-		slog.Error(logPrefix+"missing MMS gRPC environment variables", slog.Any("error", ErrMissingEnvVariable))
+		slog.Error(logPrefix+"missing MMS gRPC environment variables", slog.Any(ErrorKey, ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
 
@@ -96,13 +96,13 @@ func Load() (*Config, error) {
 		SSLMode:  env["UMS_DB_SSLMODE"],
 	}
 	if dbConf.Host == NullString || dbConf.Port == NullString || dbConf.DbName == NullString || dbConf.User == NullString || dbConf.Password == NullString || dbConf.SSLMode == NullString {
-		slog.Error(logPrefix+"missing database environment variables", slog.Any("error", ErrMissingEnvVariable))
+		slog.Error(logPrefix+"missing database environment variables", slog.Any(ErrorKey, ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
 
 	jwtSecret := env["JWT_SECRET"]
 	if jwtSecret == NullString {
-		slog.Error(logPrefix+"missing JWT environment variable", slog.Any("error", ErrMissingEnvVariable))
+		slog.Error(logPrefix+"missing JWT environment variable", slog.Any(ErrorKey, ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
 

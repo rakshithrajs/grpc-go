@@ -1,6 +1,10 @@
 package models
 
-import "mime"
+import (
+	"mime"
+
+	"github.com/rakshithrajs/cloud/MMS/internal/config"
+)
 
 type MimeType string
 
@@ -40,6 +44,6 @@ func ParseMimeType(s string) MimeType {
 	case string(MimeTypeApplicationJSON):
 		return MimeTypeApplicationJSON
 	default:
-		return ""
+		return config.NullString
 	}
 }

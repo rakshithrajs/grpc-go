@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
@@ -60,7 +61,7 @@ func TestGetUserProfileHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, w := mockUtils.SetUpGinTest(http.MethodGet, "/api/users/profile", "", tt.auth)
+			c, w := mockUtils.SetUpGinTest(http.MethodGet, "/api/users/profile", config.NullString, tt.auth)
 
 			svc := &mocks.MockUserService{GetUserByIDErr: tt.mockErr}
 			handler := NewUserHandler(svc)

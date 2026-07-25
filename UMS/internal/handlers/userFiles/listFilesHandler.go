@@ -14,7 +14,7 @@ import (
 func (h *UserFilesHandler) ListFilesHandler(c *gin.Context) {
 	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		handlerUtils.ReturnErrorResponse(c, err, fnListFiles, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, err, fnListFiles, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
@@ -23,7 +23,7 @@ func (h *UserFilesHandler) ListFilesHandler(c *gin.Context) {
 	files, err := h.storage.ListUserFiles(ctx, userID)
 	if err != nil {
 		slog.Error(handlerUtils.LogPrefix(fnListFiles)+"failed to list user files", slog.Any(config.ErrorKey, err))
-		handlerUtils.ReturnErrorResponse(c, err, fnListFiles, handlerUtils.ErrFailedToListFiles, "")
+		handlerUtils.ReturnErrorResponse(c, err, fnListFiles, handlerUtils.ErrFailedToListFiles, config.NullString)
 		return
 	}
 

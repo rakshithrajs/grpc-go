@@ -19,14 +19,14 @@ func AuthMiddleware() gin.HandlerFunc {
 		authHeader := strings.TrimSpace(c.GetHeader("Authorization"))
 
 		if authHeader == config.NullString {
-			handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrMissingAuthHeader, funcNameAuthMiddleware, middlewareUtils.ErrSomethingWentWrong, "")
+			handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrMissingAuthHeader, funcNameAuthMiddleware, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 			c.Abort()
 			return
 		}
 
 		claims, err := middlewareUtils.VerifyToken(authHeader)
 		if err != nil {
-			handlerUtils.ReturnErrorResponse(c, err, funcNameAuthMiddleware, middlewareUtils.ErrSomethingWentWrong, "")
+			handlerUtils.ReturnErrorResponse(c, err, funcNameAuthMiddleware, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 			c.Abort()
 			return
 		}

@@ -100,7 +100,7 @@ func TestUploadFile(t *testing.T) {
 			fileName:     "success.txt",
 			content:      []byte("content"),
 			expectedCode: codes.OK,
-			expectedErr:  "",
+			expectedErr:  config.NullString,
 			expectedFile: &MMSpb.File{
 				ID:       "file-id-123",
 				FileName: "success.txt",

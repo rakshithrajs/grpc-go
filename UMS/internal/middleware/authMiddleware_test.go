@@ -29,7 +29,7 @@ func GenerateJwt(iss, sub any, iat, exp int64, jwtSecret string, signingMethod j
 	token := jwt.NewWithClaims(signingMethod, claims)
 	tokenString, err := token.SignedString([]byte(jwtSecret))
 	if err != nil {
-		return "", err
+		return config.NullString, err
 	}
 	return tokenString, nil
 }
@@ -43,7 +43,7 @@ func TestAuthMiddleware(t *testing.T) {
 	}{
 		{
 			name:                "authorization fails because of Missing Authorization Header",
-			AuthorizationHeader: "",
+			AuthorizationHeader: config.NullString,
 			expectedStatusCode:  http.StatusUnauthorized,
 			expectedError:       handlerUtils.ErrMissingAuthHeader.Error(),
 		},
@@ -150,7 +150,7 @@ func TestAuthMiddleware(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// act
 			req, _ := http.NewRequest(http.MethodGet, "/test", nil)
-			if tt.AuthorizationHeader != "" {
+			if tt.AuthorizationHeader != config.NullString {
 				req.Header.Set("Authorization", tt.AuthorizationHeader)
 			}
 

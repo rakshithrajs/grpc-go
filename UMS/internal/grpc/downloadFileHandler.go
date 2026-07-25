@@ -13,7 +13,7 @@ import (
 )
 
 func (c *Client) DownloadFileGrpcHandler(ctx context.Context, userID, fileID string) (*MMS.DownloadFileResponse, error) {
-	if strings.TrimSpace(fileID) == "" {
+	if strings.TrimSpace(fileID) == config.NullString {
 		return nil, status.Error(codes.InvalidArgument, handlerUtils.ErrFileIDRequired.Error())
 	}
 

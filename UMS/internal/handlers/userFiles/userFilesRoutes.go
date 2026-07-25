@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
 	"github.com/rakshithrajs/cloud/UMS/internal/middleware"
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"
@@ -40,7 +41,7 @@ func RegisterRoutes(rg *gin.RouterGroup, h *UserFilesHandler) {
 	filesRouterGroup.Use(middleware.AuthMiddleware())
 	filesRouterGroup.POST("/upload", h.UploadFileHandler)
 	filesRouterGroup.GET("/:fileID/download", h.DownloadFileHandler)
-	filesRouterGroup.GET("", h.ListFilesHandler)
+	filesRouterGroup.GET(config.NullString, h.ListFilesHandler)
 	filesRouterGroup.PATCH("/:fileID/rename", h.RenameFileHandler)
 	filesRouterGroup.DELETE("/:fileID", h.DeleteFileHandler)
 }

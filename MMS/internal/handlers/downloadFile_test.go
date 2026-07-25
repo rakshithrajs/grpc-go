@@ -80,7 +80,7 @@ func TestDownloadFile(t *testing.T) {
 			fileID:       fileID,
 			mockDbErr:    mocks.DbOpNotFound,
 			expectedCode: codes.OK,
-			expectedErr:  "",
+			expectedErr:  config.NullString,
 			expectedData: &MMSpb.DownloadFileResponse{},
 		},
 		{
@@ -117,7 +117,7 @@ func TestDownloadFile(t *testing.T) {
 			setupCtx:     ctxWithUser,
 			fileID:       fileID,
 			expectedCode: codes.OK,
-			expectedErr:  "",
+			expectedErr:  config.NullString,
 			expectedData: &MMSpb.DownloadFileResponse{
 				FileName: fileName,
 				MimeType: MMSpb.MimeType_MIME_TYPE_TEXT_PLAIN,

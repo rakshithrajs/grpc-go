@@ -26,7 +26,7 @@ var ZeroTime = time.Time{}
 func userStorageDir(userID string) string {
 	cfg, err := config.GetConfig()
 	if err != nil {
-		return ""
+		return config.NullString
 	}
 	return filepath.Join(cfg.UserStoragePath, userID)
 }
@@ -115,7 +115,7 @@ func (m *MockFileService) UpdateFile(ctx context.Context, id string, req models.
 
 	name := "test.txt"
 	path := filepath.Join(userStorageDir(userID), name)
-	if req.Name != "" {
+	if req.Name != config.NullString {
 		name = req.Name
 		path = filepath.Join(userStorageDir(userID), name)
 	}

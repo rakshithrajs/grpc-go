@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
@@ -128,16 +129,16 @@ func TestUploadFileHandler(t *testing.T) {
 			var w *httptest.ResponseRecorder
 			if tt.withFile {
 				content := tt.fileContent
-				if content == "" && !tt.emptyContent {
+				if content == config.NullString && !tt.emptyContent {
 					content = "test content"
 				}
 				name := tt.fileName
-				if name == "" {
+				if name == config.NullString {
 					name = "test.txt"
 				}
 				c, w = mockUtils.SetUpGinTestMultipart(content, name, tt.auth)
 			} else {
-				c, w = mockUtils.SetUpGinTest(http.MethodPost, "/api/files/upload", "", tt.auth)
+				c, w = mockUtils.SetUpGinTest(http.MethodPost, "/api/files/upload", config.NullString, tt.auth)
 			}
 
 			mmsClient := &mocks.MockMMSClient{MockErr: tt.uploadGrpcErr, MockDeleteErr: tt.deleteGrpcErr}

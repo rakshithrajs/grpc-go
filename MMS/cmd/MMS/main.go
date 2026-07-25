@@ -20,20 +20,20 @@ const (
 func main() {
 	cfg, err := config.GetConfig()
 	if err != nil {
-		slog.Error(logPrefix+"failed to get config", slog.Any("error", err))
+		slog.Error(logPrefix+"failed to get config", slog.Any(config.ErrorKey, err))
 		return
 	}
 
 	db, err := storage.Connect(cfg.DSN)
 	if err != nil {
-		slog.Error(logPrefix+"failed to connect to database", slog.Any("error", err))
+		slog.Error(logPrefix+"failed to connect to database", slog.Any(config.ErrorKey, err))
 		return
 	}
 	defer db.Close()
 
 	listen, err := net.Listen("tcp", cfg.GRPCAddress)
 	if err != nil {
-		slog.Error(logPrefix+"failed to listen", slog.Any("error", err))
+		slog.Error(logPrefix+"failed to listen", slog.Any(config.ErrorKey, err))
 		return
 	}
 
@@ -45,6 +45,6 @@ func main() {
 
 	slog.Info(logPrefix+"starting MMS gRPC server", slog.String("address", cfg.GRPCAddress))
 	if err := server.Serve(listen); err != nil {
-		slog.Error(logPrefix+"failed to serve", slog.Any("error", err))
+		slog.Error(logPrefix+"failed to serve", slog.Any(config.ErrorKey, err))
 	}
 }

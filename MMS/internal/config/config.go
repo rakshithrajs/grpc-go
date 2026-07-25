@@ -42,6 +42,7 @@ const (
 	logPrefix         = "[" + functionName + "]: "
 	NullString        = ""
 	UserIDMetadataKey = "userID"
+	ErrorKey          = "error"
 )
 
 type Config struct {
@@ -64,7 +65,7 @@ func moduleRoot() string {
 func Load() (*Config, error) {
 	env, err := godotenv.Read(filepath.Join(moduleRoot(), "..", ".env"))
 	if err != nil {
-		slog.Error(logPrefix+"failed to read .env file", slog.Any("error", err))
+		slog.Error(logPrefix+"failed to read .env file", slog.Any(ErrorKey, err))
 	}
 
 	grpcConf := &gRPCConfig{
@@ -72,7 +73,7 @@ func Load() (*Config, error) {
 		Port: env["MMS_GRPC_PORT"],
 	}
 	if grpcConf.Host == NullString || grpcConf.Port == NullString {
-		slog.Error(logPrefix+"missing gRPC environment variables", slog.Any("error", ErrMissingEnvVariable))
+		slog.Error(logPrefix+"missing gRPC environment variables", slog.Any(ErrorKey, ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
 
@@ -85,13 +86,13 @@ func Load() (*Config, error) {
 		SSLMode:  env["MMS_DB_SSLMODE"],
 	}
 	if dbConf.Host == NullString || dbConf.Port == NullString || dbConf.DbName == NullString || dbConf.User == NullString || dbConf.Password == NullString || dbConf.SSLMode == NullString {
-		slog.Error(logPrefix+"missing database environment variables", slog.Any("error", ErrMissingEnvVariable))
+		slog.Error(logPrefix+"missing database environment variables", slog.Any(ErrorKey, ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
 
 	userStoragePath := env["USER_STORAGE_PATH"]
 	if userStoragePath == NullString {
-		slog.Error(logPrefix+"missing user storage path environment variable", slog.Any("error", ErrMissingEnvVariable))
+		slog.Error(logPrefix+"missing user storage path environment variable", slog.Any(ErrorKey, ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
 

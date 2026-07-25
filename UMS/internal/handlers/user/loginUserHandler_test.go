@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 )
 
@@ -33,7 +34,7 @@ func TestLoginUserHandler(t *testing.T) {
 		},
 		{
 			name:         "user login fails as of empty email",
-			body:         `{"email":"","password":"ValidPassword@123"}`,
+			body:         `{"email":config.NullString,"password":"ValidPassword@123"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
 				"email": modelUtils.ErrEmailRequired.Error(),
@@ -41,7 +42,7 @@ func TestLoginUserHandler(t *testing.T) {
 		},
 		{
 			name:         "user login fails as of empty password",
-			body:         `{"email":"test@example.com","password":""}`,
+			body:         `{"email":"test@example.com","password":config.NullString}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
 				"password": modelUtils.ErrPasswordRequired.Error(),
@@ -49,7 +50,7 @@ func TestLoginUserHandler(t *testing.T) {
 		},
 		{
 			name:         "user login fails as of empty email and password",
-			body:         `{"email":"","password":""}`,
+			body:         `{"email":config.NullString,"password":config.NullString}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
 				"email":    modelUtils.ErrEmailRequired.Error(),
@@ -118,7 +119,7 @@ func TestLoginUserHandler(t *testing.T) {
 			if tt.expectedCode == http.StatusOK {
 				resp := make(map[string]string)
 				json.NewDecoder(w.Body).Decode(&resp)
-				if resp["token"] == "" {
+				if resp["token"] == config.NullString {
 					t.Errorf("expected token in response, got empty")
 				}
 			}

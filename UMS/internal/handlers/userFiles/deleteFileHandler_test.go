@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
@@ -32,7 +33,7 @@ func TestDeleteFileHandler(t *testing.T) {
 		{
 			name:          "delete file fails due to missing fileID",
 			auth:          true,
-			fileID:        "",
+			fileID:        config.NullString,
 			expectedCode:  http.StatusBadRequest,
 			expectedError: handlerUtils.ErrFileIDRequired.Error(),
 		},
@@ -103,7 +104,7 @@ func TestDeleteFileHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, w := mockUtils.SetUpGinTest(http.MethodDelete, "/api/files/:fileID", "", tt.auth)
+			c, w := mockUtils.SetUpGinTest(http.MethodDelete, "/api/files/:fileID", config.NullString, tt.auth)
 			c.Params = []gin.Param{{Key: "fileID", Value: tt.fileID}}
 
 			mmsClient := &mocks.MockMMSClient{MockErr: tt.mockGrpcErr}

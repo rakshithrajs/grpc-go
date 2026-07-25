@@ -3,6 +3,7 @@ package mocks
 import (
 	"context"
 
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"
@@ -42,9 +43,9 @@ func (m *MockUserFilesService) DeleteUserFile(ctx context.Context, userID, fileI
 
 	switch m.DeleteUserFileError {
 	case DbOpInternalError:
-		return "", storage.ErrFailedToDeleteUserFile
+		return config.NullString, storage.ErrFailedToDeleteUserFile
 	case DbOpNotFound:
-		return "", nil
+		return config.NullString, nil
 	}
 
 	return "test-file-name.txt", nil
@@ -77,9 +78,9 @@ func (m *MockUserFilesService) UpdateUserFile(ctx context.Context, userID, fileI
 	if m.updateCallCount == 1 {
 		switch m.UpdateUserFileError {
 		case DbOpInternalError:
-			return "", storage.ErrFailedToUpdateUserFile
+			return config.NullString, storage.ErrFailedToUpdateUserFile
 		case DbOpNotFound:
-			return "", nil
+			return config.NullString, nil
 		}
 
 		oldName := "old-file-name.txt"
@@ -89,7 +90,7 @@ func (m *MockUserFilesService) UpdateUserFile(ctx context.Context, userID, fileI
 
 	switch m.UpdateRollbackError {
 	case DbOpInternalError:
-		return "", handlerUtils.ErrFailedToRollback
+		return config.NullString, handlerUtils.ErrFailedToRollback
 	}
 
 	return "old-file-name.txt", nil

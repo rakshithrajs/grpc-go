@@ -15,7 +15,7 @@ import (
 )
 
 func (c *Client) UploadFileGrpcHandler(ctx context.Context, userID, fileName string, content []byte) (*models.File, error) {
-	if strings.TrimSpace(fileName) == "" {
+	if strings.TrimSpace(fileName) == config.NullString {
 		return nil, status.Error(codes.InvalidArgument, handlerUtils.ErrFileNameRequired.Error())
 	}
 	if len(content) == 0 {
@@ -32,7 +32,7 @@ func (c *Client) UploadFileGrpcHandler(ctx context.Context, userID, fileName str
 		return nil, err
 	}
 
-	if resp.GetFile() == nil || resp.GetFile().GetID() == "" {
+	if resp.GetFile() == nil || resp.GetFile().GetID() == config.NullString {
 		return nil, status.Error(codes.Internal, handlerUtils.ErrFailedToUploadFile.Error())
 	}
 

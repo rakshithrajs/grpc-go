@@ -50,7 +50,7 @@ func TestDeleteFile(t *testing.T) {
 			setupCtx:     ctxWithUser,
 			fileID:       "file-id-123",
 			mockDbErr:    mocks.DbOpNotFound,
-			expectedErr:  "",
+			expectedErr:  config.NullString,
 			expectedCode: codes.OK,
 		},
 		{
@@ -66,7 +66,7 @@ func TestDeleteFile(t *testing.T) {
 			setupCtx:     ctxWithUser,
 			fileID:       "file-id-123",
 			expectedCode: codes.OK,
-			expectedErr:  "",
+			expectedErr:  config.NullString,
 			expectedData: &MMSpb.EmptyMessage{},
 		},
 	}
@@ -87,7 +87,7 @@ func TestDeleteFile(t *testing.T) {
 				t.Fatalf("expected code %v, got %v", tt.expectedCode, status.Code(err))
 			}
 
-			if tt.expectedErr != "" && status.Convert(err).Message() != tt.expectedErr {
+			if tt.expectedErr != config.NullString && status.Convert(err).Message() != tt.expectedErr {
 				t.Fatalf("expected error %v, got %v", tt.expectedErr, status.Convert(err).Message())
 			}
 

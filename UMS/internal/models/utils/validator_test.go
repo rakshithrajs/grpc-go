@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 )
 
 type notEmptyTest struct {
@@ -28,7 +30,7 @@ func TestValidateNotEmpty(t *testing.T) {
 		},
 		{
 			name:    "empty string",
-			value:   "",
+			value:   config.NullString,
 			wantErr: true,
 		},
 		{
@@ -103,7 +105,7 @@ func TestValidatePassword(t *testing.T) {
 		},
 		{
 			name:     "empty password",
-			password: "",
+			password: config.NullString,
 			wantErr:  true,
 		},
 		{
@@ -184,13 +186,13 @@ func TestNormalizeEmail(t *testing.T) {
 		},
 		{
 			name:     "empty string",
-			input:    "",
-			expected: "",
+			input:    config.NullString,
+			expected: config.NullString,
 		},
 		{
 			name:     "only spaces",
 			input:    "   ",
-			expected: "",
+			expected: config.NullString,
 		},
 	}
 
@@ -262,7 +264,7 @@ func TestValidateEmail(t *testing.T) {
 		},
 		{
 			name:    "empty string",
-			email:   "",
+			email:   config.NullString,
 			wantErr: true,
 		},
 	}
@@ -322,7 +324,7 @@ func TestValidatePhone(t *testing.T) {
 		},
 		{
 			name:    "empty string",
-			phone:   "",
+			phone:   config.NullString,
 			wantErr: true,
 		},
 		{
@@ -392,7 +394,7 @@ func TestValidateName(t *testing.T) {
 		},
 		{
 			name:    "empty string",
-			value:   "",
+			value:   config.NullString,
 			wantErr: true,
 		},
 		{
@@ -461,7 +463,7 @@ func TestFieldErrors(t *testing.T) {
 			name: "email required",
 			input: func() validationTest {
 				v := validValidationTest()
-				v.Email = ""
+				v.Email = config.NullString
 				return v
 			}(),
 			expected: map[string]string{
@@ -522,7 +524,7 @@ func TestFieldErrors(t *testing.T) {
 				v := validValidationTest()
 				v.Email = "abc@gmail.com"
 				v.Password = "Valid123!"
-				v.ConfirmPassword = ""
+				v.ConfirmPassword = config.NullString
 				return v
 			}(),
 			expected: map[string]string{
@@ -549,7 +551,7 @@ func TestFieldErrors(t *testing.T) {
 				v.Email = "abc@gmail.com"
 				v.Password = "Valid123!"
 				v.ConfirmPassword = "Valid123!"
-				v.Phone = ""
+				v.Phone = config.NullString
 				return v
 			}(),
 			expected: map[string]string{
@@ -578,7 +580,7 @@ func TestFieldErrors(t *testing.T) {
 				v.Password = "Valid123!"
 				v.ConfirmPassword = "Valid123!"
 				v.Phone = "9876543210"
-				v.Name = ""
+				v.Name = config.NullString
 				return v
 			}(),
 			expected: map[string]string{
@@ -624,7 +626,7 @@ func TestFieldErrors(t *testing.T) {
 				v.ConfirmPassword = "Valid123!"
 				v.Phone = "9876543210"
 				v.Name = "JohnDoe"
-				v.NewName = ""
+				v.NewName = config.NullString
 				return v
 			}(),
 			expected: map[string]string{

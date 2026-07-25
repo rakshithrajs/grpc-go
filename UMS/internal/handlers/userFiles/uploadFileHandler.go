@@ -17,7 +17,7 @@ import (
 func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		handlerUtils.ReturnErrorResponse(c, err, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, err, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
@@ -25,19 +25,19 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 
 	fileHeader, err := c.FormFile(multipartFileField)
 	if err != nil {
-		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileIsRequired, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileIsRequired, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
 	if strings.TrimSpace(fileHeader.Filename) == config.NullString {
-		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileNameRequired, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileNameRequired, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
 	openedFile, err := fileHeader.Open()
 	if err != nil {
 		slog.Error(handlerUtils.LogPrefix(fnUploadFile)+"failed to open uploaded file", slog.Any(config.ErrorKey, err))
-		handlerUtils.ReturnErrorResponse(c, err, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, err, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 	defer openedFile.Close()
@@ -45,12 +45,12 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 	content, err := io.ReadAll(openedFile)
 	if err != nil {
 		slog.Error(handlerUtils.LogPrefix(fnUploadFile)+"failed to read uploaded file", slog.Any(config.ErrorKey, err))
-		handlerUtils.ReturnErrorResponse(c, err, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, err, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
 	if len(content) == 0 {
-		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrEmptyFileContent, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrEmptyFileContent, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 

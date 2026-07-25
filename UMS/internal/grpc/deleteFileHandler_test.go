@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
@@ -23,7 +24,7 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 	}{
 		{
 			name:         "file deletion failed as file id is missing",
-			fileID:       "",
+			fileID:       config.NullString,
 			expectedCode: codes.InvalidArgument,
 			expectedErr:  handlerUtils.ErrFileIDRequired.Error(),
 		},
@@ -45,7 +46,7 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			deleteDbErr:  mocks.DbOpNotFound,
 			expectedCode: codes.OK,
-			expectedErr:  "",
+			expectedErr:  config.NullString,
 		},
 		{
 			name:         "file deleted failed due to missing metadata",
@@ -73,7 +74,7 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			GrpcErr:      mocks.GrpcOpNotFound,
 			expectedCode: codes.OK,
-			expectedErr:  "",
+			expectedErr:  config.NullString,
 		},
 		{
 			name:         "file deletion failed due to grpc internal error with rollback failure",
@@ -87,7 +88,7 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			name:         "file deletion succeeds",
 			fileID:       "file-id-123",
 			expectedCode: codes.OK,
-			expectedErr:  "",
+			expectedErr:  config.NullString,
 		},
 	}
 

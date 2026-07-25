@@ -58,17 +58,17 @@ func (u *userFilesStore) DeleteUserFile(ctx context.Context, userID, fileID stri
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
 		slog.Error(logPrefix(fnDeleteUserFile)+"prepare statement", slog.Any(config.ErrorKey, err))
-		return "", ErrFailedToDeleteUserFile
+		return config.NullString, ErrFailedToDeleteUserFile
 	}
 	defer stmt.Close()
 
 	var fileName string
 	if err := stmt.QueryRowContext(ctx, userID, fileID).Scan(&fileName); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", nil
+			return config.NullString, nil
 		}
 		slog.Error(logPrefix(fnDeleteUserFile)+"query row", slog.Any(config.ErrorKey, err))
-		return "", ErrFailedToDeleteUserFile
+		return config.NullString, ErrFailedToDeleteUserFile
 	}
 
 	return fileName, nil
@@ -116,17 +116,17 @@ func (u *userFilesStore) UpdateUserFile(ctx context.Context, userID, fileID, fil
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
 		slog.Error(logPrefix(fnUpdateUserFile)+"prepare statement", slog.Any(config.ErrorKey, err))
-		return "", ErrFailedToUpdateUserFile
+		return config.NullString, ErrFailedToUpdateUserFile
 	}
 	defer stmt.Close()
 
 	var oldFileName string
 	if err := stmt.QueryRowContext(ctx, fileName, userID, fileID).Scan(&oldFileName); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", nil
+			return config.NullString, nil
 		}
 		slog.Error(logPrefix(fnUpdateUserFile)+"query row", slog.Any(config.ErrorKey, err))
-		return "", ErrFailedToUpdateUserFile
+		return config.NullString, ErrFailedToUpdateUserFile
 	}
 
 	return oldFileName, nil

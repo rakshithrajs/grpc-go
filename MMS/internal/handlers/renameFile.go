@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	MMSpb "github.com/rakshithrajs/cloud/MMS/gen/MMS/v1"
+	"github.com/rakshithrajs/cloud/MMS/internal/config"
 	"github.com/rakshithrajs/cloud/MMS/internal/models"
 	"github.com/rakshithrajs/cloud/MMS/internal/storage"
 
@@ -35,7 +36,7 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 		if errors.Is(err, storage.ErrFileNotFound) {
 			return &MMSpb.EmptyMessage{}, nil
 		}
-		slog.Error(logPrefix(fnRenameFile)+"failed to update file record", slog.Any("error", err))
+		slog.Error(logPrefix(fnRenameFile)+"failed to update file record", slog.Any(config.ErrorKey, err))
 		if errors.Is(err, storage.ErrFileNameAlreadyExists) {
 			return nil, status.Error(codes.AlreadyExists, err.Error())
 		}
@@ -52,11 +53,11 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 	updateBody.Path = newPath
 
 	if err := os.Rename(oldPath, newPath); err != nil {
-		slog.Error(logPrefix(fnRenameFile)+"failed to rename file on disk", slog.Any("error", err), slog.String("oldPath", oldPath), slog.String("newPath", newPath))
+		slog.Error(logPrefix(fnRenameFile)+"failed to rename file on disk", slog.Any(config.ErrorKey, err), slog.String("oldPath", oldPath), slog.String("newPath", newPath))
 		updateBody.Name = file.Name
 		updateBody.Path = file.Path
 		if _, rbErr := f.fileService.UpdateFile(ctx, req.GetFileID(), updateBody, userID); rbErr != nil {
-			slog.Error(logPrefix(fnRenameFile)+"failed to rollback file rename", slog.Any("error", rbErr), slog.String("oldPath", oldPath), slog.String("newPath", newPath))
+			slog.Error(logPrefix(fnRenameFile)+"failed to rollback file rename", slog.Any(config.ErrorKey, rbErr), slog.String("oldPath", oldPath), slog.String("newPath", newPath))
 			return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 		}
 		return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())

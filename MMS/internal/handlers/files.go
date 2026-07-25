@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const nullString = ""
+const nullString = config.NullString
 
 func logPrefix(fn string) string { return "[" + fn + "]: " }
 

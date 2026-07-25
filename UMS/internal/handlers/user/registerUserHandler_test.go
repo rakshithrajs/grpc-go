@@ -43,7 +43,7 @@ func TestRegisterUserHandler(t *testing.T) {
 		},
 		{
 			name:         "user registration fails as of empty name",
-			body:         `{"name":"","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
+			body:         `{"name":config.NullString,"email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
 				"name": modelUtils.ErrNameRequired.Error(),
@@ -59,7 +59,7 @@ func TestRegisterUserHandler(t *testing.T) {
 		},
 		{
 			name:         "user registration fails as of empty email",
-			body:         `{"name":"Test","email":"","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
+			body:         `{"name":"Test","email":config.NullString,"password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
 				"email": modelUtils.ErrEmailRequired.Error(),
@@ -73,7 +73,7 @@ func TestRegisterUserHandler(t *testing.T) {
 		},
 		{
 			name:         "user registration fails as of empty password",
-			body:         `{"name":"Test","email":"test@example.com","password":"","confirmPassword":"","phone":"1234567890"}`,
+			body:         `{"name":"Test","email":"test@example.com","password":config.NullString,"confirmPassword":config.NullString,"phone":"1234567890"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
 				"password":        modelUtils.ErrPasswordRequired.Error(),
@@ -90,7 +90,7 @@ func TestRegisterUserHandler(t *testing.T) {
 		},
 		{
 			name:         "user registration fails as of empty phone",
-			body:         `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":""}`,
+			body:         `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":config.NullString}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
 				"phone": modelUtils.ErrPhoneRequired.Error(),

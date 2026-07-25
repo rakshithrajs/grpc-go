@@ -14,10 +14,10 @@ import (
 )
 
 func (c *Client) RenameFileGrpcHandler(ctx context.Context, userID, fileID, newName string) error {
-	if strings.TrimSpace(fileID) == "" {
+	if strings.TrimSpace(fileID) == config.NullString {
 		return status.Error(codes.InvalidArgument, handlerUtils.ErrFileIDRequired.Error())
 	}
-	if strings.TrimSpace(newName) == "" {
+	if strings.TrimSpace(newName) == config.NullString {
 		return status.Error(codes.InvalidArgument, modelUtils.ErrNewNameRequired.Error())
 	}
 
@@ -25,7 +25,7 @@ func (c *Client) RenameFileGrpcHandler(ctx context.Context, userID, fileID, newN
 	if err != nil {
 		return status.Error(codes.Internal, handlerUtils.ErrFailedToUpdateUserFile.Error())
 	}
-	if oldName == "" {
+	if oldName == config.NullString {
 		return nil
 	}
 

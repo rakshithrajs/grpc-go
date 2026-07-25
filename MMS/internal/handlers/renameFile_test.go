@@ -94,7 +94,7 @@ func TestRenameFile(t *testing.T) {
 			newName:      newName,
 			mockDbErr:    mocks.DbOpNotFound,
 			expectedCode: codes.OK,
-			expectedErr:  "",
+			expectedErr:  config.NullString,
 		},
 		{
 			name:         "rename fails as file name already exists",
@@ -111,7 +111,7 @@ func TestRenameFile(t *testing.T) {
 			fileID:       "file-id-123",
 			newName:      "test.txt",
 			expectedCode: codes.OK,
-			expectedErr:  "",
+			expectedErr:  config.NullString,
 		},
 		{
 			name:             "rename succeeds with disk rename",
@@ -122,7 +122,7 @@ func TestRenameFile(t *testing.T) {
 			preCreate:        true,
 			assertDiskRename: true,
 			expectedCode:     codes.OK,
-			expectedErr:      "",
+			expectedErr:      config.NullString,
 		},
 		{
 			name:              "rename fails and roll back also fails",

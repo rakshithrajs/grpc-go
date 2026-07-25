@@ -19,13 +19,13 @@ var fileRenamedSuccessfully = "file renamed successfully"
 func (h *UserFilesHandler) RenameFileHandler(c *gin.Context) {
 	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		handlerUtils.ReturnErrorResponse(c, err, fnRenameFile, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, err, fnRenameFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
 	fileID := strings.TrimSpace(c.Param("fileID"))
-	if fileID == "" {
-		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileIDRequired, fnRenameFile, middlewareUtils.ErrSomethingWentWrong, "")
+	if fileID == config.NullString {
+		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileIDRequired, fnRenameFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
@@ -33,12 +33,12 @@ func (h *UserFilesHandler) RenameFileHandler(c *gin.Context) {
 
 	var payload models.RenameFileRequest
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrInvalidJSON, fnRenameFile, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrInvalidJSON, fnRenameFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
 	if err := modelUtils.Validate.Struct(&payload); err != nil {
-		handlerUtils.ReturnErrorResponse(c, modelUtils.FieldErrors(err), fnRenameFile, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, modelUtils.FieldErrors(err), fnRenameFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 

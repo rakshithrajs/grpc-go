@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
@@ -27,7 +28,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 		{
 			name:         "upload fails when file name is empty",
 			content:      []byte("test content"),
-			fileName:     "",
+			fileName:     config.NullString,
 			expectedCode: codes.InvalidArgument,
 			expectedErr:  handlerUtils.ErrFileNameRequired.Error(),
 		},

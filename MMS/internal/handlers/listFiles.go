@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	MMSpb "github.com/rakshithrajs/cloud/MMS/gen/MMS/v1"
+	"github.com/rakshithrajs/cloud/MMS/internal/config"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -23,7 +24,7 @@ func (f *FileHandler) ListFiles(ctx context.Context, req *MMSpb.EmptyMessage) (*
 
 	files, err := f.fileService.GetFiles(ctx, userID)
 	if err != nil {
-		slog.Error(logPrefix(fnListFiles)+"failed to get files", slog.Any("error", err))
+		slog.Error(logPrefix(fnListFiles)+"failed to get files", slog.Any(config.ErrorKey, err))
 		return nil, status.Error(codes.Internal, ErrFailedToListFiles.Error())
 	}
 

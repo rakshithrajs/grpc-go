@@ -15,13 +15,13 @@ import (
 func (h *UserFilesHandler) DownloadFileHandler(c *gin.Context) {
 	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		handlerUtils.ReturnErrorResponse(c, err, fnDownloadFile, middlewareUtils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, err, fnDownloadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
 	fileID := strings.TrimSpace(c.Param("fileID"))
-	if fileID == "" {
-		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileIDRequired, fnDownloadFile, middlewareUtils.ErrSomethingWentWrong, "")
+	if fileID == config.NullString {
+		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileIDRequired, fnDownloadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
@@ -55,7 +56,7 @@ func TestListFilesHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, w := mockUtils.SetUpGinTest(http.MethodGet, "/api/files", "", tt.auth)
+			c, w := mockUtils.SetUpGinTest(http.MethodGet, "/api/files", config.NullString, tt.auth)
 
 			mmsClient := &mocks.MockMMSClient{}
 			svc := &mocks.MockUserFilesService{
