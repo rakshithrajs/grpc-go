@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -41,7 +40,7 @@ func (d *DbConfig) DSN() string {
 const (
 	functionName      = "Load"
 	logPrefix         = "[" + functionName + "]: "
-	nullString        = ""
+	NullString        = ""
 	UserIDMetadataKey = "userID"
 )
 
@@ -62,22 +61,8 @@ func moduleRoot() string {
 	return root[:len(root)-len("go.mod")]
 }
 
-func envRoot() string {
-	dir := moduleRoot()
-	for {
-		if _, err := os.Stat(filepath.Join(dir, ".env")); err == nil {
-			return dir
-		}
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			return moduleRoot()
-		}
-		dir = parent
-	}
-}
-
 func Load() (*Config, error) {
-	env, err := godotenv.Read(filepath.Join(envRoot(), ".env"))
+	env, err := godotenv.Read(filepath.Join(moduleRoot(), "..", ".env"))
 	if err != nil {
 		slog.Error(logPrefix+"failed to read .env file", slog.Any("error", err))
 	}
@@ -86,7 +71,7 @@ func Load() (*Config, error) {
 		Host: env["MMS_GRPC_HOST"],
 		Port: env["MMS_GRPC_PORT"],
 	}
-	if grpcConf.Host == nullString || grpcConf.Port == nullString {
+	if grpcConf.Host == NullString || grpcConf.Port == NullString {
 		slog.Error(logPrefix+"missing gRPC environment variables", slog.Any("error", ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
@@ -99,13 +84,13 @@ func Load() (*Config, error) {
 		Password: env["MMS_DB_PASSWORD"],
 		SSLMode:  env["MMS_DB_SSLMODE"],
 	}
-	if dbConf.Host == nullString || dbConf.Port == nullString || dbConf.DbName == nullString || dbConf.User == nullString || dbConf.Password == nullString || dbConf.SSLMode == nullString {
+	if dbConf.Host == NullString || dbConf.Port == NullString || dbConf.DbName == NullString || dbConf.User == NullString || dbConf.Password == NullString || dbConf.SSLMode == NullString {
 		slog.Error(logPrefix+"missing database environment variables", slog.Any("error", ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}
 
 	userStoragePath := env["USER_STORAGE_PATH"]
-	if userStoragePath == nullString {
+	if userStoragePath == NullString {
 		slog.Error(logPrefix+"missing user storage path environment variable", slog.Any("error", ErrMissingEnvVariable))
 		return nil, ErrMissingEnvVariable
 	}

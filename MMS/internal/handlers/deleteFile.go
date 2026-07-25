@@ -13,6 +13,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var (
+	ErrFailedToDeleteFile = errors.New("failed to delete file")
+)
+
 func (f *FileHandler) DeleteFile(ctx context.Context, req *MMSpb.DeleteFileRequest) (*MMSpb.EmptyMessage, error) {
 	userID, err := UserIDFromContext(ctx)
 	if err != nil {

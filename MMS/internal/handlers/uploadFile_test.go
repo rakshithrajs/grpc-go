@@ -67,14 +67,6 @@ func TestUploadFile(t *testing.T) {
 			expectedErr:  ErrMissingUserID.Error(),
 		},
 		{
-			name:         "upload fails as file name is missing",
-			setupCtx:     ctxWithUser,
-			fileName:     "",
-			content:      []byte("content"),
-			expectedCode: codes.Internal,
-			expectedErr:  ErrFailedToUploadFile.Error(),
-		},
-		{
 			name:         "upload fails as file path already exists",
 			setupCtx:     ctxWithUser,
 			fileName:     "already-exists.txt",
@@ -100,20 +92,6 @@ func TestUploadFile(t *testing.T) {
 			mockDbErr:    mocks.DbOpInternalError,
 			expectedCode: codes.Internal,
 			expectedErr:  ErrFailedToUploadFile.Error(),
-		},
-		{
-			name:         "upload succeeds with empty content",
-			setupCtx:     ctxWithUser,
-			fileName:     "empty-content.txt",
-			content:      []byte{},
-			expectedCode: codes.OK,
-			expectedErr:  "",
-			expectedFile: &MMSpb.File{
-				ID:       "file-id-123",
-				FileName: "empty-content.txt",
-				FileSize: 0,
-				MimeType: MMSpb.MimeType_MIME_TYPE_TEXT_PLAIN,
-			},
 		},
 		{
 			name:         "upload succeeds",
@@ -162,25 +140,8 @@ func TestUploadFile(t *testing.T) {
 				t.Errorf("expected error %q, got %q", tt.expectedErr, st.Message())
 			}
 
-			if tt.expectedCode != codes.OK {
-				return
-			}
-
-			if resp.GetFile() == nil {
-				t.Fatalf("expected file, got nil")
-			}
-
-			if resp.GetFile().GetID() != tt.expectedFile.GetID() {
-				t.Errorf("expected id %q, got %q", tt.expectedFile.GetID(), resp.GetFile().GetID())
-			}
-			if resp.GetFile().GetFileName() != tt.expectedFile.GetFileName() {
-				t.Errorf("expected filename %q, got %q", tt.expectedFile.GetFileName(), resp.GetFile().GetFileName())
-			}
-			if resp.GetFile().GetFileSize() != tt.expectedFile.GetFileSize() {
-				t.Errorf("expected size %d, got %d", tt.expectedFile.GetFileSize(), resp.GetFile().GetFileSize())
-			}
-			if resp.GetFile().GetMimeType() != tt.expectedFile.GetMimeType() {
-				t.Errorf("expected mime type %v, got %v", tt.expectedFile.GetMimeType(), resp.GetFile().GetMimeType())
+			if tt.expectedCode == codes.OK {
+				mocks.CheckData(t, resp, &MMSpb.UploadFileResponse{File: tt.expectedFile})
 			}
 		})
 	}

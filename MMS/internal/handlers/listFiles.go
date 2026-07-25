@@ -2,12 +2,17 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	MMSpb "github.com/rakshithrajs/cloud/MMS/gen/MMS/v1"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+)
+
+var (
+	ErrFailedToListFiles = errors.New("failed to list files")
 )
 
 func (f *FileHandler) ListFiles(ctx context.Context, req *MMSpb.EmptyMessage) (*MMSpb.ListFilesResponse, error) {
@@ -19,7 +24,7 @@ func (f *FileHandler) ListFiles(ctx context.Context, req *MMSpb.EmptyMessage) (*
 	files, err := f.fileService.GetFiles(ctx, userID)
 	if err != nil {
 		slog.Error(logPrefix(fnListFiles)+"failed to get files", slog.Any("error", err))
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, status.Error(codes.Internal, ErrFailedToListFiles.Error())
 	}
 
 	respFiles := make([]*MMSpb.File, 0, len(files))

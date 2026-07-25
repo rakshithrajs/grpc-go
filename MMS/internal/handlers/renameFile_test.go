@@ -22,7 +22,6 @@ func TestRenameFile(t *testing.T) {
 
 	const (
 		userID  = "user-123"
-		fileID  = "file-id-123"
 		newName = "renamed.txt"
 		oldName = "old.txt"
 	)
@@ -46,19 +45,24 @@ func TestRenameFile(t *testing.T) {
 	}
 
 	tests := []struct {
-		name          string
-		setupCtx      func() context.Context
-		mockDbErr     mocks.DbOperationError
-		returnOldName bool
-		preCreate     bool
-		expectedCode  codes.Code
-		expectedErr   string
+		name             string
+		setupCtx         func() context.Context
+		fileID           string
+		newName          string
+		mockDbErr        mocks.DbOperationError
+		returnOldName    bool
+		preCreate        bool
+		assertDiskRename bool
+		expectedCode     codes.Code
+		expectedErr      string
 	}{
 		{
 			name: "rename fails due to missing metadata",
 			setupCtx: func() context.Context {
 				return context.Background()
 			},
+			fileID:       "file-id-123",
+			newName:      newName,
 			expectedCode: codes.Unauthenticated,
 			expectedErr:  ErrMissingMetadata.Error(),
 		},
@@ -67,12 +71,16 @@ func TestRenameFile(t *testing.T) {
 			setupCtx: func() context.Context {
 				return metadata.NewIncomingContext(context.Background(), metadata.Pairs())
 			},
+			fileID:       "file-id-123",
+			newName:      newName,
 			expectedCode: codes.Unauthenticated,
 			expectedErr:  ErrMissingUserID.Error(),
 		},
 		{
 			name:         "rename fails due to db internal error",
 			setupCtx:     ctxWithUser,
+			fileID:       "file-id-123",
+			newName:      newName,
 			mockDbErr:    mocks.DbOpInternalError,
 			expectedCode: codes.Internal,
 			expectedErr:  ErrFailedToRenameFile.Error(),
@@ -80,6 +88,8 @@ func TestRenameFile(t *testing.T) {
 		{
 			name:         "rename succeeds but file not found",
 			setupCtx:     ctxWithUser,
+			fileID:       "file-id-123",
+			newName:      newName,
 			mockDbErr:    mocks.DbOpNotFound,
 			expectedCode: codes.OK,
 			expectedErr:  "",
@@ -87,6 +97,8 @@ func TestRenameFile(t *testing.T) {
 		{
 			name:         "rename fails as file name already exists",
 			setupCtx:     ctxWithUser,
+			fileID:       "file-id-123",
+			newName:      newName,
 			mockDbErr:    mocks.DbOpDuplicateName,
 			expectedCode: codes.AlreadyExists,
 			expectedErr:  storage.ErrFileNameAlreadyExists.Error(),
@@ -94,20 +106,27 @@ func TestRenameFile(t *testing.T) {
 		{
 			name:         "rename succeeds early when name is unchanged",
 			setupCtx:     ctxWithUser,
+			fileID:       "file-id-123",
+			newName:      "test.txt",
 			expectedCode: codes.OK,
 			expectedErr:  "",
 		},
 		{
-			name:          "rename succeeds with disk rename",
-			setupCtx:      ctxWithUser,
-			returnOldName: true,
-			preCreate:     true,
-			expectedCode:  codes.OK,
-			expectedErr:   "",
+			name:             "rename succeeds with disk rename",
+			setupCtx:         ctxWithUser,
+			fileID:           "file-id-123",
+			newName:          newName,
+			returnOldName:    true,
+			preCreate:        true,
+			assertDiskRename: true,
+			expectedCode:     codes.OK,
+			expectedErr:      "",
 		},
 		{
 			name:          "rename fails and rolls back disk rename",
 			setupCtx:      ctxWithUser,
+			fileID:        "file-id-123",
+			newName:       newName,
 			returnOldName: true,
 			expectedCode:  codes.Internal,
 			expectedErr:   ErrFailedToRenameFile.Error(),
@@ -132,8 +151,8 @@ func TestRenameFile(t *testing.T) {
 
 			// act
 			_, err := handler.RenameFile(tt.setupCtx(), &MMSpb.RenameFileRequest{
-				FileID:  fileID,
-				NewName: newName,
+				FileID:  tt.fileID,
+				NewName: tt.newName,
 			})
 
 			// assert
@@ -146,16 +165,14 @@ func TestRenameFile(t *testing.T) {
 				t.Errorf("expected error %q, got %q", tt.expectedErr, st.Message())
 			}
 
-			if tt.expectedCode != codes.OK {
-				return
-			}
-
-			if tt.name == "rename succeeds with disk rename" {
-				if _, statErr := os.Stat(oldPath); !os.IsNotExist(statErr) {
-					t.Errorf("expected old file to be removed, still exists at %s", oldPath)
-				}
-				if _, statErr := os.Stat(newPath); os.IsNotExist(statErr) {
-					t.Errorf("expected new file to exist, missing at %s", newPath)
+			if tt.expectedCode == codes.OK {
+				if tt.assertDiskRename {
+					if _, statErr := os.Stat(oldPath); !os.IsNotExist(statErr) {
+						t.Errorf("expected old file to be removed, still exists at %s", oldPath)
+					}
+					if _, statErr := os.Stat(newPath); os.IsNotExist(statErr) {
+						t.Errorf("expected new file to exist, missing at %s", newPath)
+					}
 				}
 			}
 		})

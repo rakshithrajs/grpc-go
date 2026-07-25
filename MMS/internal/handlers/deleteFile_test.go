@@ -7,7 +7,6 @@ import (
 	MMSpb "github.com/rakshithrajs/cloud/MMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/MMS/internal/config"
 	"github.com/rakshithrajs/cloud/MMS/internal/mocks"
-	"github.com/rakshithrajs/cloud/MMS/internal/storage"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -26,9 +25,10 @@ func TestDeleteFile(t *testing.T) {
 		mockDbErr    mocks.DbOperationError
 		expectedCode codes.Code
 		expectedErr  string
+		expectedData *MMSpb.EmptyMessage
 	}{
 		{
-			name: "missing metadata",
+			name: "deletion fails due to missing metadata",
 			setupCtx: func() context.Context {
 				return context.Background()
 			},
@@ -37,7 +37,7 @@ func TestDeleteFile(t *testing.T) {
 			expectedErr:  ErrMissingMetadata.Error(),
 		},
 		{
-			name: "missing userID",
+			name: "deletion fails due to missing userID",
 			setupCtx: func() context.Context {
 				return metadata.NewIncomingContext(context.Background(), metadata.Pairs())
 			},
@@ -46,7 +46,7 @@ func TestDeleteFile(t *testing.T) {
 			expectedErr:  ErrMissingUserID.Error(),
 		},
 		{
-			name:         "file not found",
+			name:         "deletion succeeds with file not found",
 			setupCtx:     ctxWithUser,
 			fileID:       "file-id-123",
 			mockDbErr:    mocks.DbOpNotFound,
@@ -54,19 +54,20 @@ func TestDeleteFile(t *testing.T) {
 			expectedCode: codes.OK,
 		},
 		{
-			name:         "db internal error",
+			name:         "deletion fails due to db internal error",
 			setupCtx:     ctxWithUser,
 			fileID:       "file-id-123",
 			mockDbErr:    mocks.DbOpInternalError,
-			expectedErr:  storage.ErrFailedToDeleteFile.Error(),
+			expectedErr:  ErrFailedToDeleteFile.Error(),
 			expectedCode: codes.Internal,
 		},
 		{
-			name:         "delete succeeds",
+			name:         "deletion succeeds",
 			setupCtx:     ctxWithUser,
 			fileID:       "file-id-123",
 			expectedCode: codes.OK,
 			expectedErr:  "",
+			expectedData: &MMSpb.EmptyMessage{},
 		},
 	}
 
@@ -79,7 +80,7 @@ func TestDeleteFile(t *testing.T) {
 			req := &MMSpb.DeleteFileRequest{FileID: tt.fileID}
 
 			// act
-			_, err := handler.DeleteFile(tt.setupCtx(), req)
+			resp, err := handler.DeleteFile(tt.setupCtx(), req)
 
 			// assert
 			if tt.expectedCode != status.Code(err) {
@@ -88,6 +89,12 @@ func TestDeleteFile(t *testing.T) {
 
 			if tt.expectedErr != "" && status.Convert(err).Message() != tt.expectedErr {
 				t.Fatalf("expected error %v, got %v", tt.expectedErr, status.Convert(err).Message())
+			}
+
+			if tt.expectedData != nil {
+				if resp == nil {
+					t.Fatalf("expected response %v, got nil", tt.expectedData)
+				}
 			}
 		})
 	}

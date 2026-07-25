@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strings"
 
 	MMSpb "github.com/rakshithrajs/cloud/MMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/MMS/internal/models"
@@ -17,6 +16,7 @@ import (
 )
 
 var (
+	ErrNewNameRequired    = errors.New("new name is required")
 	ErrFailedToRenameFile = errors.New("failed to rename file")
 )
 
@@ -26,10 +26,8 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 		return nil, err
 	}
 
-	newName := strings.TrimSpace(req.GetNewName())
-
 	updateBody := models.UpdateFileRequest{
-		Name: newName,
+		Name: req.GetNewName(),
 	}
 
 	file, err := f.fileService.UpdateFile(ctx, req.GetFileID(), updateBody, userID)
@@ -44,13 +42,13 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 		return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 	}
 
-	if file.Name == newName {
+	if file.Name == updateBody.Name {
 		return &MMSpb.EmptyMessage{}, nil
 	}
 
 	oldPath := file.Path
 	userDir := filepath.Dir(oldPath)
-	newPath := filepath.Join(userDir, newName)
+	newPath := filepath.Join(userDir, updateBody.Name)
 	updateBody.Path = newPath
 
 	if _, err := f.fileService.UpdateFile(ctx, req.GetFileID(), updateBody, userID); err != nil {

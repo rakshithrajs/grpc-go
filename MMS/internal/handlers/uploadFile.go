@@ -19,7 +19,9 @@ import (
 )
 
 var (
-	ErrFailedToUploadFile = errors.New("failed to upload file")
+	ErrFileNameRequired    = errors.New("file name is required")
+	ErrFileContentRequired = errors.New("file content is required")
+	ErrFailedToUploadFile  = errors.New("failed to upload file")
 )
 
 func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileRequest) (*MMSpb.UploadFileResponse, error) {
@@ -29,6 +31,7 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 	}
 
 	cleanedName := strings.TrimSpace(req.GetFileName())
+
 	payload := models.UploadFileRequest{
 		Name:     cleanedName,
 		Contents: req.GetContent(),

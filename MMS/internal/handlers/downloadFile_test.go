@@ -74,7 +74,7 @@ func TestDownloadFile(t *testing.T) {
 			expectedErr:  ErrMissingUserID.Error(),
 		},
 		{
-			name:         "download succeeds but file not found",
+			name:         "download succeeds with file not found",
 			setupCtx:     ctxWithUser,
 			fileID:       fileID,
 			mockDbErr:    mocks.DbOpNotFound,
@@ -146,18 +146,8 @@ func TestDownloadFile(t *testing.T) {
 				t.Fatalf("expected error %q, got %q", tt.expectedErr, st.Message())
 			}
 
-			if tt.expectedCode != codes.OK {
-				return
-			}
-
-			if resp.FileName != tt.expectedData.FileName {
-				t.Errorf("expected filename %q, got %q", tt.expectedData.FileName, resp.FileName)
-			}
-			if resp.MimeType != tt.expectedData.MimeType {
-				t.Errorf("expected mime type %v, got %v", tt.expectedData.MimeType, resp.MimeType)
-			}
-			if string(resp.Content) != string(tt.expectedData.Content) {
-				t.Errorf("expected content %q, got %q", tt.expectedData.Content, resp.Content)
+			if tt.expectedCode == codes.OK {
+				mocks.CheckData(t, resp, tt.expectedData)
 			}
 		})
 	}
