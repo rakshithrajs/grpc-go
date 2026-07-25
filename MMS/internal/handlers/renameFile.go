@@ -11,14 +11,8 @@ import (
 	"github.com/rakshithrajs/cloud/MMS/internal/config"
 	"github.com/rakshithrajs/cloud/MMS/internal/models"
 	"github.com/rakshithrajs/cloud/MMS/internal/storage"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-)
-
-var (
-	ErrNewNameRequired    = errors.New("new name is required")
-	ErrFailedToRenameFile = errors.New("failed to rename file")
 )
 
 func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileRequest) (*MMSpb.EmptyMessage, error) {

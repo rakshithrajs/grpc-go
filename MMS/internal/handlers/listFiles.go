@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 
 	MMSpb "github.com/rakshithrajs/cloud/MMS/gen/MMS/v1"
@@ -10,10 +9,6 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-)
-
-var (
-	ErrFailedToListFiles = errors.New("failed to list files")
 )
 
 func (f *FileHandler) ListFiles(ctx context.Context, req *MMSpb.EmptyMessage) (*MMSpb.ListFilesResponse, error) {

@@ -7,6 +7,7 @@ import (
 	MMSpb "github.com/rakshithrajs/cloud/MMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/MMS/internal/config"
 	"github.com/rakshithrajs/cloud/MMS/internal/mocks"
+	"github.com/rakshithrajs/cloud/MMS/internal/storage"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -58,7 +59,7 @@ func TestDeleteFile(t *testing.T) {
 			setupCtx:     ctxWithUser,
 			fileID:       "file-id-123",
 			mockDbErr:    mocks.DbOpInternalError,
-			expectedErr:  ErrFailedToDeleteFile.Error(),
+			expectedErr:  storage.ErrFailedToDeleteFile.Error(),
 			expectedCode: codes.Internal,
 		},
 		{

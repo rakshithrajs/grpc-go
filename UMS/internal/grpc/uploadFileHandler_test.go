@@ -68,7 +68,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpInternalError,
 			expectedCode: codes.Internal,
-			expectedErr:  mocks.ErrFailedToUploadFile.Error(),
+			expectedErr:  handlerUtils.ErrFailedToUploadFile.Error(),
 		},
 		{
 			name:         "upload fails as file name already exists",

@@ -14,11 +14,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var (
-	ErrFileIDRequired       = errors.New("file ID is required")
-	ErrFailedToDownloadFile = errors.New("failed to download file")
-)
-
 func (f *FileHandler) DownloadFile(ctx context.Context, req *MMSpb.DownloadFileRequest) (*MMSpb.DownloadFileResponse, error) {
 	userID, err := UserIDFromContext(ctx)
 	if err != nil {

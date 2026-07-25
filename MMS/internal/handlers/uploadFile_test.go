@@ -92,7 +92,7 @@ func TestUploadFile(t *testing.T) {
 			content:      []byte("content"),
 			mockDbErr:    mocks.DbOpInternalError,
 			expectedCode: codes.Internal,
-			expectedErr:  ErrFailedToUploadFile.Error(),
+			expectedErr:  storage.ErrFailedToUploadFile.Error(),
 		},
 		{
 			name:         "upload succeeds",

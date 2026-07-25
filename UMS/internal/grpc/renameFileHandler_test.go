@@ -106,7 +106,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			newName:      "renamed.txt",
 			grpcErr:      mocks.GrpcOpInternalError,
 			expectedCode: codes.Internal,
-			expectedErr:  mocks.ErrFailedToRenameFile.Error(),
+			expectedErr:  handlerUtils.ErrFailedToRenameFile.Error(),
 		},
 		{
 			name:              "grpc rename internal error with rollback failure",

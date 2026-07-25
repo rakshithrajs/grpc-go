@@ -13,15 +13,8 @@ import (
 	"github.com/rakshithrajs/cloud/MMS/internal/config"
 	"github.com/rakshithrajs/cloud/MMS/internal/models"
 	"github.com/rakshithrajs/cloud/MMS/internal/storage"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-)
-
-var (
-	ErrFileNameRequired    = errors.New("file name is required")
-	ErrFileContentRequired = errors.New("file content is required")
-	ErrFailedToUploadFile  = errors.New("failed to upload file")
 )
 
 func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileRequest) (*MMSpb.UploadFileResponse, error) {
@@ -40,7 +33,7 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 	cfg, err := config.GetConfig()
 	if err != nil {
 		slog.Error(logPrefix(fnUploadFile)+"failed to get config", slog.Any(config.ErrorKey, err))
-		return nil, status.Error(codes.Internal, ErrFailedToUploadFile.Error())
+		return nil, status.Error(codes.Internal, storage.ErrFailedToUploadFile.Error())
 	}
 
 	fileSize := int64(len(payload.Contents))
@@ -49,7 +42,7 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 	userDir := filepath.Join(cfg.UserStoragePath, userID)
 	if err := os.MkdirAll(userDir, 0o755); err != nil {
 		slog.Error(logPrefix(fnUploadFile)+"failed to create user directory", slog.Any(config.ErrorKey, err))
-		return nil, status.Error(codes.Internal, ErrFailedToUploadFile.Error())
+		return nil, status.Error(codes.Internal, storage.ErrFailedToUploadFile.Error())
 	}
 
 	filePath := filepath.Join(userDir, cleanedName)
@@ -60,18 +53,18 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 			return nil, status.Error(codes.AlreadyExists, storage.ErrFilePathAlreadyExists.Error())
 		}
 		slog.Error(logPrefix(fnUploadFile)+"failed to create file", slog.Any(config.ErrorKey, err))
-		return nil, status.Error(codes.Internal, ErrFailedToUploadFile.Error())
+		return nil, status.Error(codes.Internal, storage.ErrFailedToUploadFile.Error())
 	}
 	defer fi.Close()
 
 	if written, err := fi.Write(payload.Contents); err != nil || written != len(payload.Contents) {
 		slog.Error(logPrefix(fnUploadFile)+"failed to write file", slog.Any(config.ErrorKey, err), slog.Int("written", written), slog.Int("expected", len(payload.Contents)))
-		return nil, status.Error(codes.Internal, ErrFailedToUploadFile.Error())
+		return nil, status.Error(codes.Internal, storage.ErrFailedToUploadFile.Error())
 	}
 
 	if err := fi.Sync(); err != nil {
 		slog.Error(logPrefix(fnUploadFile)+"failed to sync file", slog.Any(config.ErrorKey, err))
-		return nil, status.Error(codes.Internal, ErrFailedToUploadFile.Error())
+		return nil, status.Error(codes.Internal, storage.ErrFailedToUploadFile.Error())
 	}
 
 	file := &models.File{
@@ -89,7 +82,7 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 			return nil, status.Error(codes.AlreadyExists, err.Error())
 		}
 		slog.Error(logPrefix(fnUploadFile)+"failed to save file metadata", slog.Any(config.ErrorKey, err))
-		return nil, status.Error(codes.Internal, ErrFailedToUploadFile.Error())
+		return nil, status.Error(codes.Internal, storage.ErrFailedToUploadFile.Error())
 	}
 
 	return &MMSpb.UploadFileResponse{

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"errors"
 
 	MMSpb "github.com/rakshithrajs/cloud/MMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/MMS/internal/config"
@@ -12,8 +11,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
-
-const nullString = config.NullString
 
 func logPrefix(fn string) string { return "[" + fn + "]: " }
 
@@ -26,20 +23,15 @@ const (
 	fnUserIDFromContext = "UserIDFromContext"
 )
 
-var (
-	ErrMissingMetadata = errors.New("missing metadata")
-	ErrMissingUserID   = errors.New("missing user id in metadata")
-)
-
 func UserIDFromContext(ctx context.Context) (string, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nullString, status.Error(codes.Unauthenticated, ErrMissingMetadata.Error())
+		return config.NullString, status.Error(codes.Unauthenticated, ErrMissingMetadata.Error())
 	}
 
 	userIDs := md.Get(config.UserIDMetadataKey)
-	if len(userIDs) == 0 || userIDs[0] == nullString {
-		return nullString, status.Error(codes.Unauthenticated, ErrMissingUserID.Error())
+	if len(userIDs) == 0 || userIDs[0] == config.NullString {
+		return config.NullString, status.Error(codes.Unauthenticated, ErrMissingUserID.Error())
 	}
 
 	return userIDs[0], nil

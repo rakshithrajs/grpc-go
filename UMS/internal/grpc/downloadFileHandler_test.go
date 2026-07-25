@@ -61,7 +61,7 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			mockGrpcErr:  mocks.GrpcOpInternalError,
 			expectedCode: codes.Internal,
-			expectedErr:  mocks.ErrFailedToDownloadFile.Error(),
+			expectedErr:  handlerUtils.ErrFailedToDownloadFile.Error(),
 		},
 		{
 			name:         "file download succeeds",
