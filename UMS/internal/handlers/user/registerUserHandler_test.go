@@ -129,7 +129,7 @@ func TestRegisterUserHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c, w := mocks.SetUpGinTest(http.MethodPost, "/api/users/register", tt.body, false)
 
-			svc := &mocks.MockUserService{MockErr: tt.mockErr}
+			svc := &mocks.MockUserService{CreateUserErr: tt.mockErr}
 			handler := NewUserHandler(svc)
 
 			handler.RegisterUserHandler(c)

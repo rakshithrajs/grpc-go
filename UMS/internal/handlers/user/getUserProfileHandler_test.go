@@ -60,7 +60,7 @@ func TestGetUserProfileHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c, w := mocks.SetUpGinTest(http.MethodGet, "/api/users/profile", "", tt.auth)
 
-			svc := &mocks.MockUserService{MockErr: tt.mockErr}
+			svc := &mocks.MockUserService{GetUserByIDErr: tt.mockErr}
 			handler := NewUserHandler(svc)
 
 			handler.GetUserProfileHandler(c)

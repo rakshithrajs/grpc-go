@@ -51,17 +51,13 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 	newPath := filepath.Join(userDir, updateBody.Name)
 	updateBody.Path = newPath
 
-	if _, err := f.fileService.UpdateFile(ctx, req.GetFileID(), updateBody, userID); err != nil {
-		slog.Error(logPrefix(fnRenameFile)+"failed to update file path", slog.Any("error", err))
-		return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
-	}
-
 	if err := os.Rename(oldPath, newPath); err != nil {
 		slog.Error(logPrefix(fnRenameFile)+"failed to rename file on disk", slog.Any("error", err), slog.String("oldPath", oldPath), slog.String("newPath", newPath))
 		updateBody.Name = file.Name
 		updateBody.Path = file.Path
 		if _, rbErr := f.fileService.UpdateFile(ctx, req.GetFileID(), updateBody, userID); rbErr != nil {
 			slog.Error(logPrefix(fnRenameFile)+"failed to rollback file rename", slog.Any("error", rbErr), slog.String("oldPath", oldPath), slog.String("newPath", newPath))
+			return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 		}
 		return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 	}

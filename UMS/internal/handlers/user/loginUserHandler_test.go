@@ -104,7 +104,7 @@ func TestLoginUserHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c, w := mocks.SetUpGinTest(http.MethodPost, "/api/users/login", tt.body, false)
 
-			svc := &mocks.MockUserService{MockErr: tt.mockErr}
+			svc := &mocks.MockUserService{GetUserByEmailErr: tt.mockErr}
 			handler := NewUserHandler(svc)
 
 			handler.LoginUserHandler(c)

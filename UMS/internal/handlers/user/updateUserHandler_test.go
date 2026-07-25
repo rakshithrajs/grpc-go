@@ -10,12 +10,13 @@ import (
 
 func TestUpdateUserHandler(t *testing.T) {
 	tests := []struct {
-		name          string
-		body          string
-		auth          bool
-		mockErr       mocks.DbOperationError
-		expectedCode  int
-		expectedError any
+		name           string
+		body           string
+		auth           bool
+		mockErr        mocks.DbOperationError
+		getUserByIDErr mocks.DbOperationError
+		expectedCode   int
+		expectedError  any
 	}{
 		{
 			name:          "user update fails due to missing auth",
@@ -64,6 +65,15 @@ func TestUpdateUserHandler(t *testing.T) {
 			expectedError: utils.ErrUserEmailAlreadyExists.Error(),
 		},
 		{
+			name:           "user update fails due get user by ID error",
+			body:           `{"password":"NewPassword@123","confirmPassword":"NewPassword@123"}`,
+			auth:           true,
+			mockErr:        mocks.DbOpSuccess,
+			getUserByIDErr: mocks.DbOpInternalError,
+			expectedCode:   http.StatusInternalServerError,
+			expectedError:  utils.ErrSomethingWentWrong.Error(),
+		},
+		{
 			name:          "user update fails due to internal server error",
 			body:          `{"phone":"0987654321"}`,
 			auth:          true,
@@ -105,7 +115,7 @@ func TestUpdateUserHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c, w := mocks.SetUpGinTest(http.MethodPatch, "/api/users/update", tt.body, tt.auth)
 
-			svc := &mocks.MockUserService{MockErr: tt.mockErr}
+			svc := &mocks.MockUserService{UpdateUserErr: tt.mockErr, GetUserByIDErr: tt.getUserByIDErr}
 			handler := NewUserHandler(svc)
 
 			handler.UpdateUserHandler(c)

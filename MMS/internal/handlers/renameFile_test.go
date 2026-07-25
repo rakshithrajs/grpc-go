@@ -45,16 +45,18 @@ func TestRenameFile(t *testing.T) {
 	}
 
 	tests := []struct {
-		name             string
-		setupCtx         func() context.Context
-		fileID           string
-		newName          string
-		mockDbErr        mocks.DbOperationError
-		returnOldName    bool
-		preCreate        bool
-		assertDiskRename bool
-		expectedCode     codes.Code
-		expectedErr      string
+		name              string
+		setupCtx          func() context.Context
+		fileID            string
+		newName           string
+		mockDbErr         mocks.DbOperationError
+		updateRollbackErr mocks.DbOperationError
+		returnOldName     bool
+		preCreate         bool
+		assertDiskRename  bool
+		expectedCode      codes.Code
+		expectedErr       string
+		DiskWriteFailure  bool
 	}{
 		{
 			name: "rename fails due to missing metadata",
@@ -121,6 +123,17 @@ func TestRenameFile(t *testing.T) {
 			assertDiskRename: true,
 			expectedCode:     codes.OK,
 			expectedErr:      "",
+		},
+		{
+			name:              "rename fails and roll back also fails",
+			setupCtx:          ctxWithUser,
+			fileID:            "file-id-123",
+			newName:           newName,
+			mockDbErr:         mocks.DbOpInternalError,
+			updateRollbackErr: mocks.DbOpInternalError,
+			DiskWriteFailure:  true,
+			expectedCode:      codes.Internal,
+			expectedErr:       ErrFailedToRenameFile.Error(),
 		},
 		{
 			name:          "rename fails and rolls back disk rename",

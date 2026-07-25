@@ -16,15 +16,18 @@ var mockPasswordHash string
 var ZeroTime = time.Time{}
 
 type MockUserService struct {
-	MockErr   DbOperationError
-	User      *models.User
-	ID        string
-	Email     string
-	UpdateReq models.UpdateUserRequest
+	GetUserByIDErr    DbOperationError
+	CreateUserErr     DbOperationError
+	GetUserByEmailErr DbOperationError
+	UpdateUserErr     DbOperationError
+	User              *models.User
+	ID                string
+	Email             string
+	UpdateReq         models.UpdateUserRequest
 }
 
 func (m *MockUserService) CreateUser(ctx context.Context, user *models.User) (*models.User, error) {
-	switch m.MockErr {
+	switch m.CreateUserErr {
 	case DbOpDuplicateEmail:
 		return nil, utils.ErrUserEmailAlreadyExists
 	case DbOpDuplicatePhone:
@@ -44,7 +47,7 @@ func (m *MockUserService) CreateUser(ctx context.Context, user *models.User) (*m
 func (m *MockUserService) GetUserByID(ctx context.Context, id string) (*models.User, error) {
 	m.ID = id
 
-	switch m.MockErr {
+	switch m.GetUserByIDErr {
 	case DbOpNotFound:
 		return nil, utils.ErrUserNotFound
 	case DbOpInternalError:
@@ -64,7 +67,7 @@ func (m *MockUserService) GetUserByID(ctx context.Context, id string) (*models.U
 func (m *MockUserService) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
 	m.Email = email
 
-	switch m.MockErr {
+	switch m.GetUserByEmailErr {
 	case DbOpNotFound:
 		return nil, utils.ErrEmailNotFound
 	case DbOpInternalError:
@@ -85,7 +88,7 @@ func (m *MockUserService) UpdateUser(ctx context.Context, id string, req models.
 	m.ID = id
 	m.UpdateReq = req
 
-	switch m.MockErr {
+	switch m.UpdateUserErr {
 	case DbOpDuplicateEmail:
 		return utils.ErrUserEmailAlreadyExists
 	case DbOpDuplicatePhone:

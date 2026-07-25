@@ -11,12 +11,14 @@ import (
 )
 
 type MockFileService struct {
-	MockErr         DbOperationError
-	ReturnOldName   bool
-	UserID          string
-	FileID          string
-	Files           []*models.ListFileResponse
-	updateCallCount int
+	MockErr           DbOperationError
+	updateRollbackErr DbOperationError
+	DiskWriteFailure  bool
+	ReturnOldName     bool
+	UserID            string
+	FileID            string
+	Files             []*models.ListFileResponse
+	updateCallCount   int
 }
 
 var ZeroTime = time.Time{}
@@ -95,7 +97,12 @@ func (m *MockFileService) UpdateFile(ctx context.Context, id string, req models.
 	m.UserID = userID
 	m.FileID = id
 
-	switch m.MockErr {
+	err := m.MockErr
+	if m.DiskWriteFailure {
+		err = m.updateRollbackErr
+	}
+
+	switch err {
 	case DbOpInternalError:
 		return nil, storage.ErrFailedToUpdateFile
 	case DbOpNotFound:
