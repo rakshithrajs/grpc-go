@@ -100,7 +100,7 @@ func TestListFiles(t *testing.T) {
 			for i, expected := range tt.expectedFiles {
 				got := gotFiles[i]
 				if got.GetID() != expected.GetID() {
-					t.Errorf("expected file %d id %q, got %q", i, expected.GetID(), got.GetID())
+					t.Errorf("expected file %d ID %q, got %q", i, expected.GetID(), got.GetID())
 				}
 				if got.GetFileName() != expected.GetFileName() {
 					t.Errorf("expected file %d filename %q, got %q", i, expected.GetFileName(), got.GetFileName())

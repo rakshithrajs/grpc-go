@@ -85,7 +85,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			expectedErr:  mocks.ErrMissingUserID.Error(),
 		},
 		{
-			name:         "file rename succesded with no file id found",
+			name:         "file rename succeeded with no file id found",
 			fileID:       "file-id-123",
 			newName:      "renamed.txt",
 			grpcErr:      mocks.GrpcOpNotFound,

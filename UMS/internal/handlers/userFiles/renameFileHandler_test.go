@@ -62,7 +62,7 @@ func TestRenameFileHandler(t *testing.T) {
 			name:         "rename file fails due to empty newName",
 			auth:         true,
 			fileID:       "file-id-123",
-			body:         `{"newName":config.NullString}`,
+			body:         `{"newName":""}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
 				"newName": modelUtils.ErrNewNameRequired.Error(),

@@ -42,7 +42,7 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			expectedErr:  mocks.ErrMissingMetadata.Error(),
 		},
 		{
-			name:         "file download fails due to user id is misssing",
+			name:         "file download fails due to user id is missing",
 			fileID:       "file-id-123",
 			mockGrpcErr:  mocks.GrpcOpMissingUserID,
 			expectedCode: codes.Unauthenticated,

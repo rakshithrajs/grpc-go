@@ -51,7 +51,7 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 		updateBody.Name = file.Name
 		updateBody.Path = file.Path
 		if _, rbErr := f.fileService.UpdateFile(ctx, req.GetFileID(), updateBody, userID); rbErr != nil {
-			slog.Error(logPrefix(fnRenameFile)+"failed to rollback file rename", slog.Any(config.ErrorKey, rbErr), slog.String("oldPath", oldPath), slog.String("newPath", newPath))
+			slog.Error(logPrefix(fnRenameFile)+"failed to roll back file rename", slog.Any(config.ErrorKey, rbErr), slog.String("oldPath", oldPath), slog.String("newPath", newPath))
 			return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 		}
 		return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())

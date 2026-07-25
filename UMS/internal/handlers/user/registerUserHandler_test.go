@@ -36,21 +36,21 @@ func TestRegisterUserHandler(t *testing.T) {
 			},
 		},
 		{
-			name:          "user registration fails as of invalid json",
+			name:          "user registration fails due to invalid json",
 			body:          `{`,
 			expectedCode:  http.StatusBadRequest,
 			expectedError: handlerUtils.ErrInvalidJSON.Error(),
 		},
 		{
-			name:         "user registration fails as of empty name",
-			body:         `{"name":config.NullString,"email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
+			name:         "user registration fails due to empty name",
+			body:         `{"name":"","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
 				"name": modelUtils.ErrNameRequired.Error(),
 			},
 		},
 		{
-			name:         "user registration fails as of invalid name",
+			name:         "user registration fails due to invalid name",
 			body:         `{"name":"Test123","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
@@ -58,22 +58,22 @@ func TestRegisterUserHandler(t *testing.T) {
 			},
 		},
 		{
-			name:         "user registration fails as of empty email",
-			body:         `{"name":"Test","email":config.NullString,"password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
+			name:         "user registration fails due to empty email",
+			body:         `{"name":"Test","email":"","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
 				"email": modelUtils.ErrEmailRequired.Error(),
 			},
 		},
 		{
-			name:          "user registration fails as of invalid email format",
+			name:          "user registration fails due to invalid email format",
 			body:          `{"name":"Test","email":"invalid-email","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			expectedCode:  http.StatusBadRequest,
 			expectedError: map[string]string{"email": modelUtils.ErrInvalidEmail.Error()},
 		},
 		{
-			name:         "user registration fails as of empty password",
-			body:         `{"name":"Test","email":"test@example.com","password":config.NullString,"confirmPassword":config.NullString,"phone":"1234567890"}`,
+			name:         "user registration fails due to empty password",
+			body:         `{"name":"Test","email":"test@example.com","password":"","confirmPassword":"","phone":"1234567890"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
 				"password":        modelUtils.ErrPasswordRequired.Error(),
@@ -81,7 +81,7 @@ func TestRegisterUserHandler(t *testing.T) {
 			},
 		},
 		{
-			name:         "user registration fails as of password mismatch",
+			name:         "user registration fails due to password mismatch",
 			body:         `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"DifferentPassword@123","phone":"1234567890"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
@@ -89,15 +89,15 @@ func TestRegisterUserHandler(t *testing.T) {
 			},
 		},
 		{
-			name:         "user registration fails as of empty phone",
-			body:         `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":config.NullString}`,
+			name:         "user registration fails due to empty phone",
+			body:         `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":""}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
 				"phone": modelUtils.ErrPhoneRequired.Error(),
 			},
 		},
 		{
-			name:         "user registration fails as of invalid phone",
+			name:         "user registration fails due to invalid phone",
 			body:         `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"123"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
@@ -105,21 +105,21 @@ func TestRegisterUserHandler(t *testing.T) {
 			},
 		},
 		{
-			name:          "user registration fails as of duplicate email",
+			name:          "user registration fails due to duplicate email",
 			body:          `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			mockErr:       mocks.DbOpDuplicateEmail,
 			expectedCode:  http.StatusConflict,
 			expectedError: handlerUtils.ErrUserEmailAlreadyExists.Error(),
 		},
 		{
-			name:          "user registration fails as of duplicate phone",
+			name:          "user registration fails due to duplicate phone",
 			body:          `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			mockErr:       mocks.DbOpDuplicatePhone,
 			expectedCode:  http.StatusConflict,
 			expectedError: handlerUtils.ErrPhoneNumberAlreadyExists.Error(),
 		},
 		{
-			name:          "user registration fails as of internal server error",
+			name:          "user registration fails due to internal server error",
 			body:          `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			mockErr:       mocks.DbOpInternalError,
 			expectedCode:  http.StatusInternalServerError,

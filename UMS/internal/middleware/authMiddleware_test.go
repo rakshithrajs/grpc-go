@@ -49,7 +49,7 @@ func TestAuthMiddleware(t *testing.T) {
 		},
 		{
 			name:                "authorization fails because of Missing Bearer",
-			AuthorizationHeader: "okenabcdefg",
+			AuthorizationHeader: "tokenabcdefg",
 			expectedStatusCode:  http.StatusUnauthorized,
 			expectedError:       middlewareUtils.ErrMissingBearerToken.Error(),
 		},

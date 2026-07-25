@@ -49,14 +49,14 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			expectedErr:  config.NullString,
 		},
 		{
-			name:         "file deleted failed due to missing metadata",
+			name:         "file deletion failed due to missing metadata",
 			fileID:       "file-id-123",
 			GrpcErr:      mocks.GrpcOpMissingMetadata,
 			expectedCode: codes.Unauthenticated,
 			expectedErr:  mocks.ErrMissingMetadata.Error(),
 		},
 		{
-			name:         "file deleted failed due to missing user id",
+			name:         "file deletion failed due to missing user id",
 			fileID:       "file-id-123",
 			GrpcErr:      mocks.GrpcOpMissingUserID,
 			expectedCode: codes.Unauthenticated,
