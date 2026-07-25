@@ -4,9 +4,10 @@ import (
 	"context"
 	"testing"
 
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
+	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -28,21 +29,21 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			content:      []byte("test content"),
 			fileName:     "",
 			expectedCode: codes.InvalidArgument,
-			expectedErr:  utils.ErrFileNameRequired.Error(),
+			expectedErr:  handlerUtils.ErrFileNameRequired.Error(),
 		},
 		{
 			name:         "upload fails when file name is whitespace",
 			content:      []byte("test content"),
 			fileName:     "   ",
 			expectedCode: codes.InvalidArgument,
-			expectedErr:  utils.ErrFileNameRequired.Error(),
+			expectedErr:  handlerUtils.ErrFileNameRequired.Error(),
 		},
 		{
 			name:         "upload fails when content is empty",
 			fileName:     "test.txt",
 			content:      []byte{},
 			expectedCode: codes.InvalidArgument,
-			expectedErr:  utils.ErrFileIsRequired.Error(),
+			expectedErr:  handlerUtils.ErrFileIsRequired.Error(),
 		},
 		{
 			name:         "upload fails due to missing metadata",
@@ -90,7 +91,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			content:           []byte("test content"),
 			uploadReturnEmpty: true,
 			expectedCode:      codes.Internal,
-			expectedErr:       utils.ErrFailedToUploadFile.Error(),
+			expectedErr:       handlerUtils.ErrFailedToUploadFile.Error(),
 		},
 		{
 			name:         "upload fails when user file mapping already exists",
@@ -98,7 +99,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			content:      []byte("test content"),
 			createDbErr:  mocks.DbOpDuplicateFile,
 			expectedCode: codes.AlreadyExists,
-			expectedErr:  utils.ErrUserFileAlreadyExists.Error(),
+			expectedErr:  handlerUtils.ErrUserFileAlreadyExists.Error(),
 		},
 		{
 			name:         "upload fails due to db internal error and rollback succeeds",
@@ -106,7 +107,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			content:      []byte("test content"),
 			createDbErr:  mocks.DbOpInternalError,
 			expectedCode: codes.Internal,
-			expectedErr:  utils.ErrFailedToUploadFile.Error(),
+			expectedErr:  handlerUtils.ErrFailedToUploadFile.Error(),
 		},
 		{
 			name:         "upload fails due to db internal error and rollback fails",
@@ -115,7 +116,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			grpcErr:      mocks.GrpcOpRollbackFailure,
 			createDbErr:  mocks.DbOpInternalError,
 			expectedCode: codes.Internal,
-			expectedErr:  utils.ErrFailedToRollback.Error(),
+			expectedErr:  handlerUtils.ErrFailedToRollback.Error(),
 		},
 		{
 			name:         "upload succeeds",
@@ -155,7 +156,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 				return
 			}
 
-			mocks.CheckData(t, file, tt.expectedFile)
+			mockUtils.CheckData(t, file, tt.expectedFile)
 		})
 	}
 }

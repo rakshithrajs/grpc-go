@@ -36,10 +36,11 @@ func NewUserFilesHandler(client *grpc.Client, storage storage.UserFilesService) 
 }
 
 func RegisterRoutes(rg *gin.RouterGroup, h *UserFilesHandler) {
-	rg.Use(middleware.AuthMiddleware())
-	rg.POST("/upload", h.UploadFileHandler)
-	rg.GET("/:fileID/download", h.DownloadFileHandler)
-	rg.GET("", h.ListFilesHandler)
-	rg.PATCH("/:fileID/rename", h.RenameFileHandler)
-	rg.DELETE("/:fileID", h.DeleteFileHandler)
+	filesRouterGroup := rg.Group("/files")
+	filesRouterGroup.Use(middleware.AuthMiddleware())
+	filesRouterGroup.POST("/upload", h.UploadFileHandler)
+	filesRouterGroup.GET("/:fileID/download", h.DownloadFileHandler)
+	filesRouterGroup.GET("", h.ListFilesHandler)
+	filesRouterGroup.PATCH("/:fileID/rename", h.RenameFileHandler)
+	filesRouterGroup.DELETE("/:fileID", h.DeleteFileHandler)
 }

@@ -6,7 +6,7 @@ import (
 
 	MMS "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -14,7 +14,7 @@ import (
 
 func (c *Client) DownloadFileGrpcHandler(ctx context.Context, userID, fileID string) (*MMS.DownloadFileResponse, error) {
 	if strings.TrimSpace(fileID) == "" {
-		return nil, status.Error(codes.InvalidArgument, utils.ErrFileIDRequired.Error())
+		return nil, status.Error(codes.InvalidArgument, handlerUtils.ErrFileIDRequired.Error())
 	}
 
 	ctx = metadata.AppendToOutgoingContext(ctx, config.UserIDMetadataKey, userID)

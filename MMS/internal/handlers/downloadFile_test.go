@@ -9,6 +9,7 @@ import (
 	MMSpb "github.com/rakshithrajs/cloud/MMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/MMS/internal/config"
 	"github.com/rakshithrajs/cloud/MMS/internal/mocks"
+	mockUtils "github.com/rakshithrajs/cloud/MMS/internal/mocks/utils"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -147,7 +148,7 @@ func TestDownloadFile(t *testing.T) {
 			}
 
 			if tt.expectedCode == codes.OK {
-				mocks.CheckData(t, resp, tt.expectedData)
+				mockUtils.CheckData(t, resp, tt.expectedData)
 			}
 		})
 	}

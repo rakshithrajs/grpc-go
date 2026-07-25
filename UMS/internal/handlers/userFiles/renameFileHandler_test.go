@@ -6,8 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
+	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 )
 
 func TestRenameFileHandler(t *testing.T) {
@@ -29,7 +31,7 @@ func TestRenameFileHandler(t *testing.T) {
 			auth:          false,
 			body:          `{"newName":"renamed.txt"}`,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: utils.ErrUnauthorized.Error(),
+			expectedError: handlerUtils.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "rename file fails due to missing fileID",
@@ -37,7 +39,7 @@ func TestRenameFileHandler(t *testing.T) {
 			fileID:        "",
 			body:          `{"newName":"renamed.txt"}`,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrFileIDRequired.Error(),
+			expectedError: handlerUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:          "rename file fails due to whitespace fileID",
@@ -45,7 +47,7 @@ func TestRenameFileHandler(t *testing.T) {
 			fileID:        "   ",
 			body:          `{"newName":"renamed.txt"}`,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrFileIDRequired.Error(),
+			expectedError: handlerUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:          "rename file fails due to invalid json",
@@ -53,7 +55,7 @@ func TestRenameFileHandler(t *testing.T) {
 			fileID:        "file-id-123",
 			body:          `{`,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrInvalidJSON.Error(),
+			expectedError: handlerUtils.ErrInvalidJSON.Error(),
 		},
 		{
 			name:         "rename file fails due to empty newName",
@@ -62,7 +64,7 @@ func TestRenameFileHandler(t *testing.T) {
 			body:         `{"newName":""}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
-				"newName": utils.ErrNewNameRequired.Error(),
+				"newName": modelUtils.ErrNewNameRequired.Error(),
 			},
 		},
 		{
@@ -72,7 +74,7 @@ func TestRenameFileHandler(t *testing.T) {
 			body:         `{"newName":"   "}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
-				"newName": utils.ErrNewNameRequired.Error(),
+				"newName": modelUtils.ErrNewNameRequired.Error(),
 			},
 		},
 		{
@@ -82,7 +84,7 @@ func TestRenameFileHandler(t *testing.T) {
 			body:                `{"newName":"renamed.txt"}`,
 			UpdateUserFileError: mocks.DbOpInternalError,
 			expectedCode:        http.StatusInternalServerError,
-			expectedError:       utils.ErrFailedToRenameFile.Error(),
+			expectedError:       handlerUtils.ErrFailedToRenameFile.Error(),
 		},
 		{
 			name:                "rename file succeeds when file not found in db",
@@ -100,7 +102,7 @@ func TestRenameFileHandler(t *testing.T) {
 			body:          `{"newName":"renamed.txt"}`,
 			mockGrpcErr:   mocks.GrpcOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: utils.ErrFailedToRenameFile.Error(),
+			expectedError: handlerUtils.ErrFailedToRenameFile.Error(),
 		},
 		{
 			name:          "rename file fails due to grpc invalid argument",
@@ -109,7 +111,7 @@ func TestRenameFileHandler(t *testing.T) {
 			body:          `{"newName":"renamed.txt"}`,
 			mockGrpcErr:   mocks.GrpcOpInvalidArgument,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrFileIDRequired.Error(),
+			expectedError: handlerUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:          "rename file fails due to grpc file name already exists",
@@ -137,7 +139,7 @@ func TestRenameFileHandler(t *testing.T) {
 			mockGrpcErr:         mocks.GrpcOpInternalError,
 			UpdateRollbackError: mocks.DbOpInternalError,
 			expectedCode:        http.StatusInternalServerError,
-			expectedError:       utils.ErrFailedToRenameFile.Error(),
+			expectedError:       handlerUtils.ErrFailedToRenameFile.Error(),
 		},
 		{
 			name:         "rename file succeeds",
@@ -151,7 +153,7 @@ func TestRenameFileHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, w := mocks.SetUpGinTest(http.MethodPatch, "/api/files/:fileID/rename", tt.body, tt.auth)
+			c, w := mockUtils.SetUpGinTest(http.MethodPatch, "/api/files/:fileID/rename", tt.body, tt.auth)
 			c.Params = []gin.Param{{Key: "fileID", Value: tt.fileID}}
 
 			mmsClient := &mocks.MockMMSClient{MockErr: tt.mockGrpcErr}
@@ -166,11 +168,11 @@ func TestRenameFileHandler(t *testing.T) {
 			}
 
 			if tt.expectedError != nil {
-				mocks.CheckError(t, w, tt.expectedError)
+				mockUtils.CheckError(t, w, tt.expectedError)
 			}
 
 			if tt.expectedData != nil {
-				mocks.CheckData(t, w, tt.expectedData)
+				mockUtils.CheckData(t, w, tt.expectedData)
 			}
 		})
 	}

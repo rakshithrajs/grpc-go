@@ -6,8 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 )
 
 func TestDeleteFileHandler(t *testing.T) {
@@ -26,21 +27,21 @@ func TestDeleteFileHandler(t *testing.T) {
 			name:          "delete file fails due to missing auth",
 			auth:          false,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: utils.ErrUnauthorized.Error(),
+			expectedError: handlerUtils.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "delete file fails due to missing fileID",
 			auth:          true,
 			fileID:        "",
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrFileIDRequired.Error(),
+			expectedError: handlerUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:          "delete file fails due to whitespace fileID",
 			auth:          true,
 			fileID:        "   ",
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrFileIDRequired.Error(),
+			expectedError: handlerUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:                "delete file fails due to db internal error",
@@ -48,7 +49,7 @@ func TestDeleteFileHandler(t *testing.T) {
 			fileID:              "file-id-123",
 			DeleteUserFileError: mocks.DbOpInternalError,
 			expectedCode:        http.StatusInternalServerError,
-			expectedError:       utils.ErrFailedToDeleteFile.Error(),
+			expectedError:       handlerUtils.ErrFailedToDeleteFile.Error(),
 		},
 		{
 			name:                "delete file succeeds when file not found in db",
@@ -64,7 +65,7 @@ func TestDeleteFileHandler(t *testing.T) {
 			fileID:        "file-id-123",
 			mockGrpcErr:   mocks.GrpcOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: utils.ErrFailedToDeleteFile.Error(),
+			expectedError: handlerUtils.ErrFailedToDeleteFile.Error(),
 		},
 		{
 			name:          "delete file fails due to grpc invalid argument",
@@ -72,7 +73,7 @@ func TestDeleteFileHandler(t *testing.T) {
 			fileID:        "file-id-123",
 			mockGrpcErr:   mocks.GrpcOpInvalidArgument,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrFileIDRequired.Error(),
+			expectedError: handlerUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:         "delete file succeeds when file not found in grpc",
@@ -89,7 +90,7 @@ func TestDeleteFileHandler(t *testing.T) {
 			mockGrpcErr:         mocks.GrpcOpInternalError,
 			CreateUserFileError: mocks.DbOpInternalError,
 			expectedCode:        http.StatusInternalServerError,
-			expectedError:       utils.ErrFailedToDeleteFile.Error(),
+			expectedError:       handlerUtils.ErrFailedToDeleteFile.Error(),
 		},
 		{
 			name:         "delete file succeeds",
@@ -102,7 +103,7 @@ func TestDeleteFileHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, w := mocks.SetUpGinTest(http.MethodDelete, "/api/files/:fileID", "", tt.auth)
+			c, w := mockUtils.SetUpGinTest(http.MethodDelete, "/api/files/:fileID", "", tt.auth)
 			c.Params = []gin.Param{{Key: "fileID", Value: tt.fileID}}
 
 			mmsClient := &mocks.MockMMSClient{MockErr: tt.mockGrpcErr}
@@ -117,11 +118,11 @@ func TestDeleteFileHandler(t *testing.T) {
 			}
 
 			if tt.expectedError != nil {
-				mocks.CheckError(t, w, tt.expectedError)
+				mockUtils.CheckError(t, w, tt.expectedError)
 			}
 
 			if tt.expectedData != nil {
-				mocks.CheckData(t, w, tt.expectedData)
+				mockUtils.CheckData(t, w, tt.expectedData)
 			}
 		})
 	}

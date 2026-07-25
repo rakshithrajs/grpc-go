@@ -6,14 +6,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	"github.com/rakshithrajs/cloud/UMS/internal/handlers"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 )
 
 func (h *UserFilesHandler) ListFilesHandler(c *gin.Context) {
-	userID, err := handlers.GetUserIDFromGin(c)
+	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		utils.ReturnErrorResponse(c, err, fnListFiles, utils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, err, fnListFiles, middlewareUtils.ErrSomethingWentWrong, "")
 		return
 	}
 
@@ -21,8 +22,8 @@ func (h *UserFilesHandler) ListFilesHandler(c *gin.Context) {
 
 	files, err := h.storage.ListUserFiles(ctx, userID)
 	if err != nil {
-		slog.Error(handlers.LogPrefix(fnListFiles)+"failed to list user files", slog.Any(config.ErrorKey, err))
-		utils.ReturnErrorResponse(c, err, fnListFiles, utils.ErrFailedToListFiles, "")
+		slog.Error(handlerUtils.LogPrefix(fnListFiles)+"failed to list user files", slog.Any(config.ErrorKey, err))
+		handlerUtils.ReturnErrorResponse(c, err, fnListFiles, handlerUtils.ErrFailedToListFiles, "")
 		return
 	}
 

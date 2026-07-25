@@ -58,11 +58,9 @@ func main() {
 	mmsClient := mmsGrpc.NewClient(MMSClient, userFilesStore)
 	UserFilesHandler := userfiles.NewUserFilesHandler(mmsClient, userFilesStore)
 
-	UMSRouterGroup := router.Group(apiPrefix + "/users")
-	user.RegisterRoutes(UMSRouterGroup, UserHandler)
-
-	filesRouterGroup := router.Group(apiPrefix + "/files")
-	userfiles.RegisterRoutes(filesRouterGroup, UserFilesHandler)
+	usersRouterGroup := router.Group(apiPrefix + "/users")
+	user.RegisterRoutes(usersRouterGroup, UserHandler)
+	userfiles.RegisterRoutes(usersRouterGroup, UserFilesHandler)
 
 	if err := router.Run(cfg.ServerAddress); err != nil {
 		slog.Error(logPrefix+"failed to run server", slog.Any(config.ErrorKey, err))

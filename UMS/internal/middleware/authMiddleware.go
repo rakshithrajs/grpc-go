@@ -5,7 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 )
 
 const (
@@ -18,14 +19,14 @@ func AuthMiddleware() gin.HandlerFunc {
 		authHeader := strings.TrimSpace(c.GetHeader("Authorization"))
 
 		if authHeader == config.NullString {
-			utils.ReturnErrorResponse(c, utils.ErrMissingAuthHeader, funcNameAuthMiddleware, utils.ErrSomethingWentWrong, "")
+			handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrMissingAuthHeader, funcNameAuthMiddleware, middlewareUtils.ErrSomethingWentWrong, "")
 			c.Abort()
 			return
 		}
 
-		claims, err := utils.VerifyToken(authHeader)
+		claims, err := middlewareUtils.VerifyToken(authHeader)
 		if err != nil {
-			utils.ReturnErrorResponse(c, err, funcNameAuthMiddleware, utils.ErrSomethingWentWrong, "")
+			handlerUtils.ReturnErrorResponse(c, err, funcNameAuthMiddleware, middlewareUtils.ErrSomethingWentWrong, "")
 			c.Abort()
 			return
 		}

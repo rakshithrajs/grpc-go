@@ -7,30 +7,31 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	"github.com/rakshithrajs/cloud/UMS/internal/handlers"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	grpcUtils "github.com/rakshithrajs/cloud/UMS/internal/grpc/utils"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 )
 
 var deleteFileSuccessMsg = "file deleted successfully"
 
 func (h *UserFilesHandler) DeleteFileHandler(c *gin.Context) {
-	userID, err := handlers.GetUserIDFromGin(c)
+	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		utils.ReturnErrorResponse(c, err, fnDeleteFile, utils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, err, fnDeleteFile, middlewareUtils.ErrSomethingWentWrong, "")
 		return
 	}
 
 	fileID := strings.TrimSpace(c.Param("fileID"))
 	if fileID == "" {
-		utils.ReturnErrorResponse(c, utils.ErrFileIDRequired, fnDeleteFile, utils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileIDRequired, fnDeleteFile, middlewareUtils.ErrSomethingWentWrong, "")
 		return
 	}
 
 	ctx := c.Request.Context()
 
 	if err := h.client.DeleteFileGrpcHandler(ctx, userID, fileID); err != nil {
-		status, msg := handlers.MapGRPCError(err, utils.ErrFailedToDeleteFile.Error())
-		slog.Error(handlers.LogPrefix(fnDeleteFile)+"failed to delete file", slog.Any(config.ErrorKey, err))
+		status, msg := grpcUtils.MapGRPCError(err, handlerUtils.ErrFailedToDeleteFile.Error())
+		slog.Error(handlerUtils.LogPrefix(fnDeleteFile)+"failed to delete file", slog.Any(config.ErrorKey, err))
 		c.JSON(status, gin.H{config.ErrorKey: msg})
 		return
 	}

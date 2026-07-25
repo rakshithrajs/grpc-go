@@ -5,8 +5,9 @@ import (
 	"testing"
 
 	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,13 +25,13 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			name:         "file download fails as file id is missing",
 			fileID:       "",
 			expectedCode: codes.InvalidArgument,
-			expectedErr:  utils.ErrFileIDRequired.Error(),
+			expectedErr:  handlerUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:         "file download fails as file id is whitespace",
 			fileID:       "   ",
 			expectedCode: codes.InvalidArgument,
-			expectedErr:  utils.ErrFileIDRequired.Error(),
+			expectedErr:  handlerUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:         "file download fails as missing metadata",
@@ -90,10 +91,10 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			}
 
 			if tt.expectedCode == codes.OK {
-				mocks.CheckData(t, resp, tt.expectedData)
+				mockUtils.CheckData(t, resp, tt.expectedData)
 			}
 
-			mocks.CheckData(t, st.Message(), tt.expectedErr)
+			mockUtils.CheckData(t, st.Message(), tt.expectedErr)
 		})
 	}
 }

@@ -7,8 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 )
 
 func TestUploadFileHandler(t *testing.T) {
@@ -31,14 +32,14 @@ func TestUploadFileHandler(t *testing.T) {
 			auth:          false,
 			withFile:      true,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: utils.ErrUnauthorized.Error(),
+			expectedError: handlerUtils.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "upload file fails due to missing file",
 			auth:          true,
 			withFile:      false,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrFileIsRequired.Error(),
+			expectedError: handlerUtils.ErrFileIsRequired.Error(),
 		},
 		{
 			name:          "upload file fails due to empty file content",
@@ -46,7 +47,7 @@ func TestUploadFileHandler(t *testing.T) {
 			withFile:      true,
 			emptyContent:  true,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrEmptyFileContent.Error(),
+			expectedError: handlerUtils.ErrEmptyFileContent.Error(),
 		},
 		{
 			name:          "upload file fails due to whitespace file name",
@@ -54,7 +55,7 @@ func TestUploadFileHandler(t *testing.T) {
 			withFile:      true,
 			fileName:      "   ",
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrFileNameRequired.Error(),
+			expectedError: handlerUtils.ErrFileNameRequired.Error(),
 		},
 		{
 			name:          "upload file fails due to grpc internal error",
@@ -62,7 +63,7 @@ func TestUploadFileHandler(t *testing.T) {
 			withFile:      true,
 			uploadGrpcErr: mocks.GrpcOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: utils.ErrFailedToUploadFile.Error(),
+			expectedError: handlerUtils.ErrFailedToUploadFile.Error(),
 		},
 		{
 			name:          "upload file fails due to grpc file name already exists",
@@ -86,7 +87,7 @@ func TestUploadFileHandler(t *testing.T) {
 			withFile:            true,
 			CreateUserFileError: mocks.DbOpDuplicateFile,
 			expectedCode:        http.StatusConflict,
-			expectedError:       utils.ErrUserFileAlreadyExists.Error(),
+			expectedError:       handlerUtils.ErrUserFileAlreadyExists.Error(),
 		},
 		{
 			name:                "upload file fails due to db internal error",
@@ -94,7 +95,7 @@ func TestUploadFileHandler(t *testing.T) {
 			withFile:            true,
 			CreateUserFileError: mocks.DbOpInternalError,
 			expectedCode:        http.StatusInternalServerError,
-			expectedError:       utils.ErrFailedToUploadFile.Error(),
+			expectedError:       handlerUtils.ErrFailedToUploadFile.Error(),
 		},
 		{
 			name:                "upload file fails due to grpc rollback failure",
@@ -103,7 +104,7 @@ func TestUploadFileHandler(t *testing.T) {
 			CreateUserFileError: mocks.DbOpInternalError,
 			deleteGrpcErr:       mocks.GrpcOpRollbackFailure,
 			expectedCode:        http.StatusInternalServerError,
-			expectedError:       utils.ErrFailedToUploadFile.Error(),
+			expectedError:       handlerUtils.ErrFailedToUploadFile.Error(),
 		},
 		{
 			name:         "upload file succeeds",
@@ -134,9 +135,9 @@ func TestUploadFileHandler(t *testing.T) {
 				if name == "" {
 					name = "test.txt"
 				}
-				c, w = mocks.SetUpGinTestMultipart(content, name, tt.auth)
+				c, w = mockUtils.SetUpGinTestMultipart(content, name, tt.auth)
 			} else {
-				c, w = mocks.SetUpGinTest(http.MethodPost, "/api/files/upload", "", tt.auth)
+				c, w = mockUtils.SetUpGinTest(http.MethodPost, "/api/files/upload", "", tt.auth)
 			}
 
 			mmsClient := &mocks.MockMMSClient{MockErr: tt.uploadGrpcErr, MockDeleteErr: tt.deleteGrpcErr}
@@ -151,11 +152,11 @@ func TestUploadFileHandler(t *testing.T) {
 			}
 
 			if tt.expectedError != nil {
-				mocks.CheckError(t, w, tt.expectedError)
+				mockUtils.CheckError(t, w, tt.expectedError)
 			}
 
 			if tt.expectedData != nil {
-				mocks.CheckData(t, w, tt.expectedData)
+				mockUtils.CheckData(t, w, tt.expectedData)
 			}
 		})
 	}

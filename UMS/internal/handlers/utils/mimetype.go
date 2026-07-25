@@ -1,4 +1,4 @@
-package utils
+package handlers
 
 import MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 

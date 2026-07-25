@@ -7,20 +7,21 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	"github.com/rakshithrajs/cloud/UMS/internal/handlers"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	grpcUtils "github.com/rakshithrajs/cloud/UMS/internal/grpc/utils"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 )
 
 func (h *UserFilesHandler) DownloadFileHandler(c *gin.Context) {
-	userID, err := handlers.GetUserIDFromGin(c)
+	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		utils.ReturnErrorResponse(c, err, fnDownloadFile, utils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, err, fnDownloadFile, middlewareUtils.ErrSomethingWentWrong, "")
 		return
 	}
 
 	fileID := strings.TrimSpace(c.Param("fileID"))
 	if fileID == "" {
-		utils.ReturnErrorResponse(c, utils.ErrFileIDRequired, fnDownloadFile, utils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileIDRequired, fnDownloadFile, middlewareUtils.ErrSomethingWentWrong, "")
 		return
 	}
 
@@ -28,11 +29,11 @@ func (h *UserFilesHandler) DownloadFileHandler(c *gin.Context) {
 
 	resp, err := h.client.DownloadFileGrpcHandler(ctx, userID, fileID)
 	if err != nil {
-		status, msg := handlers.MapGRPCError(err, utils.ErrFailedToDownloadFile.Error())
-		slog.Error(handlers.LogPrefix(fnDownloadFile)+"failed to download file", slog.Any(config.ErrorKey, err))
+		status, msg := grpcUtils.MapGRPCError(err, handlerUtils.ErrFailedToDownloadFile.Error())
+		slog.Error(handlerUtils.LogPrefix(fnDownloadFile)+"failed to download file", slog.Any(config.ErrorKey, err))
 		c.JSON(status, gin.H{config.ErrorKey: msg})
 		return
 	}
 
-	c.Data(http.StatusOK, utils.MimeTypeToString(resp.GetMimeType()), resp.GetContent())
+	c.Data(http.StatusOK, handlerUtils.MimeTypeToString(resp.GetMimeType()), resp.GetContent())
 }

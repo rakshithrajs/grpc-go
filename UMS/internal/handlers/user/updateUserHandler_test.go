@@ -4,8 +4,11 @@ import (
 	"net/http"
 	"testing"
 
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
+	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 )
 
 func TestUpdateUserHandler(t *testing.T) {
@@ -23,21 +26,21 @@ func TestUpdateUserHandler(t *testing.T) {
 			body:          `{"phone":"0987654321"}`,
 			auth:          false,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: utils.ErrUnauthorized.Error(),
+			expectedError: handlerUtils.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "user update fails due to invalid json",
 			body:          `{`,
 			auth:          true,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrInvalidJSON.Error(),
+			expectedError: handlerUtils.ErrInvalidJSON.Error(),
 		},
 		{
 			name:          "user update fails due to no fields to update",
 			body:          `{}`,
 			auth:          true,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrNoFieldsToUpdate.Error(),
+			expectedError: handlerUtils.ErrNoFieldsToUpdate.Error(),
 		},
 		{
 			name:         "user update fails due to invalid phone",
@@ -45,7 +48,7 @@ func TestUpdateUserHandler(t *testing.T) {
 			auth:         true,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
-				"phone": utils.ErrInvalidPhoneNumber.Error(),
+				"phone": modelUtils.ErrInvalidPhoneNumber.Error(),
 			},
 		},
 		{
@@ -54,7 +57,7 @@ func TestUpdateUserHandler(t *testing.T) {
 			auth:          true,
 			mockErr:       mocks.DbOpDuplicatePhone,
 			expectedCode:  http.StatusConflict,
-			expectedError: utils.ErrPhoneNumberAlreadyExists.Error(),
+			expectedError: handlerUtils.ErrPhoneNumberAlreadyExists.Error(),
 		},
 		{
 			name:          "user update fails due to duplicate email",
@@ -62,7 +65,7 @@ func TestUpdateUserHandler(t *testing.T) {
 			auth:          true,
 			mockErr:       mocks.DbOpDuplicateEmail,
 			expectedCode:  http.StatusConflict,
-			expectedError: utils.ErrUserEmailAlreadyExists.Error(),
+			expectedError: handlerUtils.ErrUserEmailAlreadyExists.Error(),
 		},
 		{
 			name:           "user update fails due get user by ID error",
@@ -71,7 +74,7 @@ func TestUpdateUserHandler(t *testing.T) {
 			mockErr:        mocks.DbOpSuccess,
 			getUserByIDErr: mocks.DbOpInternalError,
 			expectedCode:   http.StatusInternalServerError,
-			expectedError:  utils.ErrSomethingWentWrong.Error(),
+			expectedError:  middlewareUtils.ErrSomethingWentWrong.Error(),
 		},
 		{
 			name:          "user update fails due to internal server error",
@@ -79,14 +82,14 @@ func TestUpdateUserHandler(t *testing.T) {
 			auth:          true,
 			mockErr:       mocks.DbOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: utils.ErrFailedToUpdateUser.Error(),
+			expectedError: handlerUtils.ErrFailedToUpdateUser.Error(),
 		},
 		{
 			name:          "user update fails due to same old password",
 			body:          `{"password":"ValidPassword@123","confirmPassword":"ValidPassword@123"}`,
 			auth:          true,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrPasswordSameAsOldPassword.Error(),
+			expectedError: handlerUtils.ErrPasswordSameAsOldPassword.Error(),
 		},
 		{
 			name:         "user update fails due to invalid password",
@@ -94,7 +97,7 @@ func TestUpdateUserHandler(t *testing.T) {
 			auth:         true,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
-				"password": utils.ErrInvalidPassword.Error(),
+				"password": modelUtils.ErrInvalidPassword.Error(),
 			},
 		},
 		{
@@ -113,7 +116,7 @@ func TestUpdateUserHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, w := mocks.SetUpGinTest(http.MethodPatch, "/api/users/update", tt.body, tt.auth)
+			c, w := mockUtils.SetUpGinTest(http.MethodPatch, "/api/users/update", tt.body, tt.auth)
 
 			svc := &mocks.MockUserService{UpdateUserErr: tt.mockErr, GetUserByIDErr: tt.getUserByIDErr}
 			handler := NewUserHandler(svc)
@@ -125,12 +128,12 @@ func TestUpdateUserHandler(t *testing.T) {
 			}
 
 			if tt.expectedCode == http.StatusOK {
-				mocks.CheckData(t, w, map[string]string{"message": userUpdatedMessage})
+				mockUtils.CheckData(t, w, map[string]string{"message": userUpdatedMessage})
 				return
 			}
 
 			if tt.expectedError != nil {
-				mocks.CheckError(t, w, tt.expectedError)
+				mockUtils.CheckError(t, w, tt.expectedError)
 			}
 		})
 	}

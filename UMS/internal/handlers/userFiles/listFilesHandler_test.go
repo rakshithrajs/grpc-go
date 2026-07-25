@@ -5,8 +5,9 @@ import (
 	"testing"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 )
 
 func TestListFilesHandler(t *testing.T) {
@@ -23,14 +24,14 @@ func TestListFilesHandler(t *testing.T) {
 			name:          "list files fails due to missing auth",
 			auth:          false,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: utils.ErrUnauthorized.Error(),
+			expectedError: handlerUtils.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "list files fails due to db internal error",
 			auth:          true,
 			mockDbErr:     mocks.DbOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: utils.ErrFailedToListFiles.Error(),
+			expectedError: handlerUtils.ErrFailedToListFiles.Error(),
 		},
 		{
 			name:         "list files returns empty list",
@@ -54,7 +55,7 @@ func TestListFilesHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, w := mocks.SetUpGinTest(http.MethodGet, "/api/files", "", tt.auth)
+			c, w := mockUtils.SetUpGinTest(http.MethodGet, "/api/files", "", tt.auth)
 
 			mmsClient := &mocks.MockMMSClient{}
 			svc := &mocks.MockUserFilesService{
@@ -71,11 +72,11 @@ func TestListFilesHandler(t *testing.T) {
 			}
 
 			if tt.expectedError != nil {
-				mocks.CheckError(t, w, tt.expectedError)
+				mockUtils.CheckError(t, w, tt.expectedError)
 			}
 
 			if tt.expectedData != nil {
-				mocks.CheckData(t, w, tt.expectedData)
+				mockUtils.CheckData(t, w, tt.expectedData)
 			}
 		})
 	}

@@ -4,8 +4,10 @@ import (
 	"net/http"
 	"testing"
 
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 )
 
 func TestGetUserProfileHandler(t *testing.T) {
@@ -21,14 +23,14 @@ func TestGetUserProfileHandler(t *testing.T) {
 			name:          "get user profile fails due to missing auth",
 			auth:          false,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: utils.ErrUnauthorized.Error(),
+			expectedError: handlerUtils.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "get user profile fails due to internal server error",
 			auth:          true,
 			mockErr:       mocks.DbOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: utils.ErrSomethingWentWrong.Error(),
+			expectedError: middlewareUtils.ErrSomethingWentWrong.Error(),
 		},
 		{
 			name:         "get user profile succeeds with no user found",
@@ -58,7 +60,7 @@ func TestGetUserProfileHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, w := mocks.SetUpGinTest(http.MethodGet, "/api/users/profile", "", tt.auth)
+			c, w := mockUtils.SetUpGinTest(http.MethodGet, "/api/users/profile", "", tt.auth)
 
 			svc := &mocks.MockUserService{GetUserByIDErr: tt.mockErr}
 			handler := NewUserHandler(svc)
@@ -70,12 +72,12 @@ func TestGetUserProfileHandler(t *testing.T) {
 			}
 
 			if tt.expectedCode == http.StatusOK {
-				mocks.CheckData(t, w, tt.expectedData)
+				mockUtils.CheckData(t, w, tt.expectedData)
 				return
 			}
 
 			if tt.expectedError != nil {
-				mocks.CheckError(t, w, tt.expectedError)
+				mockUtils.CheckError(t, w, tt.expectedError)
 			}
 		})
 	}

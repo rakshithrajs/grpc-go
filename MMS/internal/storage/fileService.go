@@ -7,7 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/rakshithrajs/cloud/MMS/internal/models"
-	"github.com/rakshithrajs/cloud/MMS/internal/utils"
+	storageUtils "github.com/rakshithrajs/cloud/MMS/internal/storage/utils"
 
 	"github.com/lib/pq"
 	"github.com/lib/pq/pqerror"
@@ -115,15 +115,15 @@ func (f *FileStore) GetFileByID(ctx context.Context, id string, userID string) (
 }
 
 func (f *FileStore) UpdateFile(ctx context.Context, id string, req models.UpdateFileRequest, userID string) (*models.File, error) {
-	fields := make([]utils.UpdateField, 0, 2)
+	fields := make([]storageUtils.UpdateField, 0, 2)
 	if req.Name != "" {
-		fields = append(fields, utils.UpdateField{Column: "name", Value: req.Name})
+		fields = append(fields, storageUtils.UpdateField{Column: "name", Value: req.Name})
 	}
 	if req.Path != "" {
-		fields = append(fields, utils.UpdateField{Column: "path", Value: req.Path})
+		fields = append(fields, storageUtils.UpdateField{Column: "path", Value: req.Path})
 	}
 
-	query, args := utils.BuildUpdateSQL("files", fields, []string{"ID", "userID"})
+	query, args := storageUtils.BuildUpdateSQL("files", fields, []string{"ID", "userID"})
 	query += ` RETURNING "ID", "userID", name, path, size, "mimeType", "createdAtUTC", "updatedAtUTC"`
 	args[0] = id
 	args[1] = userID

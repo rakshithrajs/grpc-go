@@ -7,8 +7,9 @@ import (
 	"log/slog"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	storageUtils "github.com/rakshithrajs/cloud/UMS/internal/storage/utils"
 
 	"github.com/lib/pq"
 	"github.com/lib/pq/pqerror"
@@ -50,9 +51,9 @@ func (u *userStore) CreateUser(ctx context.Context, user *models.User) (*models.
 		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation {
 			switch pqErr.Constraint {
 			case uniqueConstraintUsersEmailKey:
-				return nil, utils.ErrUserEmailAlreadyExists
+				return nil, handlerUtils.ErrUserEmailAlreadyExists
 			case uniqueConstraintUsersPhoneKey:
-				return nil, utils.ErrPhoneNumberAlreadyExists
+				return nil, handlerUtils.ErrPhoneNumberAlreadyExists
 			default:
 				slog.Error(logPrefix(fnCreateUser)+"unique constraint violation", slog.Any(config.ErrorKey, err))
 				return nil, ErrFailedToCreateUser
@@ -78,7 +79,7 @@ func (u *userStore) GetUserByID(ctx context.Context, id string) (*models.User, e
 	var user models.User
 	if err := stmt.QueryRowContext(ctx, id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Phone, &user.CreatedAtUTC, &user.UpdatedAtUTC); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, utils.ErrUserNotFound
+			return nil, handlerUtils.ErrUserNotFound
 		}
 		slog.Error(logPrefix(fnGetUserByID)+"query", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToGetUserByID
@@ -100,7 +101,7 @@ func (u *userStore) GetUserByEmail(ctx context.Context, email string) (*models.U
 	var user models.User
 	if err := stmt.QueryRowContext(ctx, email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Phone); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, utils.ErrEmailNotFound
+			return nil, handlerUtils.ErrEmailNotFound
 		}
 		slog.Error(logPrefix(fnGetUserByEmail)+"query", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToGetUserByEmail
@@ -110,21 +111,21 @@ func (u *userStore) GetUserByEmail(ctx context.Context, email string) (*models.U
 }
 
 func (u *userStore) UpdateUser(ctx context.Context, id string, req models.UpdateUserRequest) error {
-	fields := make([]utils.UpdateField, 0, 4)
+	fields := make([]storageUtils.UpdateField, 0, 4)
 	if req.Name != config.NullString {
-		fields = append(fields, utils.UpdateField{Column: "name", Value: req.Name})
+		fields = append(fields, storageUtils.UpdateField{Column: "name", Value: req.Name})
 	}
 	if req.Password != config.NullString {
-		fields = append(fields, utils.UpdateField{Column: "password", Value: req.Password})
+		fields = append(fields, storageUtils.UpdateField{Column: "password", Value: req.Password})
 	}
 	if req.Phone != config.NullString {
-		fields = append(fields, utils.UpdateField{Column: "phone", Value: req.Phone})
+		fields = append(fields, storageUtils.UpdateField{Column: "phone", Value: req.Phone})
 	}
 	if req.Email != config.NullString {
-		fields = append(fields, utils.UpdateField{Column: "email", Value: req.Email})
+		fields = append(fields, storageUtils.UpdateField{Column: "email", Value: req.Email})
 	}
 
-	query, args := utils.BuildUpdateSQL("users", fields, []string{"ID"})
+	query, args := storageUtils.BuildUpdateSQL("users", fields, []string{"ID"})
 	args[0] = id
 
 	stmt, err := u.db.PrepareContext(ctx, query)
@@ -139,9 +140,9 @@ func (u *userStore) UpdateUser(ctx context.Context, id string, req models.Update
 		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation {
 			switch pqErr.Constraint {
 			case uniqueConstraintUsersEmailKey:
-				return utils.ErrUserEmailAlreadyExists
+				return handlerUtils.ErrUserEmailAlreadyExists
 			case uniqueConstraintUsersPhoneKey:
-				return utils.ErrPhoneNumberAlreadyExists
+				return handlerUtils.ErrPhoneNumberAlreadyExists
 			default:
 				slog.Error(logPrefix(fnUpdateUser)+"unique constraint violation", slog.Any(config.ErrorKey, err))
 				return ErrFailedToUpdateUser

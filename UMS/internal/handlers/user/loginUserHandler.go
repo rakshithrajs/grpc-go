@@ -7,9 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	"github.com/rakshithrajs/cloud/UMS/internal/handlers"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
+	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -18,40 +20,40 @@ func (h *UserHandler) LoginUserHandler(ctx *gin.Context) {
 
 	var req models.LoginUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		utils.ReturnErrorResponse(ctx, utils.ErrInvalidJSON, FnLoginUser, utils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(ctx, handlerUtils.ErrInvalidJSON, FnLoginUser, middlewareUtils.ErrSomethingWentWrong, "")
 		return
 	}
 
-	req.Email = utils.NormalizeEmail(req.Email)
+	req.Email = modelUtils.NormalizeEmail(req.Email)
 
-	if err := utils.Validate.Struct(&req); err != nil {
-		fieldErrs := utils.FieldErrors(err)
-		utils.ReturnErrorResponse(ctx, fieldErrs, FnLoginUser, utils.ErrSomethingWentWrong, "")
+	if err := modelUtils.Validate.Struct(&req); err != nil {
+		fieldErrs := modelUtils.FieldErrors(err)
+		handlerUtils.ReturnErrorResponse(ctx, fieldErrs, FnLoginUser, middlewareUtils.ErrSomethingWentWrong, "")
 		return
 	}
 
 	user, err := h.storage.GetUserByEmail(ctx.Request.Context(), req.Email)
 	if err != nil {
-		utils.ReturnErrorResponse(ctx, err, FnLoginUser, utils.ErrFailedToLoginUser, "")
+		handlerUtils.ReturnErrorResponse(ctx, err, FnLoginUser, handlerUtils.ErrFailedToLoginUser, "")
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		utils.ReturnErrorResponse(ctx, utils.ErrInvalidCredentials, FnLoginUser, utils.ErrFailedToLoginUser, "")
+		handlerUtils.ReturnErrorResponse(ctx, handlerUtils.ErrInvalidCredentials, FnLoginUser, handlerUtils.ErrFailedToLoginUser, "")
 		return
 	}
 
 	cfg, err := config.GetConfig()
 	if err != nil {
-		slog.Error(handlers.LogPrefix(FnLoginUser)+"failed to get config", slog.Any(config.ErrorKey, err))
-		utils.ReturnErrorResponse(ctx, err, FnLoginUser, utils.ErrSomethingWentWrong, "")
+		slog.Error(handlerUtils.LogPrefix(FnLoginUser)+"failed to get config", slog.Any(config.ErrorKey, err))
+		handlerUtils.ReturnErrorResponse(ctx, err, FnLoginUser, middlewareUtils.ErrSomethingWentWrong, "")
 		return
 	}
 
 	token, err := config.GenerateJWT(*user, cfg.JWTSecret)
 	if err != nil {
-		slog.Error(handlers.LogPrefix(FnLoginUser)+"failed to generate JWT", slog.Any(config.ErrorKey, err))
-		utils.ReturnErrorResponse(ctx, err, FnLoginUser, utils.ErrSomethingWentWrong, "")
+		slog.Error(handlerUtils.LogPrefix(FnLoginUser)+"failed to generate JWT", slog.Any(config.ErrorKey, err))
+		handlerUtils.ReturnErrorResponse(ctx, err, FnLoginUser, middlewareUtils.ErrSomethingWentWrong, "")
 		return
 	}
 

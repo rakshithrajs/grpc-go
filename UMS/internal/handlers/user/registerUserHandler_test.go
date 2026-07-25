@@ -4,8 +4,10 @@ import (
 	"net/http"
 	"testing"
 
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
+	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 )
 
 func TestRegisterUserHandler(t *testing.T) {
@@ -37,14 +39,14 @@ func TestRegisterUserHandler(t *testing.T) {
 			name:          "user registration fails as of invalid json",
 			body:          `{`,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrInvalidJSON.Error(),
+			expectedError: handlerUtils.ErrInvalidJSON.Error(),
 		},
 		{
 			name:         "user registration fails as of empty name",
 			body:         `{"name":"","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
-				"name": utils.ErrNameRequired.Error(),
+				"name": modelUtils.ErrNameRequired.Error(),
 			},
 		},
 		{
@@ -52,7 +54,7 @@ func TestRegisterUserHandler(t *testing.T) {
 			body:         `{"name":"Test123","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
-				"name": utils.ErrInvalidName.Error(),
+				"name": modelUtils.ErrInvalidName.Error(),
 			},
 		},
 		{
@@ -60,22 +62,22 @@ func TestRegisterUserHandler(t *testing.T) {
 			body:         `{"name":"Test","email":"","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
-				"email": utils.ErrEmailRequired.Error(),
+				"email": modelUtils.ErrEmailRequired.Error(),
 			},
 		},
 		{
 			name:          "user registration fails as of invalid email format",
 			body:          `{"name":"Test","email":"invalid-email","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: map[string]string{"email": utils.ErrInvalidEmail.Error()},
+			expectedError: map[string]string{"email": modelUtils.ErrInvalidEmail.Error()},
 		},
 		{
 			name:         "user registration fails as of empty password",
 			body:         `{"name":"Test","email":"test@example.com","password":"","confirmPassword":"","phone":"1234567890"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
-				"password":        utils.ErrPasswordRequired.Error(),
-				"confirmPassword": utils.ErrPasswordConfirmRequired.Error(),
+				"password":        modelUtils.ErrPasswordRequired.Error(),
+				"confirmPassword": modelUtils.ErrPasswordConfirmRequired.Error(),
 			},
 		},
 		{
@@ -83,7 +85,7 @@ func TestRegisterUserHandler(t *testing.T) {
 			body:         `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"DifferentPassword@123","phone":"1234567890"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
-				"confirmPassword": utils.ErrPasswordMismatch.Error(),
+				"confirmPassword": modelUtils.ErrPasswordMismatch.Error(),
 			},
 		},
 		{
@@ -91,7 +93,7 @@ func TestRegisterUserHandler(t *testing.T) {
 			body:         `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":""}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
-				"phone": utils.ErrPhoneRequired.Error(),
+				"phone": modelUtils.ErrPhoneRequired.Error(),
 			},
 		},
 		{
@@ -99,7 +101,7 @@ func TestRegisterUserHandler(t *testing.T) {
 			body:         `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"123"}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
-				"phone": utils.ErrInvalidPhoneNumber.Error(),
+				"phone": modelUtils.ErrInvalidPhoneNumber.Error(),
 			},
 		},
 		{
@@ -107,27 +109,27 @@ func TestRegisterUserHandler(t *testing.T) {
 			body:          `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			mockErr:       mocks.DbOpDuplicateEmail,
 			expectedCode:  http.StatusConflict,
-			expectedError: utils.ErrUserEmailAlreadyExists.Error(),
+			expectedError: handlerUtils.ErrUserEmailAlreadyExists.Error(),
 		},
 		{
 			name:          "user registration fails as of duplicate phone",
 			body:          `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			mockErr:       mocks.DbOpDuplicatePhone,
 			expectedCode:  http.StatusConflict,
-			expectedError: utils.ErrPhoneNumberAlreadyExists.Error(),
+			expectedError: handlerUtils.ErrPhoneNumberAlreadyExists.Error(),
 		},
 		{
 			name:          "user registration fails as of internal server error",
 			body:          `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			mockErr:       mocks.DbOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: utils.ErrFailedToCreateUser.Error(),
+			expectedError: handlerUtils.ErrFailedToCreateUser.Error(),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, w := mocks.SetUpGinTest(http.MethodPost, "/api/users/register", tt.body, false)
+			c, w := mockUtils.SetUpGinTest(http.MethodPost, "/api/users/register", tt.body, false)
 
 			svc := &mocks.MockUserService{CreateUserErr: tt.mockErr}
 			handler := NewUserHandler(svc)
@@ -139,12 +141,12 @@ func TestRegisterUserHandler(t *testing.T) {
 			}
 
 			if tt.expectedCode == http.StatusCreated {
-				mocks.CheckData(t, w, tt.expectedData)
+				mockUtils.CheckData(t, w, tt.expectedData)
 				return
 			}
 
 			if tt.expectedError != nil {
-				mocks.CheckError(t, w, tt.expectedError)
+				mockUtils.CheckError(t, w, tt.expectedError)
 			}
 		})
 	}

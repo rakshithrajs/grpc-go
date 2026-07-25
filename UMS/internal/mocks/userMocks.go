@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -29,11 +29,11 @@ type MockUserService struct {
 func (m *MockUserService) CreateUser(ctx context.Context, user *models.User) (*models.User, error) {
 	switch m.CreateUserErr {
 	case DbOpDuplicateEmail:
-		return nil, utils.ErrUserEmailAlreadyExists
+		return nil, handlerUtils.ErrUserEmailAlreadyExists
 	case DbOpDuplicatePhone:
-		return nil, utils.ErrPhoneNumberAlreadyExists
+		return nil, handlerUtils.ErrPhoneNumberAlreadyExists
 	case DbOpInternalError:
-		return nil, utils.ErrFailedToCreateUser
+		return nil, handlerUtils.ErrFailedToCreateUser
 	}
 
 	m.User = user
@@ -49,7 +49,7 @@ func (m *MockUserService) GetUserByID(ctx context.Context, id string) (*models.U
 
 	switch m.GetUserByIDErr {
 	case DbOpNotFound:
-		return nil, utils.ErrUserNotFound
+		return nil, handlerUtils.ErrUserNotFound
 	case DbOpInternalError:
 		return nil, storage.ErrFailedToGetUserByID
 	}
@@ -69,7 +69,7 @@ func (m *MockUserService) GetUserByEmail(ctx context.Context, email string) (*mo
 
 	switch m.GetUserByEmailErr {
 	case DbOpNotFound:
-		return nil, utils.ErrEmailNotFound
+		return nil, handlerUtils.ErrEmailNotFound
 	case DbOpInternalError:
 		return nil, storage.ErrFailedToGetUserByEmail
 	}
@@ -90,11 +90,11 @@ func (m *MockUserService) UpdateUser(ctx context.Context, id string, req models.
 
 	switch m.UpdateUserErr {
 	case DbOpDuplicateEmail:
-		return utils.ErrUserEmailAlreadyExists
+		return handlerUtils.ErrUserEmailAlreadyExists
 	case DbOpDuplicatePhone:
-		return utils.ErrPhoneNumberAlreadyExists
+		return handlerUtils.ErrPhoneNumberAlreadyExists
 	case DbOpInternalError:
-		return utils.ErrFailedToUpdateUser
+		return handlerUtils.ErrFailedToUpdateUser
 	}
 
 	return nil

@@ -8,14 +8,16 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	"github.com/rakshithrajs/cloud/UMS/internal/handlers"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+
+	grpcUtils "github.com/rakshithrajs/cloud/UMS/internal/grpc/utils"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 )
 
 func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
-	userID, err := handlers.GetUserIDFromGin(c)
+	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		utils.ReturnErrorResponse(c, err, fnUploadFile, utils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, err, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, "")
 		return
 	}
 
@@ -23,39 +25,39 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 
 	fileHeader, err := c.FormFile(multipartFileField)
 	if err != nil {
-		utils.ReturnErrorResponse(c, utils.ErrFileIsRequired, fnUploadFile, utils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileIsRequired, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, "")
 		return
 	}
 
 	if strings.TrimSpace(fileHeader.Filename) == config.NullString {
-		utils.ReturnErrorResponse(c, utils.ErrFileNameRequired, fnUploadFile, utils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileNameRequired, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, "")
 		return
 	}
 
 	openedFile, err := fileHeader.Open()
 	if err != nil {
-		slog.Error(handlers.LogPrefix(fnUploadFile)+"failed to open uploaded file", slog.Any(config.ErrorKey, err))
-		utils.ReturnErrorResponse(c, err, fnUploadFile, utils.ErrSomethingWentWrong, "")
+		slog.Error(handlerUtils.LogPrefix(fnUploadFile)+"failed to open uploaded file", slog.Any(config.ErrorKey, err))
+		handlerUtils.ReturnErrorResponse(c, err, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, "")
 		return
 	}
 	defer openedFile.Close()
 
 	content, err := io.ReadAll(openedFile)
 	if err != nil {
-		slog.Error(handlers.LogPrefix(fnUploadFile)+"failed to read uploaded file", slog.Any(config.ErrorKey, err))
-		utils.ReturnErrorResponse(c, err, fnUploadFile, utils.ErrSomethingWentWrong, "")
+		slog.Error(handlerUtils.LogPrefix(fnUploadFile)+"failed to read uploaded file", slog.Any(config.ErrorKey, err))
+		handlerUtils.ReturnErrorResponse(c, err, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, "")
 		return
 	}
 
 	if len(content) == 0 {
-		utils.ReturnErrorResponse(c, utils.ErrEmptyFileContent, fnUploadFile, utils.ErrSomethingWentWrong, "")
+		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrEmptyFileContent, fnUploadFile, middlewareUtils.ErrSomethingWentWrong, "")
 		return
 	}
 
 	file, err := h.client.UploadFileGrpcHandler(ctx, userID, fileHeader.Filename, content)
 	if err != nil {
-		status, msg := handlers.MapGRPCError(err, utils.ErrFailedToUploadFile.Error())
-		slog.Error(handlers.LogPrefix(fnUploadFile)+"failed to upload file", slog.Any(config.ErrorKey, err))
+		status, msg := grpcUtils.MapGRPCError(err, handlerUtils.ErrFailedToUploadFile.Error())
+		slog.Error(handlerUtils.LogPrefix(fnUploadFile)+"failed to upload file", slog.Any(config.ErrorKey, err))
 		c.JSON(status, gin.H{config.ErrorKey: msg})
 		return
 	}

@@ -6,8 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 )
 
 func TestDownloadFileHandler(t *testing.T) {
@@ -25,21 +26,21 @@ func TestDownloadFileHandler(t *testing.T) {
 			name:          "download file fails due to missing auth",
 			auth:          false,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: utils.ErrUnauthorized.Error(),
+			expectedError: handlerUtils.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "download file fails due to missing fileID",
 			auth:          true,
 			fileID:        "",
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrFileIDRequired.Error(),
+			expectedError: handlerUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:          "download file fails due to whitespace fileID",
 			auth:          true,
 			fileID:        "   ",
 			expectedCode:  http.StatusBadRequest,
-			expectedError: utils.ErrFileIDRequired.Error(),
+			expectedError: handlerUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:          "download file fails due to missing metadata",
@@ -47,7 +48,7 @@ func TestDownloadFileHandler(t *testing.T) {
 			fileID:        "file-id-123",
 			mockGrpcErr:   mocks.GrpcOpMissingMetadata,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: utils.ErrUnauthorized.Error(),
+			expectedError: handlerUtils.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "download file fails due to missing userID in metadata",
@@ -55,7 +56,7 @@ func TestDownloadFileHandler(t *testing.T) {
 			fileID:        "file-id-123",
 			mockGrpcErr:   mocks.GrpcOpMissingUserID,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: utils.ErrUnauthorized.Error(),
+			expectedError: handlerUtils.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "download file fails due to grpc internal error",
@@ -63,7 +64,7 @@ func TestDownloadFileHandler(t *testing.T) {
 			fileID:        "file-id-123",
 			mockGrpcErr:   mocks.GrpcOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: utils.ErrFailedToDownloadFile.Error(),
+			expectedError: handlerUtils.ErrFailedToDownloadFile.Error(),
 		},
 		{
 			name:         "download file succeeds when file not found",
@@ -86,7 +87,7 @@ func TestDownloadFileHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, w := mocks.SetUpGinTest(http.MethodGet, "/api/files/:fileID/download", "", tt.auth)
+			c, w := mockUtils.SetUpGinTest(http.MethodGet, "/api/files/:fileID/download", "", tt.auth)
 			c.Params = []gin.Param{{Key: "fileID", Value: tt.fileID}}
 
 			mmsClient := &mocks.MockMMSClient{MockErr: tt.mockGrpcErr}
@@ -101,7 +102,7 @@ func TestDownloadFileHandler(t *testing.T) {
 			}
 
 			if tt.expectedError != nil {
-				mocks.CheckError(t, w, tt.expectedError)
+				mockUtils.CheckError(t, w, tt.expectedError)
 			}
 
 			if tt.expectedCode == http.StatusOK {

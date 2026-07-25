@@ -9,8 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
+	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 )
 
 func init() {
@@ -44,19 +45,19 @@ func TestAuthMiddleware(t *testing.T) {
 			name:                "authorization fails because of Missing Authorization Header",
 			AuthorizationHeader: "",
 			expectedStatusCode:  http.StatusUnauthorized,
-			expectedError:       utils.ErrMissingAuthHeader.Error(),
+			expectedError:       handlerUtils.ErrMissingAuthHeader.Error(),
 		},
 		{
 			name:                "authorization fails because of Missing Bearer",
 			AuthorizationHeader: "okenabcdefg",
 			expectedStatusCode:  http.StatusUnauthorized,
-			expectedError:       utils.ErrMissingBearerToken.Error(),
+			expectedError:       middlewareUtils.ErrMissingBearerToken.Error(),
 		},
 		{
 			name:                "authorization fails because of Missing Token",
 			AuthorizationHeader: "Bearer ",
 			expectedStatusCode:  http.StatusUnauthorized,
-			expectedError:       utils.ErrMissingBearerToken.Error(),
+			expectedError:       middlewareUtils.ErrMissingBearerToken.Error(),
 		},
 		{
 			name: "authorization fails because of Invalid Signing Method",
@@ -66,7 +67,7 @@ func TestAuthMiddleware(t *testing.T) {
 				return "Bearer " + token
 			}(),
 			expectedStatusCode: http.StatusUnauthorized,
-			expectedError:      utils.ErrInvalidToken.Error(),
+			expectedError:      middlewareUtils.ErrInvalidToken.Error(),
 		},
 		{
 			name: "authorization fails because of Invalid Token",
@@ -75,7 +76,7 @@ func TestAuthMiddleware(t *testing.T) {
 				return "Bearer " + token
 			}(),
 			expectedStatusCode: http.StatusUnauthorized,
-			expectedError:      utils.ErrInvalidToken.Error(),
+			expectedError:      middlewareUtils.ErrInvalidToken.Error(),
 		},
 		{
 			name: "authorization fails because of Invalid Issuer",
@@ -84,7 +85,7 @@ func TestAuthMiddleware(t *testing.T) {
 				return "Bearer " + token
 			}(),
 			expectedStatusCode: http.StatusUnauthorized,
-			expectedError:      utils.ErrInvalidToken.Error(),
+			expectedError:      middlewareUtils.ErrInvalidToken.Error(),
 		},
 		{
 			name: "authorization fails because of Invalid Subject",
@@ -93,7 +94,7 @@ func TestAuthMiddleware(t *testing.T) {
 				return "Bearer " + token
 			}(),
 			expectedStatusCode: http.StatusUnauthorized,
-			expectedError:      utils.ErrInvalidToken.Error(),
+			expectedError:      middlewareUtils.ErrInvalidToken.Error(),
 		},
 		{
 			name: "authorization fails because of Zero Issue Time",
@@ -102,7 +103,7 @@ func TestAuthMiddleware(t *testing.T) {
 				return "Bearer " + token
 			}(),
 			expectedStatusCode: http.StatusUnauthorized,
-			expectedError:      utils.ErrInvalidToken.Error(),
+			expectedError:      middlewareUtils.ErrInvalidToken.Error(),
 		},
 		{
 			name: "authorization fails because of Future Issue Time",
@@ -112,7 +113,7 @@ func TestAuthMiddleware(t *testing.T) {
 				return "Bearer " + token
 			}(),
 			expectedStatusCode: http.StatusUnauthorized,
-			expectedError:      utils.ErrInvalidToken.Error(),
+			expectedError:      middlewareUtils.ErrInvalidToken.Error(),
 		},
 		{
 			name: "authorization fails because of Expired Token",
@@ -122,7 +123,7 @@ func TestAuthMiddleware(t *testing.T) {
 				return "Bearer " + token
 			}(),
 			expectedStatusCode: http.StatusUnauthorized,
-			expectedError:      utils.ErrTokenExpired.Error(),
+			expectedError:      middlewareUtils.ErrTokenExpired.Error(),
 		},
 		{
 			name: "authorization succeeds with Valid Token",
@@ -162,7 +163,7 @@ func TestAuthMiddleware(t *testing.T) {
 			}
 
 			if tt.expectedError != nil {
-				mocks.CheckError(t, w, tt.expectedError)
+				mockUtils.CheckError(t, w, tt.expectedError)
 			}
 		})
 	}

@@ -6,7 +6,8 @@ import (
 
 	MMS "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -14,15 +15,15 @@ import (
 
 func (c *Client) RenameFileGrpcHandler(ctx context.Context, userID, fileID, newName string) error {
 	if strings.TrimSpace(fileID) == "" {
-		return status.Error(codes.InvalidArgument, utils.ErrFileIDRequired.Error())
+		return status.Error(codes.InvalidArgument, handlerUtils.ErrFileIDRequired.Error())
 	}
 	if strings.TrimSpace(newName) == "" {
-		return status.Error(codes.InvalidArgument, utils.ErrNewNameRequired.Error())
+		return status.Error(codes.InvalidArgument, modelUtils.ErrNewNameRequired.Error())
 	}
 
 	oldName, err := c.storage.UpdateUserFile(ctx, userID, fileID, newName)
 	if err != nil {
-		return status.Error(codes.Internal, utils.ErrFailedToUpdateUserFile.Error())
+		return status.Error(codes.Internal, handlerUtils.ErrFailedToUpdateUserFile.Error())
 	}
 	if oldName == "" {
 		return nil
@@ -35,7 +36,7 @@ func (c *Client) RenameFileGrpcHandler(ctx context.Context, userID, fileID, newN
 		NewName: newName,
 	}); err != nil {
 		if _, rbErr := c.storage.UpdateUserFile(ctx, userID, fileID, oldName); rbErr != nil {
-			return status.Error(codes.Internal, utils.ErrFailedToRollback.Error())
+			return status.Error(codes.Internal, handlerUtils.ErrFailedToRollback.Error())
 		}
 		return err
 	}

@@ -4,8 +4,9 @@ import (
 	"context"
 	"testing"
 
+	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
-	"github.com/rakshithrajs/cloud/UMS/internal/utils"
+	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,20 +25,20 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			name:         "file deletion failed as file id is missing",
 			fileID:       "",
 			expectedCode: codes.InvalidArgument,
-			expectedErr:  utils.ErrFileIDRequired.Error(),
+			expectedErr:  handlerUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:         "file deletion failed as file id is whitespace",
 			fileID:       "   ",
 			expectedCode: codes.InvalidArgument,
-			expectedErr:  utils.ErrFileIDRequired.Error(),
+			expectedErr:  handlerUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:         "file deletion failed due to db internal error",
 			fileID:       "file-id-123",
 			deleteDbErr:  mocks.DbOpInternalError,
 			expectedCode: codes.Internal,
-			expectedErr:  utils.ErrFailedToDeleteUserFile.Error(),
+			expectedErr:  handlerUtils.ErrFailedToDeleteUserFile.Error(),
 		},
 		{
 			name:         "file deletion succeeds but file not found in db",
@@ -65,7 +66,7 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			GrpcErr:      mocks.GrpcOpInternalError,
 			expectedCode: codes.Internal,
-			expectedErr:  utils.ErrFailedToDeleteFile.Error(),
+			expectedErr:  handlerUtils.ErrFailedToDeleteFile.Error(),
 		},
 		{
 			name:         "file deletion succeeds but file not found in grpc",
@@ -80,7 +81,7 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			GrpcErr:      mocks.GrpcOpInternalError,
 			createDbErr:  mocks.DbOpInternalError,
 			expectedCode: codes.Internal,
-			expectedErr:  utils.ErrFailedToRollback.Error(),
+			expectedErr:  handlerUtils.ErrFailedToRollback.Error(),
 		},
 		{
 			name:         "file deletion succeeds",
@@ -105,7 +106,7 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			}
 
 			if status.Code() != codes.OK {
-				mocks.CheckData(t, status.Message(), tt.expectedErr)
+				mockUtils.CheckData(t, status.Message(), tt.expectedErr)
 			}
 		})
 	}

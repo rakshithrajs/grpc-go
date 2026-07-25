@@ -9,6 +9,7 @@ import (
 	MMSpb "github.com/rakshithrajs/cloud/MMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/MMS/internal/config"
 	"github.com/rakshithrajs/cloud/MMS/internal/mocks"
+	mockUtils "github.com/rakshithrajs/cloud/MMS/internal/mocks/utils"
 	"github.com/rakshithrajs/cloud/MMS/internal/storage"
 
 	"google.golang.org/grpc/codes"
@@ -141,7 +142,7 @@ func TestUploadFile(t *testing.T) {
 			}
 
 			if tt.expectedCode == codes.OK {
-				mocks.CheckData(t, resp, &MMSpb.UploadFileResponse{File: tt.expectedFile})
+				mockUtils.CheckData(t, resp, &MMSpb.UploadFileResponse{File: tt.expectedFile})
 			}
 		})
 	}

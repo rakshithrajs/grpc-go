@@ -1,4 +1,4 @@
-package utils
+package handlers
 
 import (
 	"errors"
@@ -6,6 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
+	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
+	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 )
 
 const (
@@ -51,10 +53,10 @@ var (
 func ReturnErrorResponse(c *gin.Context, err any, source string, defaultMsg error, data any) {
 	if e, ok := err.(error); ok {
 		switch {
-		case errors.Is(e, ErrMissingAuthHeader), errors.Is(e, ErrMissingBearerToken), errors.Is(e, ErrInvalidToken), errors.Is(e, ErrTokenExpired), errors.Is(e, ErrUnauthorized):
+		case errors.Is(e, ErrMissingAuthHeader), errors.Is(e, middlewareUtils.ErrMissingBearerToken), errors.Is(e, middlewareUtils.ErrInvalidToken), errors.Is(e, middlewareUtils.ErrTokenExpired), errors.Is(e, ErrUnauthorized):
 			c.JSON(http.StatusUnauthorized, gin.H{config.ErrorKey: e.Error()})
 			return
-		case errors.Is(e, ErrInvalidJSON), errors.Is(e, ErrNoFieldsToUpdate), errors.Is(e, ErrPasswordSameAsOldPassword), errors.Is(e, ErrFileIDRequired), errors.Is(e, ErrFileIsRequired), errors.Is(e, ErrFileNameRequired), errors.Is(e, ErrNewNameRequired), errors.Is(e, ErrEmptyFileContent):
+		case errors.Is(e, ErrInvalidJSON), errors.Is(e, ErrNoFieldsToUpdate), errors.Is(e, ErrPasswordSameAsOldPassword), errors.Is(e, ErrFileIDRequired), errors.Is(e, ErrFileIsRequired), errors.Is(e, ErrFileNameRequired), errors.Is(e, modelUtils.ErrNewNameRequired), errors.Is(e, ErrEmptyFileContent):
 			c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: e.Error()})
 			return
 		case errors.Is(e, ErrInvalidCredentials), errors.Is(e, ErrEmailNotFound):
@@ -88,7 +90,7 @@ func ReturnErrorResponse(c *gin.Context, err any, source string, defaultMsg erro
 
 func returnMultipleErrorResponse(c *gin.Context, errs map[string]string, source string, _ error) {
 	isLogin := source == LoginHandlerSource
-	isRequiredField := errs["email"] == ErrEmailRequired.Error() || errs["password"] == ErrPasswordRequired.Error()
+	isRequiredField := errs["email"] == modelUtils.ErrEmailRequired.Error() || errs["password"] == modelUtils.ErrPasswordRequired.Error()
 
 	if !isLogin || (isLogin && isRequiredField) {
 		c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: errs})
