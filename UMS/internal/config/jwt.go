@@ -24,11 +24,12 @@ var (
 )
 
 func GenerateJWT(user models.User, secret string) (string, error) {
+	now := time.Now().UTC()
 	claims := jwt.MapClaims{
 		JWTClaimIssuer:   JWTIssuer,
 		JWTClaimSubject:  user.ID,
-		JWTClaimIssuedAt: time.Now().Unix(),
-		JWTClaimExpiry:   time.Now().Add(JWTExpiry).Unix(),
+		JWTClaimIssuedAt: now.Unix(),
+		JWTClaimExpiry:   now.Add(JWTExpiry).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

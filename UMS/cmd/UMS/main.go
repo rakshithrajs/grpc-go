@@ -25,20 +25,20 @@ const (
 func main() {
 	cfg, err := config.GetConfig()
 	if err != nil {
-		slog.Error(logPrefix+"failed to get config", slog.Any("error", err))
+		slog.Error(logPrefix+"failed to get config", slog.Any(config.ErrorKey, err))
 		return
 	}
 
 	db, err := storage.Connect(cfg.DSN)
 	if err != nil {
-		slog.Error(logPrefix+"failed to connect to database", slog.Any("error", err))
+		slog.Error(logPrefix+"failed to connect to database", slog.Any(config.ErrorKey, err))
 		return
 	}
 	defer db.Close()
 
 	MMSConn, err := grpc.NewClient(cfg.MMSGRPCAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		slog.Error(logPrefix+"failed to connect to MMS service", slog.Any("error", err))
+		slog.Error(logPrefix+"failed to connect to MMS service", slog.Any(config.ErrorKey, err))
 		return
 	}
 	defer MMSConn.Close()
@@ -65,6 +65,6 @@ func main() {
 	userfiles.RegisterRoutes(filesRouterGroup, UserFilesHandler)
 
 	if err := router.Run(cfg.ServerAddress); err != nil {
-		slog.Error(logPrefix+"failed to run server", slog.Any("error", err))
+		slog.Error(logPrefix+"failed to run server", slog.Any(config.ErrorKey, err))
 	}
 }

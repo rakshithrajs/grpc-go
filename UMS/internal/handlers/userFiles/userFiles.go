@@ -22,6 +22,8 @@ const (
 
 	// functions name for delete user files
 	fnDeleteFile = "DeleteFile"
+
+	multipartFileField = "file"
 )
 
 type UserFilesHandler struct {

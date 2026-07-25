@@ -39,7 +39,7 @@ func (u *userStore) CreateUser(ctx context.Context, user *models.User) (*models.
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error(logPrefix(fnCreateUser)+"prepare statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnCreateUser)+"prepare statement", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToCreateUser
 	}
 	defer stmt.Close()
@@ -54,11 +54,11 @@ func (u *userStore) CreateUser(ctx context.Context, user *models.User) (*models.
 			case uniqueConstraintUsersPhoneKey:
 				return nil, utils.ErrPhoneNumberAlreadyExists
 			default:
-				slog.Error(logPrefix(fnCreateUser)+"unique constraint violation", slog.Any("error", err))
+				slog.Error(logPrefix(fnCreateUser)+"unique constraint violation", slog.Any(config.ErrorKey, err))
 				return nil, ErrFailedToCreateUser
 			}
 		}
-		slog.Error(logPrefix(fnCreateUser)+"query row", slog.Any("error", err))
+		slog.Error(logPrefix(fnCreateUser)+"query row", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToCreateUser
 	}
 
@@ -70,7 +70,7 @@ func (u *userStore) GetUserByID(ctx context.Context, id string) (*models.User, e
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error(logPrefix(fnGetUserByID)+"prepare query", slog.Any("error", err))
+		slog.Error(logPrefix(fnGetUserByID)+"prepare query", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToGetUserByID
 	}
 	defer stmt.Close()
@@ -80,7 +80,7 @@ func (u *userStore) GetUserByID(ctx context.Context, id string) (*models.User, e
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, utils.ErrUserNotFound
 		}
-		slog.Error(logPrefix(fnGetUserByID)+"query", slog.Any("error", err))
+		slog.Error(logPrefix(fnGetUserByID)+"query", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToGetUserByID
 	}
 
@@ -92,7 +92,7 @@ func (u *userStore) GetUserByEmail(ctx context.Context, email string) (*models.U
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error(logPrefix(fnGetUserByEmail)+"prepare query", slog.Any("error", err))
+		slog.Error(logPrefix(fnGetUserByEmail)+"prepare query", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToGetUserByEmail
 	}
 	defer stmt.Close()
@@ -102,7 +102,7 @@ func (u *userStore) GetUserByEmail(ctx context.Context, email string) (*models.U
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, utils.ErrEmailNotFound
 		}
-		slog.Error(logPrefix(fnGetUserByEmail)+"query", slog.Any("error", err))
+		slog.Error(logPrefix(fnGetUserByEmail)+"query", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToGetUserByEmail
 	}
 
@@ -129,7 +129,7 @@ func (u *userStore) UpdateUser(ctx context.Context, id string, req models.Update
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error(logPrefix(fnUpdateUser)+"prepare statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnUpdateUser)+"prepare statement", slog.Any(config.ErrorKey, err))
 		return ErrFailedToUpdateUser
 	}
 	defer stmt.Close()
@@ -143,11 +143,11 @@ func (u *userStore) UpdateUser(ctx context.Context, id string, req models.Update
 			case uniqueConstraintUsersPhoneKey:
 				return utils.ErrPhoneNumberAlreadyExists
 			default:
-				slog.Error(logPrefix(fnUpdateUser)+"unique constraint violation", slog.Any("error", err))
+				slog.Error(logPrefix(fnUpdateUser)+"unique constraint violation", slog.Any(config.ErrorKey, err))
 				return ErrFailedToUpdateUser
 			}
 		}
-		slog.Error(logPrefix(fnUpdateUser)+"update user", slog.Any("error", err))
+		slog.Error(logPrefix(fnUpdateUser)+"update user", slog.Any(config.ErrorKey, err))
 		return ErrFailedToUpdateUser
 	}
 

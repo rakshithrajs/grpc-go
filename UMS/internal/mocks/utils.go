@@ -84,12 +84,12 @@ func SetUpGinTest(method, url string, body string, authWorks bool) (*gin.Context
 	return c, w
 }
 
-func SetUpGinTestMultipart(fileContent string, authWorks bool) (*gin.Context, *httptest.ResponseRecorder) {
+func SetUpGinTestMultipart(fileContent, fileName string, authWorks bool) (*gin.Context, *httptest.ResponseRecorder) {
 	gin.SetMode(gin.TestMode)
 
 	var buf bytes.Buffer
 	writer := multipart.NewWriter(&buf)
-	part, _ := writer.CreateFormFile("file", "test.txt")
+	part, _ := writer.CreateFormFile("file", fileName)
 	io.WriteString(part, fileContent)
 	writer.Close()
 

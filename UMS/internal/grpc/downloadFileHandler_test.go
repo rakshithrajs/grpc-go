@@ -6,6 +6,7 @@ import (
 
 	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
+	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -13,25 +14,41 @@ import (
 func TestDownloadFileGrpcHandler(t *testing.T) {
 	tests := []struct {
 		name         string
+		fileID       string
 		mockGrpcErr  mocks.GrpcOperationError
 		expectedCode codes.Code
 		expectedErr  string
 		expectedData *MMSpb.DownloadFileResponse
 	}{
 		{
+			name:         "file download fails as file id is missing",
+			fileID:       "",
+			expectedCode: codes.InvalidArgument,
+			expectedErr:  utils.ErrFileIDRequired.Error(),
+		},
+		{
+			name:         "file download fails as file id is whitespace",
+			fileID:       "   ",
+			expectedCode: codes.InvalidArgument,
+			expectedErr:  utils.ErrFileIDRequired.Error(),
+		},
+		{
 			name:         "file download fails as missing metadata",
+			fileID:       "file-id-123",
 			mockGrpcErr:  mocks.GrpcOpMissingMetadata,
 			expectedCode: codes.Unauthenticated,
 			expectedErr:  mocks.ErrMissingMetadata.Error(),
 		},
 		{
 			name:         "file download fails due to user id is misssing",
+			fileID:       "file-id-123",
 			mockGrpcErr:  mocks.GrpcOpMissingUserID,
 			expectedCode: codes.Unauthenticated,
 			expectedErr:  mocks.ErrMissingUserID.Error(),
 		},
 		{
 			name:         "file download succeeds with no file id found",
+			fileID:       "file-id-123",
 			mockGrpcErr:  mocks.GrpcOpNotFound,
 			expectedCode: codes.OK,
 			expectedErr:  "",
@@ -39,12 +56,14 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 		},
 		{
 			name:         "file download fails due to internal error",
+			fileID:       "file-id-123",
 			mockGrpcErr:  mocks.GrpcOpInternalError,
 			expectedCode: codes.Internal,
 			expectedErr:  mocks.ErrFailedToDownloadFile.Error(),
 		},
 		{
 			name:         "file download succeeds",
+			fileID:       "file-id-123",
 			mockGrpcErr:  mocks.GrpcOpSuccess,
 			expectedCode: codes.OK,
 			expectedErr:  "",
@@ -62,7 +81,7 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			svc := &mocks.MockUserFilesService{}
 			c := NewClient(mmsClient, svc)
 
-			resp, err := c.DownloadFileGrpcHandler(context.Background(), "user-123", "file-id-123")
+			resp, err := c.DownloadFileGrpcHandler(context.Background(), "user-123", tt.fileID)
 
 			st, _ := status.FromError(err)
 
@@ -71,12 +90,10 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			}
 
 			if tt.expectedCode == codes.OK {
-				mocks.CheckData(t, &resp, tt.expectedData)
+				mocks.CheckData(t, resp, tt.expectedData)
 			}
 
-			if tt.expectedErr != st.Message() {
-				t.Errorf("expected error %v got %v", tt.expectedErr, st.Message())
-			}
+			mocks.CheckData(t, st.Message(), tt.expectedErr)
 		})
 	}
 }

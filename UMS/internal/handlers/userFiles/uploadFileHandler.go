@@ -4,6 +4,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
@@ -20,9 +21,14 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	fileHeader, err := c.FormFile("file")
+	fileHeader, err := c.FormFile(multipartFileField)
 	if err != nil {
 		utils.ReturnErrorResponse(c, utils.ErrFileIsRequired, fnUploadFile, utils.ErrSomethingWentWrong, "")
+		return
+	}
+
+	if strings.TrimSpace(fileHeader.Filename) == config.NullString {
+		utils.ReturnErrorResponse(c, utils.ErrFileNameRequired, fnUploadFile, utils.ErrSomethingWentWrong, "")
 		return
 	}
 
@@ -38,6 +44,11 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 	if err != nil {
 		slog.Error(handlers.LogPrefix(fnUploadFile)+"failed to read uploaded file", slog.Any(config.ErrorKey, err))
 		utils.ReturnErrorResponse(c, err, fnUploadFile, utils.ErrSomethingWentWrong, "")
+		return
+	}
+
+	if len(content) == 0 {
+		utils.ReturnErrorResponse(c, utils.ErrEmptyFileContent, fnUploadFile, utils.ErrSomethingWentWrong, "")
 		return
 	}
 

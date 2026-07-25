@@ -35,6 +35,13 @@ func TestDownloadFileHandler(t *testing.T) {
 			expectedError: utils.ErrFileIDRequired.Error(),
 		},
 		{
+			name:          "download file fails due to whitespace fileID",
+			auth:          true,
+			fileID:        "   ",
+			expectedCode:  http.StatusBadRequest,
+			expectedError: utils.ErrFileIDRequired.Error(),
+		},
+		{
 			name:          "download file fails due to missing metadata",
 			auth:          true,
 			fileID:        "file-id-123",

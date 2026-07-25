@@ -8,6 +8,10 @@ import (
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 )
 
+const (
+	LoginHandlerSource = "LoginUserHandler"
+)
+
 var (
 	ErrMissingAuthHeader         = errors.New("missing Authorization header")
 	ErrUnauthorized              = errors.New("unauthorized")
@@ -24,13 +28,13 @@ var (
 	ErrPhoneNumberAlreadyExists  = errors.New("phone number already exists")
 	ErrFileIDRequired            = errors.New("file ID is required")
 	ErrFileIsRequired            = errors.New("file is required")
+	ErrFileNameRequired          = errors.New("file name is required")
+	ErrEmptyFileContent          = errors.New("file content is empty")
 	ErrFailedToUploadFile        = errors.New("failed to upload file")
 	ErrFailedToRenameFile        = errors.New("failed to rename file")
 	ErrFailedToListFiles         = errors.New("failed to list files")
 	ErrFailedToDownloadFile      = errors.New("failed to download file")
 	ErrFailedToDeleteFile        = errors.New("failed to delete file")
-	ErrFileRenamed               = errors.New("file renamed successfully")
-	ErrFileDeleted               = errors.New("file deleted successfully")
 	ErrFileNotFound              = errors.New("file not found")
 	ErrUserFileAlreadyExists     = errors.New("user file mapping already exists")
 	ErrFailedToCreateUserFile    = errors.New("failed to create user file mapping")
@@ -50,7 +54,7 @@ func ReturnErrorResponse(c *gin.Context, err any, source string, defaultMsg erro
 		case errors.Is(e, ErrMissingAuthHeader), errors.Is(e, ErrMissingBearerToken), errors.Is(e, ErrInvalidToken), errors.Is(e, ErrTokenExpired), errors.Is(e, ErrUnauthorized):
 			c.JSON(http.StatusUnauthorized, gin.H{config.ErrorKey: e.Error()})
 			return
-		case errors.Is(e, ErrInvalidJSON), errors.Is(e, ErrNoFieldsToUpdate), errors.Is(e, ErrPasswordSameAsOldPassword), errors.Is(e, ErrFileIDRequired), errors.Is(e, ErrFileIsRequired):
+		case errors.Is(e, ErrInvalidJSON), errors.Is(e, ErrNoFieldsToUpdate), errors.Is(e, ErrPasswordSameAsOldPassword), errors.Is(e, ErrFileIDRequired), errors.Is(e, ErrFileIsRequired), errors.Is(e, ErrFileNameRequired), errors.Is(e, ErrNewNameRequired), errors.Is(e, ErrEmptyFileContent):
 			c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: e.Error()})
 			return
 		case errors.Is(e, ErrInvalidCredentials), errors.Is(e, ErrEmailNotFound):
@@ -83,7 +87,7 @@ func ReturnErrorResponse(c *gin.Context, err any, source string, defaultMsg erro
 }
 
 func returnMultipleErrorResponse(c *gin.Context, errs map[string]string, source string, _ error) {
-	isLogin := source == "LoginUserHandler"
+	isLogin := source == LoginHandlerSource
 	isRequiredField := errs["email"] == ErrEmailRequired.Error() || errs["password"] == ErrPasswordRequired.Error()
 
 	if !isLogin || (isLogin && isRequiredField) {

@@ -207,9 +207,6 @@ func fieldError(e validator.FieldError) error {
 
 func FieldErrors(err error) map[string]string {
 	var verrs validator.ValidationErrors
-	if err == nil {
-		return map[string]string{"": "validation error"}
-	}
 	if !errors.As(err, &verrs) || len(verrs) == 0 {
 		return map[string]string{"": err.Error()}
 	}

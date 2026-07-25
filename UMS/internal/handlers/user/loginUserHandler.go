@@ -43,14 +43,14 @@ func (h *UserHandler) LoginUserHandler(ctx *gin.Context) {
 
 	cfg, err := config.GetConfig()
 	if err != nil {
-		slog.Error(handlers.LogPrefix(FnLoginUser)+"failed to get config", slog.Any("error", err))
+		slog.Error(handlers.LogPrefix(FnLoginUser)+"failed to get config", slog.Any(config.ErrorKey, err))
 		utils.ReturnErrorResponse(ctx, err, FnLoginUser, utils.ErrSomethingWentWrong, "")
 		return
 	}
 
 	token, err := config.GenerateJWT(*user, cfg.JWTSecret)
 	if err != nil {
-		slog.Error(handlers.LogPrefix(FnLoginUser)+"failed to generate JWT", slog.Any("error", err))
+		slog.Error(handlers.LogPrefix(FnLoginUser)+"failed to generate JWT", slog.Any(config.ErrorKey, err))
 		utils.ReturnErrorResponse(ctx, err, FnLoginUser, utils.ErrSomethingWentWrong, "")
 		return
 	}

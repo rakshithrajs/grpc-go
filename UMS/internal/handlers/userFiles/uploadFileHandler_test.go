@@ -16,6 +16,9 @@ func TestUploadFileHandler(t *testing.T) {
 		name                string
 		auth                bool
 		withFile            bool
+		fileName            string
+		fileContent         string
+		emptyContent        bool
 		CreateUserFileError mocks.DbOperationError
 		uploadGrpcErr       mocks.GrpcOperationError
 		deleteGrpcErr       mocks.GrpcOperationError
@@ -36,6 +39,22 @@ func TestUploadFileHandler(t *testing.T) {
 			withFile:      false,
 			expectedCode:  http.StatusBadRequest,
 			expectedError: utils.ErrFileIsRequired.Error(),
+		},
+		{
+			name:          "upload file fails due to empty file content",
+			auth:          true,
+			withFile:      true,
+			emptyContent:  true,
+			expectedCode:  http.StatusBadRequest,
+			expectedError: utils.ErrEmptyFileContent.Error(),
+		},
+		{
+			name:          "upload file fails due to whitespace file name",
+			auth:          true,
+			withFile:      true,
+			fileName:      "   ",
+			expectedCode:  http.StatusBadRequest,
+			expectedError: utils.ErrFileNameRequired.Error(),
 		},
 		{
 			name:          "upload file fails due to grpc internal error",
@@ -107,7 +126,15 @@ func TestUploadFileHandler(t *testing.T) {
 			var c *gin.Context
 			var w *httptest.ResponseRecorder
 			if tt.withFile {
-				c, w = mocks.SetUpGinTestMultipart("test content", tt.auth)
+				content := tt.fileContent
+				if content == "" && !tt.emptyContent {
+					content = "test content"
+				}
+				name := tt.fileName
+				if name == "" {
+					name = "test.txt"
+				}
+				c, w = mocks.SetUpGinTestMultipart(content, name, tt.auth)
 			} else {
 				c, w = mocks.SetUpGinTest(http.MethodPost, "/api/files/upload", "", tt.auth)
 			}

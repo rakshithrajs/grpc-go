@@ -14,6 +14,7 @@ import (
 func TestClient_UploadFileGrpcHandler(t *testing.T) {
 	tests := []struct {
 		name              string
+		fileName          string
 		content           []byte
 		grpcErr           mocks.GrpcOperationError
 		createDbErr       mocks.DbOperationError
@@ -23,13 +24,29 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 		expectedFile      *models.File
 	}{
 		{
+			name:         "upload fails when file name is empty",
+			content:      []byte("test content"),
+			fileName:     "",
+			expectedCode: codes.InvalidArgument,
+			expectedErr:  utils.ErrFileNameRequired.Error(),
+		},
+		{
+			name:         "upload fails when file name is whitespace",
+			content:      []byte("test content"),
+			fileName:     "   ",
+			expectedCode: codes.InvalidArgument,
+			expectedErr:  utils.ErrFileNameRequired.Error(),
+		},
+		{
 			name:         "upload fails when content is empty",
+			fileName:     "test.txt",
 			content:      []byte{},
 			expectedCode: codes.InvalidArgument,
 			expectedErr:  utils.ErrFileIsRequired.Error(),
 		},
 		{
 			name:         "upload fails due to missing metadata",
+			fileName:     "test.txt",
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpMissingMetadata,
 			expectedCode: codes.Unauthenticated,
@@ -37,6 +54,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 		},
 		{
 			name:         "upload fails due to missing user id",
+			fileName:     "test.txt",
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpMissingUserID,
 			expectedCode: codes.Unauthenticated,
@@ -44,6 +62,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 		},
 		{
 			name:         "upload fails due to internal error",
+			fileName:     "test.txt",
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpInternalError,
 			expectedCode: codes.Internal,
@@ -51,6 +70,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 		},
 		{
 			name:         "upload fails as file name already exists",
+			fileName:     "test.txt",
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpFileNameAlreadyExists,
 			expectedCode: codes.AlreadyExists,
@@ -58,6 +78,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 		},
 		{
 			name:         "upload fails as file path already exists",
+			fileName:     "test.txt",
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpFilePathAlreadyExists,
 			expectedCode: codes.AlreadyExists,
@@ -65,6 +86,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 		},
 		{
 			name:              "upload fails when grpc returns empty file",
+			fileName:          "test.txt",
 			content:           []byte("test content"),
 			uploadReturnEmpty: true,
 			expectedCode:      codes.Internal,
@@ -72,6 +94,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 		},
 		{
 			name:         "upload fails when user file mapping already exists",
+			fileName:     "test.txt",
 			content:      []byte("test content"),
 			createDbErr:  mocks.DbOpDuplicateFile,
 			expectedCode: codes.AlreadyExists,
@@ -79,6 +102,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 		},
 		{
 			name:         "upload fails due to db internal error and rollback succeeds",
+			fileName:     "test.txt",
 			content:      []byte("test content"),
 			createDbErr:  mocks.DbOpInternalError,
 			expectedCode: codes.Internal,
@@ -86,6 +110,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 		},
 		{
 			name:         "upload fails due to db internal error and rollback fails",
+			fileName:     "test.txt",
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpRollbackFailure,
 			createDbErr:  mocks.DbOpInternalError,
@@ -94,6 +119,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 		},
 		{
 			name:         "upload succeeds",
+			fileName:     "test.txt",
 			content:      []byte("test content"),
 			expectedCode: codes.OK,
 			expectedFile: &models.File{
@@ -114,7 +140,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			svc := &mocks.MockUserFilesService{CreateUserFileError: tt.createDbErr}
 			c := NewClient(mmsClient, svc)
 
-			file, err := c.UploadFileGrpcHandler(context.Background(), "user-123", "test.txt", tt.content)
+			file, err := c.UploadFileGrpcHandler(context.Background(), "user-123", tt.fileName, tt.content)
 
 			st, _ := status.FromError(err)
 

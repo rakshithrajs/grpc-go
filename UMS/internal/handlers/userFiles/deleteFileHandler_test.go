@@ -36,6 +36,13 @@ func TestDeleteFileHandler(t *testing.T) {
 			expectedError: utils.ErrFileIDRequired.Error(),
 		},
 		{
+			name:          "delete file fails due to whitespace fileID",
+			auth:          true,
+			fileID:        "   ",
+			expectedCode:  http.StatusBadRequest,
+			expectedError: utils.ErrFileIDRequired.Error(),
+		},
+		{
 			name:                "delete file fails due to db internal error",
 			auth:                true,
 			fileID:              "file-id-123",

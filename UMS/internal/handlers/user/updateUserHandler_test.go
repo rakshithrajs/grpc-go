@@ -56,6 +56,14 @@ func TestUpdateUserHandler(t *testing.T) {
 			expectedError: utils.ErrPhoneNumberAlreadyExists.Error(),
 		},
 		{
+			name:          "user update fails due to duplicate email",
+			body:          `{"email":"new@example.com"}`,
+			auth:          true,
+			mockErr:       mocks.DbOpDuplicateEmail,
+			expectedCode:  http.StatusConflict,
+			expectedError: utils.ErrUserEmailAlreadyExists.Error(),
+		},
+		{
 			name:          "user update fails due to internal server error",
 			body:          `{"phone":"0987654321"}`,
 			auth:          true,

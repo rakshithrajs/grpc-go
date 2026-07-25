@@ -40,6 +40,14 @@ func TestRenameFileHandler(t *testing.T) {
 			expectedError: utils.ErrFileIDRequired.Error(),
 		},
 		{
+			name:          "rename file fails due to whitespace fileID",
+			auth:          true,
+			fileID:        "   ",
+			body:          `{"newName":"renamed.txt"}`,
+			expectedCode:  http.StatusBadRequest,
+			expectedError: utils.ErrFileIDRequired.Error(),
+		},
+		{
 			name:          "rename file fails due to invalid json",
 			auth:          true,
 			fileID:        "file-id-123",
@@ -52,6 +60,16 @@ func TestRenameFileHandler(t *testing.T) {
 			auth:         true,
 			fileID:       "file-id-123",
 			body:         `{"newName":""}`,
+			expectedCode: http.StatusBadRequest,
+			expectedError: map[string]string{
+				"newName": utils.ErrNewNameRequired.Error(),
+			},
+		},
+		{
+			name:         "rename file fails due to whitespace newName",
+			auth:         true,
+			fileID:       "file-id-123",
+			body:         `{"newName":"   "}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
 				"newName": utils.ErrNewNameRequired.Error(),

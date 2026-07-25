@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"errors"
+	"strings"
 
 	MMS "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
@@ -14,6 +15,9 @@ import (
 )
 
 func (c *Client) UploadFileGrpcHandler(ctx context.Context, userID, fileName string, content []byte) (*models.File, error) {
+	if strings.TrimSpace(fileName) == "" {
+		return nil, status.Error(codes.InvalidArgument, utils.ErrFileNameRequired.Error())
+	}
 	if len(content) == 0 {
 		return nil, status.Error(codes.InvalidArgument, utils.ErrFileIsRequired.Error())
 	}

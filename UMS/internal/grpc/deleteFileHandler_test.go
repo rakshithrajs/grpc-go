@@ -13,6 +13,7 @@ import (
 func TestDeleteFileGrpcHandler(t *testing.T) {
 	tests := []struct {
 		name         string
+		fileID       string
 		deleteDbErr  mocks.DbOperationError
 		createDbErr  mocks.DbOperationError
 		GrpcErr      mocks.GrpcOperationError
@@ -20,43 +21,62 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 		expectedErr  string
 	}{
 		{
+			name:         "file deletion failed as file id is missing",
+			fileID:       "",
+			expectedCode: codes.InvalidArgument,
+			expectedErr:  utils.ErrFileIDRequired.Error(),
+		},
+		{
+			name:         "file deletion failed as file id is whitespace",
+			fileID:       "   ",
+			expectedCode: codes.InvalidArgument,
+			expectedErr:  utils.ErrFileIDRequired.Error(),
+		},
+		{
 			name:         "file deletion failed due to db internal error",
+			fileID:       "file-id-123",
 			deleteDbErr:  mocks.DbOpInternalError,
 			expectedCode: codes.Internal,
 			expectedErr:  utils.ErrFailedToDeleteUserFile.Error(),
 		},
 		{
 			name:         "file deletion succeeds but file not found in db",
+			fileID:       "file-id-123",
 			deleteDbErr:  mocks.DbOpNotFound,
 			expectedCode: codes.OK,
 			expectedErr:  "",
 		},
 		{
 			name:         "file deleted failed due to missing metadata",
+			fileID:       "file-id-123",
 			GrpcErr:      mocks.GrpcOpMissingMetadata,
 			expectedCode: codes.Unauthenticated,
 			expectedErr:  mocks.ErrMissingMetadata.Error(),
 		},
 		{
 			name:         "file deleted failed due to missing user id",
+			fileID:       "file-id-123",
 			GrpcErr:      mocks.GrpcOpMissingUserID,
 			expectedCode: codes.Unauthenticated,
 			expectedErr:  mocks.ErrMissingUserID.Error(),
 		},
 		{
 			name:         "file deletion failed due to grpc internal error",
+			fileID:       "file-id-123",
 			GrpcErr:      mocks.GrpcOpInternalError,
 			expectedCode: codes.Internal,
 			expectedErr:  utils.ErrFailedToDeleteFile.Error(),
 		},
 		{
 			name:         "file deletion succeeds but file not found in grpc",
+			fileID:       "file-id-123",
 			GrpcErr:      mocks.GrpcOpNotFound,
 			expectedCode: codes.OK,
 			expectedErr:  "",
 		},
 		{
 			name:         "file deletion failed due to grpc internal error with rollback failure",
+			fileID:       "file-id-123",
 			GrpcErr:      mocks.GrpcOpInternalError,
 			createDbErr:  mocks.DbOpInternalError,
 			expectedCode: codes.Internal,
@@ -64,6 +84,7 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 		},
 		{
 			name:         "file deletion succeeds",
+			fileID:       "file-id-123",
 			expectedCode: codes.OK,
 			expectedErr:  "",
 		},
@@ -75,7 +96,7 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			svc := &mocks.MockUserFilesService{DeleteUserFileError: tt.deleteDbErr, CreateUserFileError: tt.createDbErr}
 			c := NewClient(mmsClient, svc)
 
-			err := c.DeleteFileGrpcHandler(context.Background(), "user-123", "file-id-123")
+			err := c.DeleteFileGrpcHandler(context.Background(), "user-123", tt.fileID)
 
 			status, _ := status.FromError(err)
 
@@ -84,9 +105,7 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			}
 
 			if status.Code() != codes.OK {
-				if status.Message() != tt.expectedErr {
-					t.Errorf("expected error = %v, got %v", tt.expectedErr, status.Message())
-				}
+				mocks.CheckData(t, status.Message(), tt.expectedErr)
 			}
 		})
 	}

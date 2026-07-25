@@ -8,6 +8,7 @@ import (
 
 	"github.com/lib/pq"
 	"github.com/lib/pq/pqerror"
+	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
 	"github.com/rakshithrajs/cloud/UMS/internal/utils"
 )
@@ -18,7 +19,7 @@ const (
 	fnListUserFiles  = "ListUserFiles"
 	fnUpdateUserFile = "UpdateUserFile"
 
-	uniqueConstraintUserFilesUserIDFileID = "userFiles_userID_fileID_unique"
+	uniqueConstraintUserFilesUserIDFileID = "userFiles_pkey"
 )
 
 type userFilesStore struct {
@@ -34,7 +35,7 @@ func (u *userFilesStore) CreateUserFile(ctx context.Context, userID, fileID, fil
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error(logPrefix(fnCreateUserFile)+"prepare statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnCreateUserFile)+"prepare statement", slog.Any(config.ErrorKey, err))
 		return ErrFailedToCreateUserFile
 	}
 	defer stmt.Close()
@@ -44,7 +45,7 @@ func (u *userFilesStore) CreateUserFile(ctx context.Context, userID, fileID, fil
 		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == uniqueConstraintUserFilesUserIDFileID {
 			return utils.ErrUserFileAlreadyExists
 		}
-		slog.Error(logPrefix(fnCreateUserFile)+"execute statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnCreateUserFile)+"execute statement", slog.Any(config.ErrorKey, err))
 		return ErrFailedToCreateUserFile
 	}
 
@@ -56,7 +57,7 @@ func (u *userFilesStore) DeleteUserFile(ctx context.Context, userID, fileID stri
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error(logPrefix(fnDeleteUserFile)+"prepare statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnDeleteUserFile)+"prepare statement", slog.Any(config.ErrorKey, err))
 		return "", ErrFailedToDeleteUserFile
 	}
 	defer stmt.Close()
@@ -66,7 +67,7 @@ func (u *userFilesStore) DeleteUserFile(ctx context.Context, userID, fileID stri
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", nil
 		}
-		slog.Error(logPrefix(fnDeleteUserFile)+"query row", slog.Any("error", err))
+		slog.Error(logPrefix(fnDeleteUserFile)+"query row", slog.Any(config.ErrorKey, err))
 		return "", ErrFailedToDeleteUserFile
 	}
 
@@ -78,14 +79,14 @@ func (u *userFilesStore) ListUserFiles(ctx context.Context, userID string) ([]mo
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error(logPrefix(fnListUserFiles)+"prepare statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnListUserFiles)+"prepare statement", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToListUserFiles
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.QueryContext(ctx, userID)
 	if err != nil {
-		slog.Error(logPrefix(fnListUserFiles)+"execute statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnListUserFiles)+"execute statement", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToListUserFiles
 	}
 	defer rows.Close()
@@ -95,14 +96,14 @@ func (u *userFilesStore) ListUserFiles(ctx context.Context, userID string) ([]mo
 		var file models.UserFiles
 		file.UserID = userID
 		if err := rows.Scan(&file.FileID, &file.FileName); err != nil {
-			slog.Error(logPrefix(fnListUserFiles)+"scan row", slog.Any("error", err))
+			slog.Error(logPrefix(fnListUserFiles)+"scan row", slog.Any(config.ErrorKey, err))
 			return nil, ErrFailedToListUserFiles
 		}
 		files = append(files, file)
 	}
 
 	if err := rows.Err(); err != nil {
-		slog.Error(logPrefix(fnListUserFiles)+"rows iteration", slog.Any("error", err))
+		slog.Error(logPrefix(fnListUserFiles)+"rows iteration", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToListUserFiles
 	}
 
@@ -114,7 +115,7 @@ func (u *userFilesStore) UpdateUserFile(ctx context.Context, userID, fileID, fil
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error(logPrefix(fnUpdateUserFile)+"prepare statement", slog.Any("error", err))
+		slog.Error(logPrefix(fnUpdateUserFile)+"prepare statement", slog.Any(config.ErrorKey, err))
 		return "", ErrFailedToUpdateUserFile
 	}
 	defer stmt.Close()
@@ -124,7 +125,7 @@ func (u *userFilesStore) UpdateUserFile(ctx context.Context, userID, fileID, fil
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", nil
 		}
-		slog.Error(logPrefix(fnUpdateUserFile)+"query row", slog.Any("error", err))
+		slog.Error(logPrefix(fnUpdateUserFile)+"query row", slog.Any(config.ErrorKey, err))
 		return "", ErrFailedToUpdateUserFile
 	}
 

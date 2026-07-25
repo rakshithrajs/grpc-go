@@ -42,6 +42,8 @@ func (h *UserHandler) UpdateUserHandler(c *gin.Context) {
 		return
 	}
 
+	req.Email = utils.NormalizeEmail(req.Email)
+
 	if req.Password != config.NullString {
 		user, err := h.storage.GetUserByID(ctx, id)
 		if err != nil {

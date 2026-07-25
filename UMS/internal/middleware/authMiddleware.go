@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/utils"
@@ -13,7 +15,7 @@ const (
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
+		authHeader := strings.TrimSpace(c.GetHeader("Authorization"))
 
 		if authHeader == config.NullString {
 			utils.ReturnErrorResponse(c, utils.ErrMissingAuthHeader, funcNameAuthMiddleware, utils.ErrSomethingWentWrong, "")

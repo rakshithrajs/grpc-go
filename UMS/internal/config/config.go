@@ -60,7 +60,6 @@ func moduleRoot() string {
 		panic(err)
 	}
 	root := strings.TrimSpace(string(out))
-	fmt.Println("Module root:", root)
 	return root[:len(root)-len("go.mod")]
 }
 
