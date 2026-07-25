@@ -1,15 +1,14 @@
 package handlers
 
 import (
-	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	grpcUtils "github.com/rakshithrajs/cloud/UMS/internal/grpc/utils"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
+	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 )
 
 func (h *UserFilesHandler) DownloadFileHandler(c *gin.Context) {
@@ -19,18 +18,16 @@ func (h *UserFilesHandler) DownloadFileHandler(c *gin.Context) {
 		return
 	}
 
-	fileID := strings.TrimSpace(c.Param("fileID"))
-	if fileID == config.NullString {
-		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileIDRequired, fnDownloadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+	var fileID = strings.TrimSpace(c.Param("fileID"))
+	if err := modelUtils.Validate.Var(fileID, "required,isValueEmpty,uuid"); err != nil {
+		handlerUtils.ReturnErrorResponse(c, modelUtils.ErrFileIDRequired, fnRenameFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
 	ctx := c.Request.Context()
 
-	resp, err := h.client.DownloadFileGrpcHandler(ctx, userID, fileID)
-	if err != nil {
-		status, msg := grpcUtils.MapGRPCError(err, handlerUtils.ErrFailedToDownloadFile.Error())
-		slog.Error(handlerUtils.LogPrefix(fnDownloadFile)+"failed to download file", slog.Any(config.ErrorKey, err))
+	resp, status, msg := h.client.DownloadFileGrpcHandler(ctx, userID, fileID)
+	if status != http.StatusOK {
 		c.JSON(status, gin.H{config.ErrorKey: msg})
 		return
 	}

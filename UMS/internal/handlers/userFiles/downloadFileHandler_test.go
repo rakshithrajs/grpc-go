@@ -10,6 +10,7 @@ import (
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
+	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 )
 
 func TestDownloadFileHandler(t *testing.T) {
@@ -34,14 +35,14 @@ func TestDownloadFileHandler(t *testing.T) {
 			auth:          true,
 			fileID:        config.NullString,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrFileIDRequired.Error(),
+			expectedError: modelUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:          "download file fails due to whitespace fileID",
 			auth:          true,
 			fileID:        "   ",
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrFileIDRequired.Error(),
+			expectedError: modelUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:          "download file fails due to missing metadata",

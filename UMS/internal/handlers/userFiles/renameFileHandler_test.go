@@ -40,7 +40,7 @@ func TestRenameFileHandler(t *testing.T) {
 			fileID:        config.NullString,
 			body:          `{"newName":"renamed.txt"}`,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrFileIDRequired.Error(),
+			expectedError: modelUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:          "rename file fails due to whitespace fileID",
@@ -48,7 +48,7 @@ func TestRenameFileHandler(t *testing.T) {
 			fileID:        "   ",
 			body:          `{"newName":"renamed.txt"}`,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrFileIDRequired.Error(),
+			expectedError: modelUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:          "rename file fails due to invalid json",
@@ -112,7 +112,7 @@ func TestRenameFileHandler(t *testing.T) {
 			body:          `{"newName":"renamed.txt"}`,
 			mockGrpcErr:   mocks.GrpcOpInvalidArgument,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrFileIDRequired.Error(),
+			expectedError: modelUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:          "rename file fails due to grpc file name already exists",

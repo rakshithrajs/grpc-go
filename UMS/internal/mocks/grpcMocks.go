@@ -5,6 +5,7 @@ import (
 
 	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -94,7 +95,7 @@ func (m *MockMMSClient) DeleteFile(ctx context.Context, in *MMSpb.DeleteFileRequ
 	case GrpcOpMissingUserID:
 		return nil, status.Error(codes.Unauthenticated, ErrMissingUserID.Error())
 	case GrpcOpInvalidArgument:
-		return nil, status.Error(codes.InvalidArgument, handlerUtils.ErrFileIDRequired.Error())
+		return nil, status.Error(codes.InvalidArgument, modelUtils.ErrFileIDRequired.Error())
 	case GrpcOpInternalError:
 		return nil, status.Error(codes.Internal, handlerUtils.ErrFailedToDeleteFile.Error())
 	case GrpcOpNotFound:
@@ -115,7 +116,7 @@ func (m *MockMMSClient) RenameFile(ctx context.Context, in *MMSpb.RenameFileRequ
 	case GrpcOpMissingUserID:
 		return nil, status.Error(codes.Unauthenticated, ErrMissingUserID.Error())
 	case GrpcOpInvalidArgument:
-		return nil, status.Error(codes.InvalidArgument, handlerUtils.ErrFileIDRequired.Error())
+		return nil, status.Error(codes.InvalidArgument, modelUtils.ErrFileIDRequired.Error())
 	case GrpcOpInternalError:
 		return nil, status.Error(codes.Internal, handlerUtils.ErrFailedToRenameFile.Error())
 	case GrpcOpFileNameAlreadyExists:

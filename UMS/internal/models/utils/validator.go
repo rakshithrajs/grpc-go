@@ -27,6 +27,8 @@ var (
 	ErrPasswordMismatch        = errors.New("passwords do not match")
 	ErrPasswordConfirmRequired = errors.New("password confirmation is required")
 	ErrNewNameRequired         = errors.New("new name is required")
+	ErrFileIDRequired          = errors.New("file ID is required")
+	ErrFileIDInvalidUUID       = errors.New("file ID has invalid UUID")
 )
 
 var Validate = validator.New()
@@ -199,6 +201,16 @@ func fieldError(e validator.FieldError) error {
 		switch e.Tag() {
 		case "required", "isValueEmpty":
 			return ErrNewNameRequired
+		default:
+			return e
+		}
+	}
+	if e.StructField() == "FileID" {
+		switch e.Tag() {
+		case "required", "isValueEmpty":
+			return ErrFileIDRequired
+		case "uuid":
+			return ErrFileIDInvalidUUID
 		default:
 			return e
 		}

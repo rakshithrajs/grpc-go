@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
@@ -9,8 +10,6 @@ import (
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func TestRenameFileGrpcHandler(t *testing.T) {
@@ -21,35 +20,35 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 		grpcErr           mocks.GrpcOperationError
 		updateDbErr       mocks.DbOperationError
 		updateRollbackErr mocks.DbOperationError
-		expectedCode      codes.Code
+		expectedCode      int
 		expectedErr       string
 	}{
 		{
 			name:         "file rename failed as file id is missing",
 			fileID:       config.NullString,
 			newName:      "renamed.txt",
-			expectedCode: codes.InvalidArgument,
-			expectedErr:  handlerUtils.ErrFileIDRequired.Error(),
+			expectedCode: http.StatusBadRequest,
+			expectedErr:  modelUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:         "file rename failed as file id is whitespace",
 			fileID:       "   ",
 			newName:      "renamed.txt",
-			expectedCode: codes.InvalidArgument,
-			expectedErr:  handlerUtils.ErrFileIDRequired.Error(),
+			expectedCode: http.StatusBadRequest,
+			expectedErr:  modelUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:         "file rename failed as new name is missing",
 			fileID:       "file-id-123",
 			newName:      config.NullString,
-			expectedCode: codes.InvalidArgument,
+			expectedCode: http.StatusBadRequest,
 			expectedErr:  modelUtils.ErrNewNameRequired.Error(),
 		},
 		{
 			name:         "file rename failed as new name is whitespace",
 			fileID:       "file-id-123",
 			newName:      "   ",
-			expectedCode: codes.InvalidArgument,
+			expectedCode: http.StatusBadRequest,
 			expectedErr:  modelUtils.ErrNewNameRequired.Error(),
 		},
 		{
@@ -57,7 +56,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			newName:      "renamed.txt",
 			updateDbErr:  mocks.DbOpInternalError,
-			expectedCode: codes.Internal,
+			expectedCode: http.StatusInternalServerError,
 			expectedErr:  handlerUtils.ErrFailedToUpdateUserFile.Error(),
 		},
 		{
@@ -65,7 +64,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			newName:      "renamed.txt",
 			updateDbErr:  mocks.DbOpNotFound,
-			expectedCode: codes.OK,
+			expectedCode: http.StatusOK,
 			expectedErr:  config.NullString,
 		},
 		{
@@ -73,7 +72,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			newName:      "renamed.txt",
 			grpcErr:      mocks.GrpcOpMissingMetadata,
-			expectedCode: codes.Unauthenticated,
+			expectedCode: http.StatusUnauthorized,
 			expectedErr:  mocks.ErrMissingMetadata.Error(),
 		},
 		{
@@ -81,7 +80,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			newName:      "renamed.txt",
 			grpcErr:      mocks.GrpcOpMissingUserID,
-			expectedCode: codes.Unauthenticated,
+			expectedCode: http.StatusUnauthorized,
 			expectedErr:  mocks.ErrMissingUserID.Error(),
 		},
 		{
@@ -89,7 +88,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			newName:      "renamed.txt",
 			grpcErr:      mocks.GrpcOpNotFound,
-			expectedCode: codes.OK,
+			expectedCode: http.StatusOK,
 			expectedErr:  config.NullString,
 		},
 		{
@@ -97,7 +96,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			newName:      "renamed.txt",
 			grpcErr:      mocks.GrpcOpFileNameAlreadyExists,
-			expectedCode: codes.AlreadyExists,
+			expectedCode: http.StatusConflict,
 			expectedErr:  mocks.ErrFileNameAlreadyExists.Error(),
 		},
 		{
@@ -105,7 +104,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			newName:      "renamed.txt",
 			grpcErr:      mocks.GrpcOpInternalError,
-			expectedCode: codes.Internal,
+			expectedCode: http.StatusInternalServerError,
 			expectedErr:  handlerUtils.ErrFailedToRenameFile.Error(),
 		},
 		{
@@ -114,14 +113,14 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			newName:           "renamed.txt",
 			grpcErr:           mocks.GrpcOpInternalError,
 			updateRollbackErr: mocks.DbOpInternalError,
-			expectedCode:      codes.Internal,
+			expectedCode:      http.StatusInternalServerError,
 			expectedErr:       handlerUtils.ErrFailedToRollback.Error(),
 		},
 		{
 			name:         "rename succeeds",
 			fileID:       "file-id-123",
 			newName:      "renamed.txt",
-			expectedCode: codes.OK,
+			expectedCode: http.StatusOK,
 			expectedErr:  config.NullString,
 		},
 	}
@@ -132,16 +131,14 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			svc := &mocks.MockUserFilesService{UpdateUserFileError: tt.updateDbErr, UpdateRollbackError: tt.updateRollbackErr}
 			c := NewClient(mmsClient, svc)
 
-			err := c.RenameFileGrpcHandler(context.Background(), "user-123", tt.fileID, tt.newName)
+			status, errMsg := c.RenameFileGrpcHandler(context.Background(), "user-123", tt.fileID, tt.newName)
 
-			status, _ := status.FromError(err)
-
-			if tt.expectedCode != status.Code() {
-				t.Errorf("expected %v got %v", tt.expectedCode, status.Code())
+			if tt.expectedCode != status {
+				t.Errorf("expected %v got %v", tt.expectedCode, status)
 			}
 
-			if status.Code() != codes.OK {
-				mockUtils.CheckData(t, status.Message(), tt.expectedErr)
+			if status != http.StatusOK {
+				mockUtils.CheckData(t, errMsg, tt.expectedErr)
 			}
 		})
 	}

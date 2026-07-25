@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
@@ -9,8 +10,6 @@ import (
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func TestClient_UploadFileGrpcHandler(t *testing.T) {
@@ -21,7 +20,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 		grpcErr           mocks.GrpcOperationError
 		createDbErr       mocks.DbOperationError
 		uploadReturnEmpty bool
-		expectedCode      codes.Code
+		expectedCode      int
 		expectedErr       string
 		expectedFile      *models.File
 	}{
@@ -29,21 +28,21 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			name:         "upload fails when file name is empty",
 			content:      []byte("test content"),
 			fileName:     config.NullString,
-			expectedCode: codes.InvalidArgument,
+			expectedCode: http.StatusBadRequest,
 			expectedErr:  handlerUtils.ErrFileNameRequired.Error(),
 		},
 		{
 			name:         "upload fails when file name is whitespace",
 			content:      []byte("test content"),
 			fileName:     "   ",
-			expectedCode: codes.InvalidArgument,
+			expectedCode: http.StatusBadRequest,
 			expectedErr:  handlerUtils.ErrFileNameRequired.Error(),
 		},
 		{
 			name:         "upload fails when content is empty",
 			fileName:     "test.txt",
 			content:      []byte{},
-			expectedCode: codes.InvalidArgument,
+			expectedCode: http.StatusBadRequest,
 			expectedErr:  handlerUtils.ErrFileIsRequired.Error(),
 		},
 		{
@@ -51,7 +50,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			fileName:     "test.txt",
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpMissingMetadata,
-			expectedCode: codes.Unauthenticated,
+			expectedCode: http.StatusUnauthorized,
 			expectedErr:  mocks.ErrMissingMetadata.Error(),
 		},
 		{
@@ -59,7 +58,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			fileName:     "test.txt",
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpMissingUserID,
-			expectedCode: codes.Unauthenticated,
+			expectedCode: http.StatusUnauthorized,
 			expectedErr:  mocks.ErrMissingUserID.Error(),
 		},
 		{
@@ -67,7 +66,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			fileName:     "test.txt",
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpInternalError,
-			expectedCode: codes.Internal,
+			expectedCode: http.StatusInternalServerError,
 			expectedErr:  handlerUtils.ErrFailedToUploadFile.Error(),
 		},
 		{
@@ -75,7 +74,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			fileName:     "test.txt",
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpFileNameAlreadyExists,
-			expectedCode: codes.AlreadyExists,
+			expectedCode: http.StatusConflict,
 			expectedErr:  mocks.ErrFileNameAlreadyExists.Error(),
 		},
 		{
@@ -83,7 +82,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			fileName:     "test.txt",
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpFilePathAlreadyExists,
-			expectedCode: codes.AlreadyExists,
+			expectedCode: http.StatusConflict,
 			expectedErr:  mocks.ErrFilePathAlreadyExists.Error(),
 		},
 		{
@@ -91,7 +90,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			fileName:          "test.txt",
 			content:           []byte("test content"),
 			uploadReturnEmpty: true,
-			expectedCode:      codes.Internal,
+			expectedCode:      http.StatusInternalServerError,
 			expectedErr:       handlerUtils.ErrFailedToUploadFile.Error(),
 		},
 		{
@@ -99,7 +98,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			fileName:     "test.txt",
 			content:      []byte("test content"),
 			createDbErr:  mocks.DbOpDuplicateFile,
-			expectedCode: codes.AlreadyExists,
+			expectedCode: http.StatusConflict,
 			expectedErr:  handlerUtils.ErrUserFileAlreadyExists.Error(),
 		},
 		{
@@ -107,7 +106,7 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			fileName:     "test.txt",
 			content:      []byte("test content"),
 			createDbErr:  mocks.DbOpInternalError,
-			expectedCode: codes.Internal,
+			expectedCode: http.StatusInternalServerError,
 			expectedErr:  handlerUtils.ErrFailedToUploadFile.Error(),
 		},
 		{
@@ -116,14 +115,14 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpRollbackFailure,
 			createDbErr:  mocks.DbOpInternalError,
-			expectedCode: codes.Internal,
+			expectedCode: http.StatusInternalServerError,
 			expectedErr:  handlerUtils.ErrFailedToRollback.Error(),
 		},
 		{
 			name:         "upload succeeds",
 			fileName:     "test.txt",
 			content:      []byte("test content"),
-			expectedCode: codes.OK,
+			expectedCode: http.StatusOK,
 			expectedFile: &models.File{
 				ID:       "file-id-123",
 				FileName: "test.txt",
@@ -142,17 +141,15 @@ func TestClient_UploadFileGrpcHandler(t *testing.T) {
 			svc := &mocks.MockUserFilesService{CreateUserFileError: tt.createDbErr}
 			c := NewClient(mmsClient, svc)
 
-			file, err := c.UploadFileGrpcHandler(context.Background(), "user-123", tt.fileName, tt.content)
+			file, status, errMsg := c.UploadFileGrpcHandler(context.Background(), "user-123", tt.fileName, tt.content)
 
-			st, _ := status.FromError(err)
-
-			if tt.expectedCode != st.Code() {
-				t.Errorf("expected code %v got %v", tt.expectedCode, st.Code())
+			if tt.expectedCode != status {
+				t.Errorf("expected code %v got %v", tt.expectedCode, status)
 			}
 
-			if st.Code() != codes.OK {
-				if tt.expectedErr != st.Message() {
-					t.Errorf("expected error %v got %v", tt.expectedErr, st.Message())
+			if status != http.StatusOK {
+				if tt.expectedErr != errMsg {
+					t.Errorf("expected error %v got %v", tt.expectedErr, errMsg)
 				}
 				return
 			}

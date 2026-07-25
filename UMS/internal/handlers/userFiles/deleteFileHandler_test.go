@@ -10,6 +10,7 @@ import (
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
+	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 )
 
 func TestDeleteFileHandler(t *testing.T) {
@@ -35,14 +36,14 @@ func TestDeleteFileHandler(t *testing.T) {
 			auth:          true,
 			fileID:        config.NullString,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrFileIDRequired.Error(),
+			expectedError: modelUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:          "delete file fails due to whitespace fileID",
 			auth:          true,
 			fileID:        "   ",
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrFileIDRequired.Error(),
+			expectedError: modelUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:                "delete file fails due to db internal error",
@@ -74,7 +75,7 @@ func TestDeleteFileHandler(t *testing.T) {
 			fileID:        "file-id-123",
 			mockGrpcErr:   mocks.GrpcOpInvalidArgument,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrFileIDRequired.Error(),
+			expectedError: modelUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:         "delete file succeeds when file not found in grpc",

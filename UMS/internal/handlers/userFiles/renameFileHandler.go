@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	grpcUtils "github.com/rakshithrajs/cloud/UMS/internal/grpc/utils"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
@@ -23,17 +22,17 @@ func (h *UserFilesHandler) RenameFileHandler(c *gin.Context) {
 		return
 	}
 
-	fileID := strings.TrimSpace(c.Param("fileID"))
-	if fileID == config.NullString {
-		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrFileIDRequired, fnRenameFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
-		return
-	}
-
 	ctx := c.Request.Context()
 
 	var payload models.RenameFileRequest
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrInvalidJSON, fnRenameFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		return
+	}
+
+	var fileID = strings.TrimSpace(c.Param("fileID"))
+	if err := modelUtils.Validate.Var(fileID, "required,isValueEmpty,uuid"); err != nil {
+		handlerUtils.ReturnErrorResponse(c, modelUtils.ErrFileIDRequired, fnRenameFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
@@ -44,9 +43,9 @@ func (h *UserFilesHandler) RenameFileHandler(c *gin.Context) {
 
 	newName := strings.TrimSpace(payload.NewName)
 
-	if err := h.client.RenameFileGrpcHandler(ctx, userID, fileID, newName); err != nil {
-		status, msg := grpcUtils.MapGRPCError(err, handlerUtils.ErrFailedToRenameFile.Error())
-		slog.Error(handlerUtils.LogPrefix(fnRenameFile)+"failed to rename file", slog.Any(config.ErrorKey, err))
+	status, msg := h.client.RenameFileGrpcHandler(ctx, userID, fileID, newName)
+	if status != http.StatusOK {
+		slog.Error(handlerUtils.LogPrefix(fnRenameFile)+"failed to rename file", slog.Any(config.ErrorKey, msg))
 		c.JSON(status, gin.H{config.ErrorKey: msg})
 		return
 	}

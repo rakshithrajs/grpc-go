@@ -3,25 +3,17 @@ package grpc
 import (
 	"context"
 	"errors"
-	"strings"
+	"net/http"
 
 	MMS "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
+	grpcUtils "github.com/rakshithrajs/cloud/UMS/internal/grpc/utils"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 )
 
-func (c *Client) UploadFileGrpcHandler(ctx context.Context, userID, fileName string, content []byte) (*models.File, error) {
-	if strings.TrimSpace(fileName) == config.NullString {
-		return nil, status.Error(codes.InvalidArgument, handlerUtils.ErrFileNameRequired.Error())
-	}
-	if len(content) == 0 {
-		return nil, status.Error(codes.InvalidArgument, handlerUtils.ErrFileIsRequired.Error())
-	}
-
+func (c *Client) UploadFileGrpcHandler(ctx context.Context, userID, fileName string, content []byte) (*models.File, int, string) {
 	ctx = metadata.AppendToOutgoingContext(ctx, config.UserIDMetadataKey, userID)
 
 	resp, err := c.mmsClient.UploadFile(ctx, &MMS.UploadFileRequest{
@@ -29,22 +21,19 @@ func (c *Client) UploadFileGrpcHandler(ctx context.Context, userID, fileName str
 		Content:  content,
 	})
 	if err != nil {
-		return nil, err
-	}
-
-	if resp.GetFile() == nil || resp.GetFile().GetID() == config.NullString {
-		return nil, status.Error(codes.Internal, handlerUtils.ErrFailedToUploadFile.Error())
+		status, msg := grpcUtils.MapGRPCError(err, handlerUtils.ErrFailedToUploadFile.Error())
+		return nil, status, msg
 	}
 
 	fileID := resp.GetFile().GetID()
 	if err := c.storage.CreateUserFile(ctx, userID, fileID, resp.GetFile().GetFileName()); err != nil {
 		if errors.Is(err, handlerUtils.ErrUserFileAlreadyExists) {
-			return nil, status.Error(codes.AlreadyExists, handlerUtils.ErrUserFileAlreadyExists.Error())
+			return nil, http.StatusConflict, err.Error()
 		}
 		if _, delErr := c.mmsClient.DeleteFile(ctx, &MMS.DeleteFileRequest{FileID: fileID}); delErr != nil {
-			return nil, status.Error(codes.Internal, handlerUtils.ErrFailedToRollback.Error())
+			return nil, http.StatusInternalServerError, handlerUtils.ErrFailedToRollback.Error()
 		}
-		return nil, status.Error(codes.Internal, handlerUtils.ErrFailedToUploadFile.Error())
+		return nil, http.StatusInternalServerError, handlerUtils.ErrFailedToUploadFile.Error()
 	}
 
 	return &models.File{
@@ -52,5 +41,5 @@ func (c *Client) UploadFileGrpcHandler(ctx context.Context, userID, fileName str
 		FileName: resp.GetFile().GetFileName(),
 		FileSize: resp.GetFile().GetFileSize(),
 		MimeType: handlerUtils.MimeTypeToString(resp.GetFile().GetMimeType()),
-	}, nil
+	}, http.StatusCreated, config.NullString
 }

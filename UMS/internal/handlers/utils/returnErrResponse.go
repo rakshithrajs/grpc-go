@@ -27,7 +27,6 @@ var (
 	ErrPasswordSameAsOldPassword = errors.New("new password is same as old password")
 	ErrUserEmailAlreadyExists    = errors.New("user email already exists")
 	ErrPhoneNumberAlreadyExists  = errors.New("phone number already exists")
-	ErrFileIDRequired            = errors.New("file ID is required")
 	ErrFileIsRequired            = errors.New("file is required")
 	ErrFileNameRequired          = errors.New("file name is required")
 	ErrEmptyFileContent          = errors.New("file content is empty")
@@ -54,7 +53,7 @@ func ReturnErrorResponse(c *gin.Context, err any, source string, defaultMsg erro
 		case errors.Is(e, ErrMissingAuthHeader), errors.Is(e, middlewareUtils.ErrMissingBearerToken), errors.Is(e, middlewareUtils.ErrInvalidToken), errors.Is(e, middlewareUtils.ErrTokenExpired), errors.Is(e, ErrUnauthorized):
 			c.JSON(http.StatusUnauthorized, gin.H{config.ErrorKey: e.Error()})
 			return
-		case errors.Is(e, ErrInvalidJSON), errors.Is(e, ErrNoFieldsToUpdate), errors.Is(e, ErrPasswordSameAsOldPassword), errors.Is(e, ErrFileIDRequired), errors.Is(e, ErrFileIsRequired), errors.Is(e, ErrFileNameRequired), errors.Is(e, modelUtils.ErrNewNameRequired), errors.Is(e, ErrEmptyFileContent):
+		case errors.Is(e, ErrInvalidJSON), errors.Is(e, ErrNoFieldsToUpdate), errors.Is(e, ErrPasswordSameAsOldPassword), errors.Is(e, modelUtils.ErrFileIDRequired), errors.Is(e, ErrFileIsRequired), errors.Is(e, ErrFileNameRequired), errors.Is(e, modelUtils.ErrNewNameRequired), errors.Is(e, ErrEmptyFileContent):
 			c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: e.Error()})
 			return
 		case errors.Is(e, ErrInvalidCredentials), errors.Is(e, ErrEmailNotFound):
@@ -73,7 +72,7 @@ func ReturnErrorResponse(c *gin.Context, err any, source string, defaultMsg erro
 			errors.Is(e, ErrFailedToUpdateUser), errors.Is(e, ErrFailedToCreateUserFile), errors.Is(e, ErrFailedToDeleteUserFile),
 			errors.Is(e, ErrFailedToUpdateUserFile), errors.Is(e, ErrFailedToListUserFiles),
 			errors.Is(e, ErrFailedToUploadFile), errors.Is(e, ErrFailedToDownloadFile), errors.Is(e, ErrFailedToRenameFile),
-			errors.Is(e, ErrFailedToDeleteFile), errors.Is(e, ErrFailedToListFiles), errors.Is(e, ErrFailedToRegisterUser):
+			errors.Is(e, ErrFailedToDeleteFile), errors.Is(e, ErrFailedToListFiles), errors.Is(e, ErrFailedToRegisterUser), errors.Is(e, ErrFailedToRollback):
 			c.JSON(http.StatusInternalServerError, gin.H{config.ErrorKey: e.Error()})
 			return
 		default:

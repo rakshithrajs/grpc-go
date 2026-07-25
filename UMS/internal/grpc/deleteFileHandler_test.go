@@ -2,14 +2,14 @@ package grpc
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 )
 
 func TestDeleteFileGrpcHandler(t *testing.T) {
@@ -19,61 +19,61 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 		deleteDbErr  mocks.DbOperationError
 		createDbErr  mocks.DbOperationError
 		GrpcErr      mocks.GrpcOperationError
-		expectedCode codes.Code
+		expectedCode int
 		expectedErr  string
 	}{
 		{
 			name:         "file deletion failed as file id is missing",
 			fileID:       config.NullString,
-			expectedCode: codes.InvalidArgument,
-			expectedErr:  handlerUtils.ErrFileIDRequired.Error(),
+			expectedCode: http.StatusBadRequest,
+			expectedErr:  modelUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:         "file deletion failed as file id is whitespace",
 			fileID:       "   ",
-			expectedCode: codes.InvalidArgument,
-			expectedErr:  handlerUtils.ErrFileIDRequired.Error(),
+			expectedCode: http.StatusBadRequest,
+			expectedErr:  modelUtils.ErrFileIDRequired.Error(),
 		},
 		{
 			name:         "file deletion failed due to db internal error",
 			fileID:       "file-id-123",
 			deleteDbErr:  mocks.DbOpInternalError,
-			expectedCode: codes.Internal,
+			expectedCode: http.StatusInternalServerError,
 			expectedErr:  handlerUtils.ErrFailedToDeleteUserFile.Error(),
 		},
 		{
 			name:         "file deletion succeeds but file not found in db",
 			fileID:       "file-id-123",
 			deleteDbErr:  mocks.DbOpNotFound,
-			expectedCode: codes.OK,
+			expectedCode: http.StatusOK,
 			expectedErr:  config.NullString,
 		},
 		{
 			name:         "file deletion failed due to missing metadata",
 			fileID:       "file-id-123",
 			GrpcErr:      mocks.GrpcOpMissingMetadata,
-			expectedCode: codes.Unauthenticated,
+			expectedCode: http.StatusUnauthorized,
 			expectedErr:  mocks.ErrMissingMetadata.Error(),
 		},
 		{
 			name:         "file deletion failed due to missing user id",
 			fileID:       "file-id-123",
 			GrpcErr:      mocks.GrpcOpMissingUserID,
-			expectedCode: codes.Unauthenticated,
+			expectedCode: http.StatusUnauthorized,
 			expectedErr:  mocks.ErrMissingUserID.Error(),
 		},
 		{
 			name:         "file deletion failed due to grpc internal error",
 			fileID:       "file-id-123",
 			GrpcErr:      mocks.GrpcOpInternalError,
-			expectedCode: codes.Internal,
+			expectedCode: http.StatusInternalServerError,
 			expectedErr:  handlerUtils.ErrFailedToDeleteFile.Error(),
 		},
 		{
 			name:         "file deletion succeeds but file not found in grpc",
 			fileID:       "file-id-123",
 			GrpcErr:      mocks.GrpcOpNotFound,
-			expectedCode: codes.OK,
+			expectedCode: http.StatusOK,
 			expectedErr:  config.NullString,
 		},
 		{
@@ -81,13 +81,13 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			GrpcErr:      mocks.GrpcOpInternalError,
 			createDbErr:  mocks.DbOpInternalError,
-			expectedCode: codes.Internal,
+			expectedCode: http.StatusInternalServerError,
 			expectedErr:  handlerUtils.ErrFailedToRollback.Error(),
 		},
 		{
 			name:         "file deletion succeeds",
 			fileID:       "file-id-123",
-			expectedCode: codes.OK,
+			expectedCode: http.StatusOK,
 			expectedErr:  config.NullString,
 		},
 	}
@@ -98,16 +98,14 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			svc := &mocks.MockUserFilesService{DeleteUserFileError: tt.deleteDbErr, CreateUserFileError: tt.createDbErr}
 			c := NewClient(mmsClient, svc)
 
-			err := c.DeleteFileGrpcHandler(context.Background(), "user-123", tt.fileID)
+			status, err := c.DeleteFileGrpcHandler(context.Background(), "user-123", tt.fileID)
 
-			status, _ := status.FromError(err)
-
-			if status.Code() != tt.expectedCode {
-				t.Errorf("expected code = %v, got %v", tt.expectedCode, status.Code())
+			if status != tt.expectedCode {
+				t.Errorf("expected code = %v, got %v", tt.expectedCode, status)
 			}
 
-			if status.Code() != codes.OK {
-				mockUtils.CheckData(t, status.Message(), tt.expectedErr)
+			if status != http.StatusOK {
+				mockUtils.CheckData(t, err, tt.expectedErr)
 			}
 		})
 	}

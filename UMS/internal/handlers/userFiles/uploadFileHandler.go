@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 
-	grpcUtils "github.com/rakshithrajs/cloud/UMS/internal/grpc/utils"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 )
@@ -54,9 +53,8 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 		return
 	}
 
-	file, err := h.client.UploadFileGrpcHandler(ctx, userID, fileHeader.Filename, content)
-	if err != nil {
-		status, msg := grpcUtils.MapGRPCError(err, handlerUtils.ErrFailedToUploadFile.Error())
+	file, status, msg := h.client.UploadFileGrpcHandler(ctx, userID, fileHeader.Filename, content)
+	if status != http.StatusCreated {
 		slog.Error(handlerUtils.LogPrefix(fnUploadFile)+"failed to upload file", slog.Any(config.ErrorKey, err))
 		c.JSON(status, gin.H{config.ErrorKey: msg})
 		return
