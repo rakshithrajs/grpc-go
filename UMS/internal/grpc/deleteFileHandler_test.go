@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
@@ -39,7 +39,7 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			deleteDbErr:  mocks.DbOpInternalError,
 			expectedCode: http.StatusInternalServerError,
-			expectedErr:  handlerUtils.ErrFailedToDeleteUserFile.Error(),
+			expectedErr:  handlerErrors.ErrFailedToDeleteUserFile.Error(),
 		},
 		{
 			name:         "file deletion succeeds but file not found in db",
@@ -67,7 +67,7 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			GrpcErr:      mocks.GrpcOpInternalError,
 			expectedCode: http.StatusInternalServerError,
-			expectedErr:  handlerUtils.ErrFailedToDeleteFile.Error(),
+			expectedErr:  handlerErrors.ErrFailedToDeleteFile.Error(),
 		},
 		{
 			name:         "file deletion succeeds but file not found in grpc",
@@ -82,7 +82,7 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 			GrpcErr:      mocks.GrpcOpInternalError,
 			createDbErr:  mocks.DbOpInternalError,
 			expectedCode: http.StatusInternalServerError,
-			expectedErr:  handlerUtils.ErrFailedToRollback.Error(),
+			expectedErr:  handlerErrors.ErrFailedToRollback.Error(),
 		},
 		{
 			name:         "file deletion succeeds",

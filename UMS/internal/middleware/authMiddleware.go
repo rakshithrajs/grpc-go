@@ -5,13 +5,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 )
 
 const (
-	funcNameAuthMiddleware = "AuthMiddleware"
-	logPrefix              = "[" + funcNameAuthMiddleware + "]: "
+	FuncNameAuthMiddleware = "AuthMiddleware"
+	logPrefix              = "[" + FuncNameAuthMiddleware + "]: "
 )
 
 func AuthMiddleware() gin.HandlerFunc {
@@ -19,14 +19,14 @@ func AuthMiddleware() gin.HandlerFunc {
 		authHeader := strings.TrimSpace(c.GetHeader("Authorization"))
 
 		if authHeader == config.NullString {
-			handlerUtils.ReturnErrorResponse(c, handlerUtils.ErrMissingAuthHeader, funcNameAuthMiddleware, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+			handlerErrors.ReturnErrorResponse(c, handlerErrors.ErrMissingAuthHeader, FuncNameAuthMiddleware, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 			c.Abort()
 			return
 		}
 
 		claims, err := middlewareUtils.VerifyToken(authHeader)
 		if err != nil {
-			handlerUtils.ReturnErrorResponse(c, err, funcNameAuthMiddleware, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+			handlerErrors.ReturnErrorResponse(c, err, FuncNameAuthMiddleware, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 			c.Abort()
 			return
 		}

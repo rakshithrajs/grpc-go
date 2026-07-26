@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
@@ -24,7 +24,7 @@ func TestGetUserProfileHandler(t *testing.T) {
 			name:          "get user profile fails due to missing auth",
 			auth:          false,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: handlerUtils.ErrUnauthorized.Error(),
+			expectedError: handlerErrors.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "get user profile fails due to internal server error",

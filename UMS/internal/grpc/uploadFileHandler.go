@@ -8,6 +8,7 @@ import (
 	MMS "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	grpcUtils "github.com/rakshithrajs/cloud/UMS/internal/grpc/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
 	"google.golang.org/grpc/metadata"
@@ -21,19 +22,19 @@ func (c *Client) UploadFileGrpcHandler(ctx context.Context, userID, fileName str
 		Content:  content,
 	})
 	if err != nil {
-		status, msg := grpcUtils.MapGRPCError(err, handlerUtils.ErrFailedToUploadFile.Error())
+		status, msg := grpcUtils.MapGRPCError(err, handlerErrors.ErrFailedToUploadFile.Error())
 		return nil, status, msg
 	}
 
 	fileID := resp.GetFile().GetID()
 	if err := c.storage.CreateUserFile(ctx, userID, fileID, resp.GetFile().GetFileName()); err != nil {
-		if errors.Is(err, handlerUtils.ErrUserFileAlreadyExists) {
+		if errors.Is(err, handlerErrors.ErrUserFileAlreadyExists) {
 			return nil, http.StatusConflict, err.Error()
 		}
 		if _, delErr := c.mmsClient.DeleteFile(ctx, &MMS.DeleteFileRequest{FileID: fileID}); delErr != nil {
-			return nil, http.StatusInternalServerError, handlerUtils.ErrFailedToRollback.Error()
+			return nil, http.StatusInternalServerError, handlerErrors.ErrFailedToRollback.Error()
 		}
-		return nil, http.StatusInternalServerError, handlerUtils.ErrFailedToUploadFile.Error()
+		return nil, http.StatusInternalServerError, handlerErrors.ErrFailedToUploadFile.Error()
 	}
 
 	return &models.File{

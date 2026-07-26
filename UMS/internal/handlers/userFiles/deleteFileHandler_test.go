@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
@@ -29,7 +29,7 @@ func TestDeleteFileHandler(t *testing.T) {
 			name:          "delete file fails due to missing auth",
 			auth:          false,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: handlerUtils.ErrUnauthorized.Error(),
+			expectedError: handlerErrors.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "delete file fails due to missing fileID",
@@ -51,7 +51,7 @@ func TestDeleteFileHandler(t *testing.T) {
 			fileID:              "file-id-123",
 			DeleteUserFileError: mocks.DbOpInternalError,
 			expectedCode:        http.StatusInternalServerError,
-			expectedError:       handlerUtils.ErrFailedToDeleteFile.Error(),
+			expectedError:       handlerErrors.ErrFailedToDeleteFile.Error(),
 		},
 		{
 			name:                "delete file succeeds when file not found in db",
@@ -67,7 +67,7 @@ func TestDeleteFileHandler(t *testing.T) {
 			fileID:        "file-id-123",
 			mockGrpcErr:   mocks.GrpcOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: handlerUtils.ErrFailedToDeleteFile.Error(),
+			expectedError: handlerErrors.ErrFailedToDeleteFile.Error(),
 		},
 		{
 			name:          "delete file fails due to grpc invalid argument",
@@ -92,7 +92,7 @@ func TestDeleteFileHandler(t *testing.T) {
 			mockGrpcErr:         mocks.GrpcOpInternalError,
 			CreateUserFileError: mocks.DbOpInternalError,
 			expectedCode:        http.StatusInternalServerError,
-			expectedError:       handlerUtils.ErrFailedToDeleteFile.Error(),
+			expectedError:       handlerErrors.ErrFailedToDeleteFile.Error(),
 		},
 		{
 			name:         "delete file succeeds",

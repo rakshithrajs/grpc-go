@@ -10,19 +10,19 @@ import (
 
 const (
 	// functions name for upload user files
-	fnUploadFile = "UploadFile"
+	FnUploadFile = "UploadFile"
 
 	// functions name for download user files
-	fnDownloadFile = "DownloadFile"
+	FnDownloadFile = "DownloadFile"
 
 	// functions name for list user files
-	fnListFiles = "ListFiles"
+	FnListFiles = "ListFiles"
 
 	// functions name for rename user files
-	fnRenameFile = "RenameFile"
+	FnRenameFile = "RenameFile"
 
 	// functions name for delete user files
-	fnDeleteFile = "DeleteFile"
+	FnDeleteFile = "DeleteFile"
 
 	multipartFileField = "file"
 )

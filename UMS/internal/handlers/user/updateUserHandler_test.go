@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
@@ -26,21 +26,21 @@ func TestUpdateUserHandler(t *testing.T) {
 			body:          `{"phone":"0987654321"}`,
 			auth:          false,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: handlerUtils.ErrUnauthorized.Error(),
+			expectedError: handlerErrors.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "user update fails due to invalid json",
 			body:          `{`,
 			auth:          true,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrInvalidJSON.Error(),
+			expectedError: handlerErrors.ErrInvalidJSON.Error(),
 		},
 		{
 			name:          "user update fails due to no fields to update",
 			body:          `{}`,
 			auth:          true,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrNoFieldsToUpdate.Error(),
+			expectedError: handlerErrors.ErrNoFieldsToUpdate.Error(),
 		},
 		{
 			name:         "user update fails due to invalid phone",
@@ -57,7 +57,7 @@ func TestUpdateUserHandler(t *testing.T) {
 			auth:          true,
 			mockErr:       mocks.DbOpDuplicatePhone,
 			expectedCode:  http.StatusConflict,
-			expectedError: handlerUtils.ErrPhoneNumberAlreadyExists.Error(),
+			expectedError: handlerErrors.ErrPhoneNumberAlreadyExists.Error(),
 		},
 		{
 			name:          "user update fails due to duplicate email",
@@ -65,7 +65,7 @@ func TestUpdateUserHandler(t *testing.T) {
 			auth:          true,
 			mockErr:       mocks.DbOpDuplicateEmail,
 			expectedCode:  http.StatusConflict,
-			expectedError: handlerUtils.ErrUserEmailAlreadyExists.Error(),
+			expectedError: handlerErrors.ErrUserEmailAlreadyExists.Error(),
 		},
 		{
 			name:           "user update fails due get user by ID error",
@@ -82,14 +82,14 @@ func TestUpdateUserHandler(t *testing.T) {
 			auth:          true,
 			mockErr:       mocks.DbOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: handlerUtils.ErrFailedToUpdateUser.Error(),
+			expectedError: handlerErrors.ErrFailedToUpdateUser.Error(),
 		},
 		{
 			name:          "user update fails due to same old password",
 			body:          `{"password":"ValidPassword@123","confirmPassword":"ValidPassword@123"}`,
 			auth:          true,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrPasswordSameAsOldPassword.Error(),
+			expectedError: handlerErrors.ErrPasswordSameAsOldPassword.Error(),
 		},
 		{
 			name:         "user update fails due to invalid password",

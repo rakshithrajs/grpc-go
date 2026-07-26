@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
@@ -39,7 +39,7 @@ func TestRegisterUserHandler(t *testing.T) {
 			name:          "user registration fails due to invalid json",
 			body:          `{`,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrInvalidJSON.Error(),
+			expectedError: handlerErrors.ErrInvalidJSON.Error(),
 		},
 		{
 			name:         "user registration fails due to empty name",
@@ -109,21 +109,21 @@ func TestRegisterUserHandler(t *testing.T) {
 			body:          `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			mockErr:       mocks.DbOpDuplicateEmail,
 			expectedCode:  http.StatusConflict,
-			expectedError: handlerUtils.ErrUserEmailAlreadyExists.Error(),
+			expectedError: handlerErrors.ErrUserEmailAlreadyExists.Error(),
 		},
 		{
 			name:          "user registration fails due to duplicate phone",
 			body:          `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			mockErr:       mocks.DbOpDuplicatePhone,
 			expectedCode:  http.StatusConflict,
-			expectedError: handlerUtils.ErrPhoneNumberAlreadyExists.Error(),
+			expectedError: handlerErrors.ErrPhoneNumberAlreadyExists.Error(),
 		},
 		{
 			name:          "user registration fails due to internal server error",
 			body:          `{"name":"Test","email":"test@example.com","password":"ValidPassword@123","confirmPassword":"ValidPassword@123","phone":"1234567890"}`,
 			mockErr:       mocks.DbOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: handlerUtils.ErrFailedToCreateUser.Error(),
+			expectedError: handlerErrors.ErrFailedToCreateUser.Error(),
 		},
 	}
 

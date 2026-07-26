@@ -7,7 +7,7 @@ import (
 
 	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
@@ -61,7 +61,7 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			fileID:       "file-id-123",
 			mockGrpcErr:  mocks.GrpcOpInternalError,
 			expectedCode: http.StatusInternalServerError,
-			expectedErr:  handlerUtils.ErrFailedToDownloadFile.Error(),
+			expectedErr:  handlerErrors.ErrFailedToDownloadFile.Error(),
 		},
 		{
 			name:         "file download succeeds",

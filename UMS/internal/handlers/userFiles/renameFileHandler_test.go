@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
@@ -32,7 +32,7 @@ func TestRenameFileHandler(t *testing.T) {
 			auth:          false,
 			body:          `{"newName":"renamed.txt"}`,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: handlerUtils.ErrUnauthorized.Error(),
+			expectedError: handlerErrors.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "rename file fails due to missing fileID",
@@ -56,7 +56,7 @@ func TestRenameFileHandler(t *testing.T) {
 			fileID:        "file-id-123",
 			body:          `{`,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrInvalidJSON.Error(),
+			expectedError: handlerErrors.ErrInvalidJSON.Error(),
 		},
 		{
 			name:         "rename file fails due to empty newName",
@@ -85,7 +85,7 @@ func TestRenameFileHandler(t *testing.T) {
 			body:                `{"newName":"renamed.txt"}`,
 			UpdateUserFileError: mocks.DbOpInternalError,
 			expectedCode:        http.StatusInternalServerError,
-			expectedError:       handlerUtils.ErrFailedToRenameFile.Error(),
+			expectedError:       handlerErrors.ErrFailedToRenameFile.Error(),
 		},
 		{
 			name:                "rename file succeeds when file not found in db",
@@ -103,7 +103,7 @@ func TestRenameFileHandler(t *testing.T) {
 			body:          `{"newName":"renamed.txt"}`,
 			mockGrpcErr:   mocks.GrpcOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: handlerUtils.ErrFailedToRenameFile.Error(),
+			expectedError: handlerErrors.ErrFailedToRenameFile.Error(),
 		},
 		{
 			name:          "rename file fails due to grpc invalid argument",
@@ -140,7 +140,7 @@ func TestRenameFileHandler(t *testing.T) {
 			mockGrpcErr:         mocks.GrpcOpInternalError,
 			UpdateRollbackError: mocks.DbOpInternalError,
 			expectedCode:        http.StatusInternalServerError,
-			expectedError:       handlerUtils.ErrFailedToRenameFile.Error(),
+			expectedError:       handlerErrors.ErrFailedToRenameFile.Error(),
 		},
 		{
 			name:         "rename file succeeds",

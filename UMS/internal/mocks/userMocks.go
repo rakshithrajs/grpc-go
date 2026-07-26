@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"
 	"golang.org/x/crypto/bcrypt"
@@ -29,11 +29,11 @@ type MockUserService struct {
 func (m *MockUserService) CreateUser(ctx context.Context, user *models.User) (*models.User, error) {
 	switch m.CreateUserErr {
 	case DbOpDuplicateEmail:
-		return nil, handlerUtils.ErrUserEmailAlreadyExists
+		return nil, handlerErrors.ErrUserEmailAlreadyExists
 	case DbOpDuplicatePhone:
-		return nil, handlerUtils.ErrPhoneNumberAlreadyExists
+		return nil, handlerErrors.ErrPhoneNumberAlreadyExists
 	case DbOpInternalError:
-		return nil, handlerUtils.ErrFailedToCreateUser
+		return nil, handlerErrors.ErrFailedToCreateUser
 	}
 
 	m.User = user
@@ -49,7 +49,7 @@ func (m *MockUserService) GetUserByID(ctx context.Context, id string) (*models.U
 
 	switch m.GetUserByIDErr {
 	case DbOpNotFound:
-		return nil, handlerUtils.ErrUserNotFound
+		return nil, handlerErrors.ErrUserNotFound
 	case DbOpInternalError:
 		return nil, storage.ErrFailedToGetUserByID
 	}
@@ -69,7 +69,7 @@ func (m *MockUserService) GetUserByEmail(ctx context.Context, email string) (*mo
 
 	switch m.GetUserByEmailErr {
 	case DbOpNotFound:
-		return nil, handlerUtils.ErrEmailNotFound
+		return nil, handlerErrors.ErrEmailNotFound
 	case DbOpInternalError:
 		return nil, storage.ErrFailedToGetUserByEmail
 	}
@@ -90,11 +90,11 @@ func (m *MockUserService) UpdateUser(ctx context.Context, id string, req models.
 
 	switch m.UpdateUserErr {
 	case DbOpDuplicateEmail:
-		return handlerUtils.ErrUserEmailAlreadyExists
+		return handlerErrors.ErrUserEmailAlreadyExists
 	case DbOpDuplicatePhone:
-		return handlerUtils.ErrPhoneNumberAlreadyExists
+		return handlerErrors.ErrPhoneNumberAlreadyExists
 	case DbOpInternalError:
-		return handlerUtils.ErrFailedToUpdateUser
+		return handlerErrors.ErrFailedToUpdateUser
 	}
 
 	return nil

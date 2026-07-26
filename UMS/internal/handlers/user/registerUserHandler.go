@@ -8,6 +8,7 @@ import (
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
 
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
@@ -18,21 +19,21 @@ import (
 func (h *UserHandler) RegisterUserHandler(ctx *gin.Context) {
 	var payload models.RegisterUserRequest
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		handlerUtils.ReturnErrorResponse(ctx, handlerUtils.ErrInvalidJSON, FnRegisterUser, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(ctx, handlerErrors.ErrInvalidJSON, FnRegisterUser, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
 	payload.Email = modelUtils.NormalizeEmail(payload.Email)
 
 	if err := modelUtils.Validate.Struct(payload); err != nil {
-		handlerUtils.ReturnErrorResponse(ctx, modelUtils.FieldErrors(err), FnRegisterUser, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(ctx, modelUtils.FieldErrors(err), FnRegisterUser, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
 	if err != nil {
 		slog.Error(handlerUtils.LogPrefix(FnRegisterUser)+"failed to generate password hash", slog.Any(config.ErrorKey, err))
-		handlerUtils.ReturnErrorResponse(ctx, err, FnRegisterUser, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(ctx, err, FnRegisterUser, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
@@ -44,7 +45,7 @@ func (h *UserHandler) RegisterUserHandler(ctx *gin.Context) {
 		Phone:    payload.Phone,
 	})
 	if err != nil {
-		handlerUtils.ReturnErrorResponse(ctx, err, FnRegisterUser, handlerUtils.ErrFailedToRegisterUser, config.NullString)
+		handlerErrors.ReturnErrorResponse(ctx, err, FnRegisterUser, handlerErrors.ErrFailedToRegisterUser, config.NullString)
 		return
 	}
 

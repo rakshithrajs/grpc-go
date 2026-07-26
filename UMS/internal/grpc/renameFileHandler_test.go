@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
@@ -57,7 +57,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			newName:      "renamed.txt",
 			updateDbErr:  mocks.DbOpInternalError,
 			expectedCode: http.StatusInternalServerError,
-			expectedErr:  handlerUtils.ErrFailedToUpdateUserFile.Error(),
+			expectedErr:  handlerErrors.ErrFailedToUpdateUserFile.Error(),
 		},
 		{
 			name:         "file rename succeeded with no old name found",
@@ -105,7 +105,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			newName:      "renamed.txt",
 			grpcErr:      mocks.GrpcOpInternalError,
 			expectedCode: http.StatusInternalServerError,
-			expectedErr:  handlerUtils.ErrFailedToRenameFile.Error(),
+			expectedErr:  handlerErrors.ErrFailedToRenameFile.Error(),
 		},
 		{
 			name:              "grpc rename internal error with rollback failure",
@@ -114,7 +114,7 @@ func TestRenameFileGrpcHandler(t *testing.T) {
 			grpcErr:           mocks.GrpcOpInternalError,
 			updateRollbackErr: mocks.DbOpInternalError,
 			expectedCode:      http.StatusInternalServerError,
-			expectedErr:       handlerUtils.ErrFailedToRollback.Error(),
+			expectedErr:       handlerErrors.ErrFailedToRollback.Error(),
 		},
 		{
 			name:         "rename succeeds",

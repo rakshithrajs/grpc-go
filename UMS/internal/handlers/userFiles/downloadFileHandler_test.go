@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
@@ -28,7 +28,7 @@ func TestDownloadFileHandler(t *testing.T) {
 			name:          "download file fails due to missing auth",
 			auth:          false,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: handlerUtils.ErrUnauthorized.Error(),
+			expectedError: handlerErrors.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "download file fails due to missing fileID",
@@ -50,7 +50,7 @@ func TestDownloadFileHandler(t *testing.T) {
 			fileID:        "file-id-123",
 			mockGrpcErr:   mocks.GrpcOpMissingMetadata,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: handlerUtils.ErrUnauthorized.Error(),
+			expectedError: handlerErrors.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "download file fails due to missing userID in metadata",
@@ -58,7 +58,7 @@ func TestDownloadFileHandler(t *testing.T) {
 			fileID:        "file-id-123",
 			mockGrpcErr:   mocks.GrpcOpMissingUserID,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: handlerUtils.ErrUnauthorized.Error(),
+			expectedError: handlerErrors.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "download file fails due to grpc internal error",
@@ -66,7 +66,7 @@ func TestDownloadFileHandler(t *testing.T) {
 			fileID:        "file-id-123",
 			mockGrpcErr:   mocks.GrpcOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: handlerUtils.ErrFailedToDownloadFile.Error(),
+			expectedError: handlerErrors.ErrFailedToDownloadFile.Error(),
 		},
 		{
 			name:         "download file succeeds when file not found",

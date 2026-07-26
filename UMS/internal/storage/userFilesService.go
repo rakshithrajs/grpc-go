@@ -9,7 +9,7 @@ import (
 	"github.com/lib/pq"
 	"github.com/lib/pq/pqerror"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
 )
 
@@ -43,7 +43,7 @@ func (u *userFilesStore) CreateUserFile(ctx context.Context, userID, fileID, fil
 	if _, err := stmt.ExecContext(ctx, userID, fileID, fileName); err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == uniqueConstraintUserFilesUserIDFileID {
-			return handlerUtils.ErrUserFileAlreadyExists
+			return handlerErrors.ErrUserFileAlreadyExists
 		}
 		slog.Error(logPrefix(fnCreateUserFile)+"execute statement", slog.Any(config.ErrorKey, err))
 		return ErrFailedToCreateUserFile

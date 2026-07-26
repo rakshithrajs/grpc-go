@@ -6,7 +6,7 @@ import (
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 )
@@ -25,14 +25,14 @@ func TestListFilesHandler(t *testing.T) {
 			name:          "list files fails due to missing auth",
 			auth:          false,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: handlerUtils.ErrUnauthorized.Error(),
+			expectedError: handlerErrors.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "list files fails due to db internal error",
 			auth:          true,
 			mockDbErr:     mocks.DbOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: handlerUtils.ErrFailedToListFiles.Error(),
+			expectedError: handlerErrors.ErrFailedToListFiles.Error(),
 		},
 		{
 			name:         "list files returns empty list",

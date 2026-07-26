@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 )
@@ -45,7 +45,7 @@ func TestAuthMiddleware(t *testing.T) {
 			name:                "authorization fails because of Missing Authorization Header",
 			AuthorizationHeader: config.NullString,
 			expectedStatusCode:  http.StatusUnauthorized,
-			expectedError:       handlerUtils.ErrMissingAuthHeader.Error(),
+			expectedError:       handlerErrors.ErrMissingAuthHeader.Error(),
 		},
 		{
 			name:                "authorization fails because of Missing Bearer",

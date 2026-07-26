@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
 	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
@@ -14,13 +15,13 @@ import (
 func (h *UserFilesHandler) DownloadFileHandler(c *gin.Context) {
 	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		handlerUtils.ReturnErrorResponse(c, err, fnDownloadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(c, err, FnDownloadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 
 	var fileID = strings.TrimSpace(c.Param("fileID"))
 	if err := modelUtils.Validate.Var(fileID, "required,isValueEmpty,uuid"); err != nil {
-		handlerUtils.ReturnErrorResponse(c, modelUtils.ErrFileIDRequired, fnRenameFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(c, modelUtils.ErrFileIDRequired, FnDownloadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 

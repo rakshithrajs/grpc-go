@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"
 )
@@ -26,7 +26,7 @@ type MockUserFilesService struct {
 func (m *MockUserFilesService) CreateUserFile(ctx context.Context, userID, fileID, fileName string) error {
 	switch m.CreateUserFileError {
 	case DbOpDuplicateFile:
-		return handlerUtils.ErrUserFileAlreadyExists
+		return handlerErrors.ErrUserFileAlreadyExists
 	case DbOpInternalError:
 		return storage.ErrFailedToCreateUserFile
 	}
@@ -90,7 +90,7 @@ func (m *MockUserFilesService) UpdateUserFile(ctx context.Context, userID, fileI
 
 	switch m.UpdateRollbackError {
 	case DbOpInternalError:
-		return config.NullString, handlerUtils.ErrFailedToRollback
+		return config.NullString, handlerErrors.ErrFailedToRollback
 	}
 
 	return "old-file-name.txt", nil

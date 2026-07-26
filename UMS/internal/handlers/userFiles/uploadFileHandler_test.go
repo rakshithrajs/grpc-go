@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 )
@@ -33,14 +33,14 @@ func TestUploadFileHandler(t *testing.T) {
 			auth:          false,
 			withFile:      true,
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: handlerUtils.ErrUnauthorized.Error(),
+			expectedError: handlerErrors.ErrUnauthorized.Error(),
 		},
 		{
 			name:          "upload file fails due to missing file",
 			auth:          true,
 			withFile:      false,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrFileIsRequired.Error(),
+			expectedError: handlerErrors.ErrFileIsRequired.Error(),
 		},
 		{
 			name:          "upload file fails due to empty file content",
@@ -48,7 +48,7 @@ func TestUploadFileHandler(t *testing.T) {
 			withFile:      true,
 			emptyContent:  true,
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrEmptyFileContent.Error(),
+			expectedError: handlerErrors.ErrEmptyFileContent.Error(),
 		},
 		{
 			name:          "upload file fails due to whitespace file name",
@@ -56,7 +56,7 @@ func TestUploadFileHandler(t *testing.T) {
 			withFile:      true,
 			fileName:      "   ",
 			expectedCode:  http.StatusBadRequest,
-			expectedError: handlerUtils.ErrFileNameRequired.Error(),
+			expectedError: handlerErrors.ErrFileNameRequired.Error(),
 		},
 		{
 			name:          "upload file fails due to grpc internal error",
@@ -64,7 +64,7 @@ func TestUploadFileHandler(t *testing.T) {
 			withFile:      true,
 			uploadGrpcErr: mocks.GrpcOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: handlerUtils.ErrFailedToUploadFile.Error(),
+			expectedError: handlerErrors.ErrFailedToUploadFile.Error(),
 		},
 		{
 			name:          "upload file fails due to grpc file name already exists",
@@ -88,7 +88,7 @@ func TestUploadFileHandler(t *testing.T) {
 			withFile:            true,
 			CreateUserFileError: mocks.DbOpDuplicateFile,
 			expectedCode:        http.StatusConflict,
-			expectedError:       handlerUtils.ErrUserFileAlreadyExists.Error(),
+			expectedError:       handlerErrors.ErrUserFileAlreadyExists.Error(),
 		},
 		{
 			name:                "upload file fails due to db internal error",
@@ -96,7 +96,7 @@ func TestUploadFileHandler(t *testing.T) {
 			withFile:            true,
 			CreateUserFileError: mocks.DbOpInternalError,
 			expectedCode:        http.StatusInternalServerError,
-			expectedError:       handlerUtils.ErrFailedToUploadFile.Error(),
+			expectedError:       handlerErrors.ErrFailedToUploadFile.Error(),
 		},
 		{
 			name:                "upload file fails due to grpc rollback failure",
@@ -105,7 +105,7 @@ func TestUploadFileHandler(t *testing.T) {
 			CreateUserFileError: mocks.DbOpInternalError,
 			deleteGrpcErr:       mocks.GrpcOpRollbackFailure,
 			expectedCode:        http.StatusInternalServerError,
-			expectedError:       handlerUtils.ErrFailedToUploadFile.Error(),
+			expectedError:       handlerErrors.ErrFailedToUploadFile.Error(),
 		},
 		{
 			name:         "upload file succeeds",

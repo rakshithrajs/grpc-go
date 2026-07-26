@@ -7,7 +7,7 @@ import (
 	MMS "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	grpcUtils "github.com/rakshithrajs/cloud/UMS/internal/grpc/utils"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -24,9 +24,9 @@ func (c *Client) RenameFileGrpcHandler(ctx context.Context, userID, fileID, newN
 		NewName: newName,
 	}); err != nil {
 		if _, rbErr := c.storage.UpdateUserFile(ctx, userID, fileID, oldName); rbErr != nil {
-			return http.StatusInternalServerError, handlerUtils.ErrFailedToRollback.Error()
+			return http.StatusInternalServerError, handlerErrors.ErrFailedToRollback.Error()
 		}
-		return grpcUtils.MapGRPCError(err, handlerUtils.ErrFailedToRenameFile.Error())
+		return grpcUtils.MapGRPCError(err, handlerErrors.ErrFailedToRenameFile.Error())
 	}
 
 	return http.StatusOK, config.NullString

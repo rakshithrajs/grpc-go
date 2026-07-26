@@ -4,7 +4,7 @@ import (
 	"context"
 
 	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 
 	"google.golang.org/grpc"
@@ -25,7 +25,7 @@ func (m *MockMMSClient) UploadFile(ctx context.Context, in *MMSpb.UploadFileRequ
 	case GrpcOpMissingUserID:
 		return nil, status.Error(codes.Unauthenticated, ErrMissingUserID.Error())
 	case GrpcOpInternalError:
-		return nil, status.Error(codes.Internal, handlerUtils.ErrFailedToUploadFile.Error())
+		return nil, status.Error(codes.Internal, handlerErrors.ErrFailedToUploadFile.Error())
 	case GrpcOpFileNameAlreadyExists:
 		return nil, status.Error(codes.AlreadyExists, ErrFileNameAlreadyExists.Error())
 	case GrpcOpFilePathAlreadyExists:
@@ -53,7 +53,7 @@ func (m *MockMMSClient) DownloadFile(ctx context.Context, in *MMSpb.DownloadFile
 	case GrpcOpMissingUserID:
 		return nil, status.Error(codes.Unauthenticated, ErrMissingUserID.Error())
 	case GrpcOpInternalError:
-		return nil, status.Error(codes.Internal, handlerUtils.ErrFailedToDownloadFile.Error())
+		return nil, status.Error(codes.Internal, handlerErrors.ErrFailedToDownloadFile.Error())
 	case GrpcOpNotFound:
 		return &MMSpb.DownloadFileResponse{}, nil
 	}
@@ -97,7 +97,7 @@ func (m *MockMMSClient) DeleteFile(ctx context.Context, in *MMSpb.DeleteFileRequ
 	case GrpcOpInvalidArgument:
 		return nil, status.Error(codes.InvalidArgument, modelUtils.ErrFileIDRequired.Error())
 	case GrpcOpInternalError:
-		return nil, status.Error(codes.Internal, handlerUtils.ErrFailedToDeleteFile.Error())
+		return nil, status.Error(codes.Internal, handlerErrors.ErrFailedToDeleteFile.Error())
 	case GrpcOpNotFound:
 		return &MMSpb.EmptyMessage{}, nil
 	case GrpcOpRollbackFailure:
@@ -118,7 +118,7 @@ func (m *MockMMSClient) RenameFile(ctx context.Context, in *MMSpb.RenameFileRequ
 	case GrpcOpInvalidArgument:
 		return nil, status.Error(codes.InvalidArgument, modelUtils.ErrFileIDRequired.Error())
 	case GrpcOpInternalError:
-		return nil, status.Error(codes.Internal, handlerUtils.ErrFailedToRenameFile.Error())
+		return nil, status.Error(codes.Internal, handlerErrors.ErrFailedToRenameFile.Error())
 	case GrpcOpFileNameAlreadyExists:
 		return nil, status.Error(codes.AlreadyExists, ErrFileNameAlreadyExists.Error())
 	case GrpcOpNotFound:

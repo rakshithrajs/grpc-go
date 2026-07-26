@@ -3,7 +3,7 @@ package grpc
 import (
 	"net/http"
 
-	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
+	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -20,7 +20,7 @@ func MapGRPCError(err error, defaultMsg string) (int, string) {
 	case codes.AlreadyExists:
 		return http.StatusConflict, st.Message()
 	case codes.Unauthenticated:
-		return http.StatusUnauthorized, handlerUtils.ErrUnauthorized.Error()
+		return http.StatusUnauthorized, handlerErrors.ErrUnauthorized.Error()
 	default:
 		return http.StatusInternalServerError, defaultMsg
 	}
