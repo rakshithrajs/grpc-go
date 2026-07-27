@@ -61,4 +61,7 @@ var (
 
 	// message: file already exists
 	ErrFileAlreadyExists = errors.New("file already exists")
+
+	// message: failed to delete file
+	ErrFailedToDeleteFile = errors.New("failed to delete file")
 )

@@ -42,6 +42,11 @@ func (f *FileHandler) DownloadFile(ctx context.Context, req *MMSpb.DownloadFileR
 		return nil, status.Error(codes.Internal, ErrFailedToDownloadFile.Error())
 	}
 
+	if err := fi.Close(); err != nil {
+		slog.Error(logPrefix(fnDownloadFile)+"failed to close file", slog.Any(config.ErrorKey, err), slog.String("path", file.Path))
+		return nil, status.Error(codes.Internal, ErrFailedToDownloadFile.Error())
+	}
+
 	return &MMSpb.DownloadFileResponse{
 		FileName: file.Name,
 		MimeType: toProtoMimeType(file.MimeType),

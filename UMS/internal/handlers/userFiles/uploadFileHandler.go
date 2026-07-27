@@ -54,10 +54,11 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 		return
 	}
 
-	file, status, msg := h.client.UploadFileGrpcHandler(ctx, userID, fileHeader.Filename, content)
-	if status != http.StatusCreated {
+	file, err := h.client.UploadFileGrpcHandler(ctx, userID, fileHeader.Filename, content)
+	if err != nil {
 		slog.Error(handlerUtils.LogPrefix(FnUploadFile)+"failed to upload file", slog.Any(config.ErrorKey, err))
-		c.JSON(status, gin.H{config.ErrorKey: msg})
+		status, errMsg := handlerUtils.MapGRPCError(err, handlerErrors.ErrFailedToUploadFile.Error())
+		c.JSON(status, gin.H{"error": errMsg})
 		return
 	}
 

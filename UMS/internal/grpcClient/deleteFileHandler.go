@@ -1,31 +1,30 @@
-package grpc
+package grpcClient
 
 import (
 	"context"
-	"net/http"
 
 	MMS "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	grpcUtils "github.com/rakshithrajs/cloud/UMS/internal/grpc/utils"
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
-	"github.com/rakshithrajs/cloud/UMS/internal/storage"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
-func (c *Client) DeleteFileGrpcHandler(ctx context.Context, userID, fileID string) (int, string) {
+func (c *Client) DeleteFileGrpcHandler(ctx context.Context, userID, fileID string) error {
 	fileName, err := c.storage.DeleteUserFile(ctx, userID, fileID)
 	if err != nil {
-		return http.StatusInternalServerError, err.Error()
+		return status.Error(codes.Internal, err.Error())
 	}
 
 	ctx = metadata.AppendToOutgoingContext(ctx, config.UserIDMetadataKey, userID)
 
 	if _, err := c.mmsClient.DeleteFile(ctx, &MMS.DeleteFileRequest{FileID: fileID}); err != nil {
 		if rbErr := c.storage.CreateUserFile(ctx, userID, fileID, fileName); rbErr != nil {
-			return http.StatusInternalServerError, handlerErrors.ErrFailedToRollback.Error()
+			return status.Error(codes.Internal, handlerErrors.ErrFailedToRollback.Error())
 		}
-		return grpcUtils.MapGRPCError(err, storage.ErrFailedToDeleteUserFile.Error())
+		return err
 	}
 
-	return http.StatusOK, config.NullString
+	return status.Error(codes.OK, config.NullString)
 }

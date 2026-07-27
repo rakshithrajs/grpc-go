@@ -1,4 +1,4 @@
-package grpc
+package handlers
 
 import (
 	"net/http"
@@ -19,6 +19,8 @@ func MapGRPCError(err error, defaultMsg string) (int, string) {
 		return http.StatusConflict, st.Message()
 	case codes.Unauthenticated:
 		return http.StatusUnauthorized, handlerErrors.ErrUnauthorized.Error()
+	case codes.Internal:
+		return http.StatusInternalServerError, st.Message()
 	default:
 		return http.StatusInternalServerError, defaultMsg
 	}

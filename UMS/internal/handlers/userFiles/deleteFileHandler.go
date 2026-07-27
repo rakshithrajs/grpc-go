@@ -25,12 +25,11 @@ func (h *UserFilesHandler) DeleteFileHandler(c *gin.Context) {
 		handlerErrors.ReturnErrorResponse(c, modelUtils.FieldErrors(err), FnDeleteFile, handlerErrors.ErrFailedToDeleteFile, config.NullString)
 		return
 	}
-
 	ctx := c.Request.Context()
 
-	status, msg := h.client.DeleteFileGrpcHandler(ctx, userID, fileID)
-	if status != http.StatusOK {
-		c.JSON(status, gin.H{config.ErrorKey: msg})
+	if err = h.client.DeleteFileGrpcHandler(ctx, userID, fileID); err != nil {
+		status, errMsg := handlerUtils.MapGRPCError(err, handlerErrors.ErrFailedToDeleteFile.Error())
+		c.JSON(status, gin.H{"error": errMsg})
 		return
 	}
 

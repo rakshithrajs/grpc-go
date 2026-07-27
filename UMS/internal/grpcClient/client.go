@@ -1,4 +1,4 @@
-package grpc
+package grpcClient
 
 import (
 	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"

@@ -3,7 +3,7 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
+	grpc "github.com/rakshithrajs/cloud/UMS/internal/grpcClient"
 	"github.com/rakshithrajs/cloud/UMS/internal/middleware"
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"
 )

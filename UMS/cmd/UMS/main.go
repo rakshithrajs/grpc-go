@@ -7,7 +7,7 @@ import (
 
 	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	mmsGrpc "github.com/rakshithrajs/cloud/UMS/internal/grpc"
+	mmsGrpc "github.com/rakshithrajs/cloud/UMS/internal/grpcClient"
 	user "github.com/rakshithrajs/cloud/UMS/internal/handlers/user"
 	userFiles "github.com/rakshithrajs/cloud/UMS/internal/handlers/userFiles"
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"

@@ -1,14 +1,15 @@
-package grpc
+package grpcClient
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func TestUploadFileGrpcHandler(t *testing.T) {
@@ -20,7 +21,7 @@ func TestUploadFileGrpcHandler(t *testing.T) {
 		deleteGrpcErr     mocks.GrpcOperationError
 		createDbErr       mocks.DbOperationError
 		uploadReturnEmpty bool
-		expectedCode      int
+		expectedCode      codes.Code
 		expectedErr       string
 		expectedFile      *models.File
 	}{
@@ -28,7 +29,7 @@ func TestUploadFileGrpcHandler(t *testing.T) {
 			name:         "file uploaded successfully",
 			fileName:     "test.txt",
 			content:      []byte("test content"),
-			expectedCode: http.StatusCreated,
+			expectedCode: codes.OK,
 			expectedFile: &models.File{
 				ID:       "550e8400-e29b-41d4-a716-446655440000",
 				FileName: "test.txt",
@@ -41,23 +42,23 @@ func TestUploadFileGrpcHandler(t *testing.T) {
 			fileName:     "test.txt",
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpMissingMetadata,
-			expectedCode: http.StatusUnauthorized,
-			expectedErr:  handlerErrors.ErrUnauthorized.Error(),
+			expectedCode: codes.Unauthenticated,
+			expectedErr:  mocks.ErrMissingMetadata.Error(),
 		},
 		{
 			name:         "upload fails due to missing user id",
 			fileName:     "test.txt",
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpMissingUserID,
-			expectedCode: http.StatusUnauthorized,
-			expectedErr:  handlerErrors.ErrUnauthorized.Error(),
+			expectedCode: codes.Unauthenticated,
+			expectedErr:  mocks.ErrMissingUserID.Error(),
 		},
 		{
 			name:         "upload fails due to internal error",
 			fileName:     "test.txt",
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpInternalError,
-			expectedCode: http.StatusInternalServerError,
+			expectedCode: codes.Internal,
 			expectedErr:  handlerErrors.ErrFailedToUploadFile.Error(),
 		},
 		{
@@ -65,7 +66,7 @@ func TestUploadFileGrpcHandler(t *testing.T) {
 			fileName:     "test.txt",
 			content:      []byte("test content"),
 			grpcErr:      mocks.GrpcOpFileAlreadyExists,
-			expectedCode: http.StatusConflict,
+			expectedCode: codes.AlreadyExists,
 			expectedErr:  mocks.ErrFileAlreadyExists.Error(),
 		},
 		{
@@ -73,7 +74,7 @@ func TestUploadFileGrpcHandler(t *testing.T) {
 			fileName:     "test.txt",
 			content:      []byte("test content"),
 			createDbErr:  mocks.DbOpDuplicateFile,
-			expectedCode: http.StatusConflict,
+			expectedCode: codes.AlreadyExists,
 			expectedErr:  handlerErrors.ErrUserFileAlreadyExists.Error(),
 		},
 		{
@@ -81,7 +82,7 @@ func TestUploadFileGrpcHandler(t *testing.T) {
 			fileName:     "test.txt",
 			content:      []byte("test content"),
 			createDbErr:  mocks.DbOpInternalError,
-			expectedCode: http.StatusInternalServerError,
+			expectedCode: codes.Internal,
 			expectedErr:  handlerErrors.ErrFailedToUploadFile.Error(),
 		},
 		{
@@ -90,7 +91,7 @@ func TestUploadFileGrpcHandler(t *testing.T) {
 			content:       []byte("test content"),
 			createDbErr:   mocks.DbOpInternalError,
 			deleteGrpcErr: mocks.GrpcOpRollbackFailure,
-			expectedCode:  http.StatusInternalServerError,
+			expectedCode:  codes.Internal,
 			expectedErr:   handlerErrors.ErrFailedToRollback.Error(),
 		},
 	}
@@ -101,12 +102,14 @@ func TestUploadFileGrpcHandler(t *testing.T) {
 			svc := &mocks.MockUserFilesService{CreateUserFileError: tt.createDbErr}
 			c := NewClient(mmsClient, svc)
 
-			file, status, errMsg := c.UploadFileGrpcHandler(context.Background(), "user-123", tt.fileName, tt.content)
+			file, err := c.UploadFileGrpcHandler(context.Background(), "user-123", tt.fileName, tt.content)
 
-			mockUtils.CheckData(t, status, tt.expectedCode)
-			mockUtils.CheckError(t, errMsg, tt.expectedErr)
+			status, _ := status.FromError(err)
 
-			if status == http.StatusCreated {
+			mockUtils.CheckData(t, status.Code(), tt.expectedCode)
+			mockUtils.CheckError(t, status.Message(), tt.expectedErr)
+
+			if status.Code() == codes.OK {
 				mockUtils.CheckData(t, file, tt.expectedFile)
 			}
 		})

@@ -1,8 +1,7 @@
-package grpc
+package grpcClient
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
@@ -10,6 +9,8 @@ import (
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func TestDownloadFileGrpcHandler(t *testing.T) {
@@ -17,14 +18,14 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 		name         string
 		fileID       string
 		mockGrpcErr  mocks.GrpcOperationError
-		expectedCode int
+		expectedCode codes.Code
 		expectedErr  string
 		expectedData *MMSpb.DownloadFileResponse
 	}{
 		{
 			name:         "file downloaded successfully",
 			fileID:       "550e8400-e29b-41d4-a716-446655440000",
-			expectedCode: http.StatusOK,
+			expectedCode: codes.OK,
 			expectedErr:  config.NullString,
 			expectedData: &MMSpb.DownloadFileResponse{
 				FileName: "test-file.txt",
@@ -36,7 +37,7 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			name:         "download succeeds with no file found",
 			fileID:       "550e8400-e29b-41d4-a716-446655440000",
 			mockGrpcErr:  mocks.GrpcOpNotFound,
-			expectedCode: http.StatusOK,
+			expectedCode: codes.OK,
 			expectedErr:  config.NullString,
 			expectedData: &MMSpb.DownloadFileResponse{},
 		},
@@ -44,21 +45,21 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			name:         "download fails due to missing metadata",
 			fileID:       "550e8400-e29b-41d4-a716-446655440000",
 			mockGrpcErr:  mocks.GrpcOpMissingMetadata,
-			expectedCode: http.StatusUnauthorized,
-			expectedErr:  handlerErrors.ErrUnauthorized.Error(),
+			expectedCode: codes.Unauthenticated,
+			expectedErr:  mocks.ErrMissingMetadata.Error(),
 		},
 		{
 			name:         "download fails due to missing user id",
 			fileID:       "550e8400-e29b-41d4-a716-446655440000",
 			mockGrpcErr:  mocks.GrpcOpMissingUserID,
-			expectedCode: http.StatusUnauthorized,
-			expectedErr:  handlerErrors.ErrUnauthorized.Error(),
+			expectedCode: codes.Unauthenticated,
+			expectedErr:  mocks.ErrMissingUserID.Error(),
 		},
 		{
 			name:         "download fails due to internal error",
 			fileID:       "550e8400-e29b-41d4-a716-446655440000",
 			mockGrpcErr:  mocks.GrpcOpInternalError,
-			expectedCode: http.StatusInternalServerError,
+			expectedCode: codes.Internal,
 			expectedErr:  handlerErrors.ErrFailedToDownloadFile.Error(),
 		},
 	}
@@ -69,12 +70,14 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			svc := &mocks.MockUserFilesService{}
 			c := NewClient(mmsClient, svc)
 
-			resp, status, err := c.DownloadFileGrpcHandler(context.Background(), "user-123", tt.fileID)
+			resp, err := c.DownloadFileGrpcHandler(context.Background(), "user-123", tt.fileID)
 
-			mockUtils.CheckData(t, status, tt.expectedCode)
-			mockUtils.CheckError(t, err, tt.expectedErr)
+			status, _ := status.FromError(err)
 
-			if status == http.StatusOK {
+			mockUtils.CheckData(t, status.Code(), tt.expectedCode)
+			mockUtils.CheckError(t, status.Message(), tt.expectedErr)
+
+			if status.Code() == codes.OK {
 				mockUtils.CheckData(t, resp, tt.expectedData)
 			}
 		})

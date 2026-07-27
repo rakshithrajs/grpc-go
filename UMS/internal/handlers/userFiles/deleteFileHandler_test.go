@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	"github.com/rakshithrajs/cloud/UMS/internal/grpc"
+	grpc "github.com/rakshithrajs/cloud/UMS/internal/grpcClient"
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
@@ -104,7 +104,7 @@ func TestDeleteFileHandler(t *testing.T) {
 			fileID:        "550e8400-e29b-41d4-a716-446655440000",
 			mockGrpcErr:   mocks.GrpcOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: storage.ErrFailedToDeleteUserFile.Error(),
+			expectedError: handlerErrors.ErrFailedToDeleteFile.Error(),
 		},
 		{
 			name:                "delete file fails due to grpc internal error and rollback fails",

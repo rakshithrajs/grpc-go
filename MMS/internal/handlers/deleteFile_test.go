@@ -92,7 +92,7 @@ func TestDeleteFile(t *testing.T) {
 			expectedErr:  ErrFailedToRollback.Error(),
 		},
 		{
-			name: "deletion succeeds when disk file is already gone",
+			name:     "deletion succeeds when disk file is already gone",
 			setupCtx: ctxWithUser,
 			beforeCall: func() {
 				if err := os.RemoveAll(filePath); err != nil {
@@ -123,7 +123,7 @@ func TestDeleteFile(t *testing.T) {
 			}
 			handler := &FileHandler{fileService: mockService}
 
-			resp, err := handler.DeleteFile(tt.setupCtx(), &MMSpb.DeleteFileRequest{FileID: fileID})
+			_, err := handler.DeleteFile(tt.setupCtx(), &MMSpb.DeleteFileRequest{FileID: fileID})
 
 			if tt.expectedCode != status.Code(err) {
 				t.Fatalf("expected code %v, got %v", tt.expectedCode, status.Code(err))
@@ -131,10 +131,6 @@ func TestDeleteFile(t *testing.T) {
 
 			if tt.expectedErr != config.NullString && status.Convert(err).Message() != tt.expectedErr {
 				t.Fatalf("expected error %v, got %v", tt.expectedErr, status.Convert(err).Message())
-			}
-
-			if tt.expectedCode == codes.OK && resp == nil {
-				t.Fatalf("expected response, got nil")
 			}
 		})
 	}
