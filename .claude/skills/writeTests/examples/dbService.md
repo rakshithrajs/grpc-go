@@ -1,3 +1,6 @@
+# a usual db service in the project
+
+```go
 package storage
 
 import (
@@ -149,3 +152,4 @@ func (f *FileStore) DeleteFile(ctx context.Context, id string, userID string) (*
 
 	return &file, nil
 }
+```

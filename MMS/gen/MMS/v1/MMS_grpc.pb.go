@@ -21,7 +21,6 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	Files_UploadFile_FullMethodName   = "/files.v1.Files/UploadFile"
 	Files_DownloadFile_FullMethodName = "/files.v1.Files/DownloadFile"
-	Files_ListFiles_FullMethodName    = "/files.v1.Files/ListFiles"
 	Files_DeleteFile_FullMethodName   = "/files.v1.Files/DeleteFile"
 	Files_RenameFile_FullMethodName   = "/files.v1.Files/RenameFile"
 )
@@ -36,8 +35,6 @@ type FilesClient interface {
 	UploadFile(ctx context.Context, in *UploadFileRequest, opts ...grpc.CallOption) (*UploadFileResponse, error)
 	// DownloadFile downloads a file from the cloud.
 	DownloadFile(ctx context.Context, in *DownloadFileRequest, opts ...grpc.CallOption) (*DownloadFileResponse, error)
-	// ListFiles returns the list of files for the authenticated user.
-	ListFiles(ctx context.Context, in *EmptyMessage, opts ...grpc.CallOption) (*ListFilesResponse, error)
 	// DeleteFile deletes the intended file from the cloud.
 	DeleteFile(ctx context.Context, in *DeleteFileRequest, opts ...grpc.CallOption) (*EmptyMessage, error)
 	// RenameFile renames the intended file in the cloud.
@@ -66,16 +63,6 @@ func (c *filesClient) DownloadFile(ctx context.Context, in *DownloadFileRequest,
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DownloadFileResponse)
 	err := c.cc.Invoke(ctx, Files_DownloadFile_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *filesClient) ListFiles(ctx context.Context, in *EmptyMessage, opts ...grpc.CallOption) (*ListFilesResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListFilesResponse)
-	err := c.cc.Invoke(ctx, Files_ListFiles_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -112,8 +99,6 @@ type FilesServer interface {
 	UploadFile(context.Context, *UploadFileRequest) (*UploadFileResponse, error)
 	// DownloadFile downloads a file from the cloud.
 	DownloadFile(context.Context, *DownloadFileRequest) (*DownloadFileResponse, error)
-	// ListFiles returns the list of files for the authenticated user.
-	ListFiles(context.Context, *EmptyMessage) (*ListFilesResponse, error)
 	// DeleteFile deletes the intended file from the cloud.
 	DeleteFile(context.Context, *DeleteFileRequest) (*EmptyMessage, error)
 	// RenameFile renames the intended file in the cloud.
@@ -133,9 +118,6 @@ func (UnimplementedFilesServer) UploadFile(context.Context, *UploadFileRequest) 
 }
 func (UnimplementedFilesServer) DownloadFile(context.Context, *DownloadFileRequest) (*DownloadFileResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DownloadFile not implemented")
-}
-func (UnimplementedFilesServer) ListFiles(context.Context, *EmptyMessage) (*ListFilesResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListFiles not implemented")
 }
 func (UnimplementedFilesServer) DeleteFile(context.Context, *DeleteFileRequest) (*EmptyMessage, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteFile not implemented")
@@ -200,24 +182,6 @@ func _Files_DownloadFile_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Files_ListFiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EmptyMessage)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FilesServer).ListFiles(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Files_ListFiles_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FilesServer).ListFiles(ctx, req.(*EmptyMessage))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Files_DeleteFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteFileRequest)
 	if err := dec(in); err != nil {
@@ -268,10 +232,6 @@ var Files_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DownloadFile",
 			Handler:    _Files_DownloadFile_Handler,
-		},
-		{
-			MethodName: "ListFiles",
-			Handler:    _Files_ListFiles_Handler,
 		},
 		{
 			MethodName: "DeleteFile",

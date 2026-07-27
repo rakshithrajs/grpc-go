@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__codegraph__codegraph_files",
+      "Bash(codespell *)",
+      "mcp__codegraph__codegraph_search",
+      "mcp__codegraph__codegraph_explore",
+      "PowerShell(go test *)",
+      "Bash(go test *)",
+      "PowerShell(go vet *)",
+      "PowerShell(go build *)"
+    ]
+  }
+}

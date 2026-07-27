@@ -51,12 +51,12 @@ func TestRenameFile(t *testing.T) {
 		newName           string
 		mockDbErr         mocks.DbOperationError
 		updateRollbackErr mocks.DbOperationError
-		returnOldName     bool
-		preCreate         bool
-		assertDiskRename  bool
-		expectedCode      codes.Code
-		expectedErr       string
-		DiskWriteFailure  bool
+		ReturnEmptyID    bool
+		returnOldName    bool
+		preCreate        bool
+		assertDiskRename bool
+		expectedCode     codes.Code
+		expectedErr      string
 	}{
 		{
 			name: "rename fails due to missing metadata",
@@ -103,7 +103,17 @@ func TestRenameFile(t *testing.T) {
 			newName:      newName,
 			mockDbErr:    mocks.DbOpDuplicateName,
 			expectedCode: codes.AlreadyExists,
-			expectedErr:  storage.ErrFileNameAlreadyExists.Error(),
+			expectedErr:  storage.ErrFileAlreadyExists.Error(),
+		},
+		{
+			name:          "rename succeeds early when update returns empty ID",
+			setupCtx:      ctxWithUser,
+			fileID:        "file-id-123",
+			newName:       newName,
+			returnOldName: true,
+			ReturnEmptyID: true,
+			expectedCode:  codes.OK,
+			expectedErr:   config.NullString,
 		},
 		{
 			name:         "rename succeeds early when name is unchanged",
@@ -129,11 +139,10 @@ func TestRenameFile(t *testing.T) {
 			setupCtx:          ctxWithUser,
 			fileID:            "file-id-123",
 			newName:           newName,
-			mockDbErr:         mocks.DbOpInternalError,
+			returnOldName:     true,
 			updateRollbackErr: mocks.DbOpInternalError,
-			DiskWriteFailure:  true,
 			expectedCode:      codes.Internal,
-			expectedErr:       ErrFailedToRenameFile.Error(),
+			expectedErr:       ErrFailedToRollback.Error(),
 		},
 		{
 			name:          "rename fails and rolls back disk rename",
@@ -157,8 +166,10 @@ func TestRenameFile(t *testing.T) {
 			}
 
 			mock := &mocks.MockFileService{
-				MockErr:       tt.mockDbErr,
-				ReturnOldName: tt.returnOldName,
+				UpdateFileErr:     tt.mockDbErr,
+				UpdateRollbackErr: tt.updateRollbackErr,
+				ReturnOldName:     tt.returnOldName,
+				ReturnEmptyID:     tt.ReturnEmptyID,
 			}
 			handler := NewFileHandler(mock)
 

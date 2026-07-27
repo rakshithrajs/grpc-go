@@ -11,14 +11,16 @@ import (
 )
 
 type MockFileService struct {
-	MockErr           DbOperationError
-	updateRollbackErr DbOperationError
-	DiskWriteFailure  bool
-	ReturnOldName     bool
+	UploadFileErr     DbOperationError
+	GetFileByIDErr    DbOperationError
+	UpdateFileErr     DbOperationError
+	UpdateRollbackErr DbOperationError
+	DeleteFileErr DbOperationError
+	ReturnOldName bool
+	ReturnEmptyID bool
 	UserID            string
 	FileID            string
 	Files             []*models.ListFileResponse
-	updateCallCount   int
 }
 
 var ZeroTime = time.Time{}
@@ -34,11 +36,13 @@ func userStorageDir(userID string) string {
 func (m *MockFileService) UploadFile(ctx context.Context, file *models.File) (*models.File, error) {
 	m.UserID = file.UserID
 
-	switch m.MockErr {
+	switch m.UploadFileErr {
 	case DbOpDuplicateName:
-		return nil, storage.ErrFileNameAlreadyExists
+		return nil, storage.ErrFileAlreadyExists
 	case DbOpInternalError:
 		return nil, storage.ErrFailedToUploadFile
+	case DbOpRollbackError:
+		return nil, storage.ErrFailedToRollback
 	}
 
 	return &models.File{
@@ -51,29 +55,11 @@ func (m *MockFileService) UploadFile(ctx context.Context, file *models.File) (*m
 	}, nil
 }
 
-func (m *MockFileService) GetFiles(ctx context.Context, userID string) ([]*models.ListFileResponse, error) {
-	m.UserID = userID
-
-	switch m.MockErr {
-	case DbOpInternalError:
-		return nil, storage.ErrFailedToGetFiles
-	}
-
-	if m.Files == nil {
-		mt := models.MimeTypeTextPlain
-		m.Files = []*models.ListFileResponse{
-			{ID: "file-1", FileName: "file1.txt", FileSize: 100, MimeType: mt},
-			{ID: "file-2", FileName: "file2.txt", FileSize: 200, MimeType: mt},
-		}
-	}
-	return m.Files, nil
-}
-
 func (m *MockFileService) GetFileByID(ctx context.Context, id, userID string) (*models.File, error) {
 	m.UserID = userID
 	m.FileID = id
 
-	switch m.MockErr {
+	switch m.GetFileByIDErr {
 	case DbOpInternalError:
 		return nil, storage.ErrFailedToGetFileByID
 	case DbOpNotFound:
@@ -97,35 +83,37 @@ func (m *MockFileService) UpdateFile(ctx context.Context, id string, req models.
 	m.UserID = userID
 	m.FileID = id
 
-	err := m.MockErr
-	if m.DiskWriteFailure {
-		err = m.updateRollbackErr
+	activeErr := m.UpdateFileErr
+	if req.Path != config.NullString && m.UpdateRollbackErr != DbOpSuccess {
+		activeErr = m.UpdateRollbackErr
 	}
 
-	switch err {
+	switch activeErr {
 	case DbOpInternalError:
 		return nil, storage.ErrFailedToUpdateFile
 	case DbOpNotFound:
-		return nil, storage.ErrFileNotFound
+		return &models.File{}, nil
 	case DbOpDuplicateName:
-		return nil, storage.ErrFileNameAlreadyExists
+		return nil, storage.ErrFileAlreadyExists
 	}
 
-	m.updateCallCount++
+	if m.ReturnEmptyID {
+		return &models.File{ID: config.NullString}, nil
+	}
 
-	name := "test.txt"
+	originalName := "test.txt"
+	if m.ReturnOldName {
+		originalName = "old.txt"
+	}
+
+	name := originalName
 	path := filepath.Join(userStorageDir(userID), name)
+
 	if req.Name != config.NullString {
 		name = req.Name
-		path = filepath.Join(userStorageDir(userID), name)
 	}
-
-	if m.ReturnOldName {
-		if m.updateCallCount == 1 || m.updateCallCount >= 3 {
-			oldName := "old.txt"
-			name = oldName
-			path = filepath.Join(userStorageDir(userID), oldName)
-		}
+	if req.Path != config.NullString {
+		path = req.Path
 	}
 
 	return &models.File{
@@ -144,11 +132,11 @@ func (m *MockFileService) DeleteFile(ctx context.Context, id, userID string) (*m
 	m.UserID = userID
 	m.FileID = id
 
-	switch m.MockErr {
+	switch m.DeleteFileErr {
 	case DbOpInternalError:
 		return nil, storage.ErrFailedToDeleteFile
 	case DbOpNotFound:
-		return nil, storage.ErrFileNotFound
+		return nil, nil
 	}
 
 	name := "test.txt"

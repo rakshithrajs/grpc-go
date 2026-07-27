@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
-	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
@@ -74,7 +73,7 @@ func TestUpdateUserHandler(t *testing.T) {
 			mockErr:        mocks.DbOpSuccess,
 			getUserByIDErr: mocks.DbOpInternalError,
 			expectedCode:   http.StatusInternalServerError,
-			expectedError:  middlewareUtils.ErrSomethingWentWrong.Error(),
+			expectedError:  handlerErrors.ErrFailedToUpdateUser.Error(),
 		},
 		{
 			name:          "user update fails due to internal server error",

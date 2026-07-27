@@ -8,7 +8,6 @@ import (
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
-	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 )
 
@@ -17,13 +16,13 @@ var deleteFileSuccessMsg = "file deleted successfully"
 func (h *UserFilesHandler) DeleteFileHandler(c *gin.Context) {
 	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		handlerErrors.ReturnErrorResponse(c, err, FnDeleteFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(c, err, FnDeleteFile, handlerErrors.ErrFailedToDeleteFile, config.NullString)
 		return
 	}
 
-	var fileID = strings.TrimSpace(c.Param("fileID"))
-	if err := modelUtils.Validate.Var(fileID, "required,isValueEmpty,uuid"); err != nil {
-		handlerErrors.ReturnErrorResponse(c, modelUtils.ErrFileIDRequired, FnDeleteFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+	fileID := strings.TrimSpace(c.Param("fileID"))
+	if err := modelUtils.Validate.Struct(&modelUtils.FileIDPayload{FileID: fileID}); err != nil {
+		handlerErrors.ReturnErrorResponse(c, modelUtils.FieldErrors(err), FnDeleteFile, handlerErrors.ErrFailedToDeleteFile, config.NullString)
 		return
 	}
 

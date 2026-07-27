@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -22,11 +23,18 @@ func TestRenameFileHandler(t *testing.T) {
 		UpdateUserFileError mocks.DbOperationError
 		UpdateRollbackError mocks.DbOperationError
 		mockGrpcErr         mocks.GrpcOperationError
-		mockGrpcErr2        mocks.GrpcOperationError
 		expectedCode        int
 		expectedError       any
 		expectedData        any
 	}{
+		{
+			name:         "file renamed successfully",
+			auth:         true,
+			fileID:       "550e8400-e29b-41d4-a716-446655440000",
+			body:         `{"newName":"renamed.txt"}`,
+			expectedCode: http.StatusOK,
+			expectedData: map[string]string{"message": fileRenamedSuccessfully},
+		},
 		{
 			name:          "rename file fails due to missing auth",
 			auth:          false,
@@ -35,33 +43,47 @@ func TestRenameFileHandler(t *testing.T) {
 			expectedError: handlerErrors.ErrUnauthorized.Error(),
 		},
 		{
-			name:          "rename file fails due to missing fileID",
-			auth:          true,
-			fileID:        config.NullString,
-			body:          `{"newName":"renamed.txt"}`,
-			expectedCode:  http.StatusBadRequest,
-			expectedError: modelUtils.ErrFileIDRequired.Error(),
-		},
-		{
-			name:          "rename file fails due to whitespace fileID",
-			auth:          true,
-			fileID:        "   ",
-			body:          `{"newName":"renamed.txt"}`,
-			expectedCode:  http.StatusBadRequest,
-			expectedError: modelUtils.ErrFileIDRequired.Error(),
-		},
-		{
 			name:          "rename file fails due to invalid json",
 			auth:          true,
-			fileID:        "file-id-123",
+			fileID:        "550e8400-e29b-41d4-a716-446655440000",
 			body:          `{`,
 			expectedCode:  http.StatusBadRequest,
 			expectedError: handlerErrors.ErrInvalidJSON.Error(),
 		},
 		{
+			name:         "rename file fails due to missing fileID",
+			auth:         true,
+			fileID:       config.NullString,
+			body:         `{"newName":"renamed.txt"}`,
+			expectedCode: http.StatusBadRequest,
+			expectedError: map[string]string{
+				"fileID": modelUtils.ErrFileIDRequired.Error(),
+			},
+		},
+		{
+			name:         "rename file fails due to whitespace fileID",
+			auth:         true,
+			fileID:       "   ",
+			body:         `{"newName":"renamed.txt"}`,
+			expectedCode: http.StatusBadRequest,
+			expectedError: map[string]string{
+				"fileID": modelUtils.ErrFileIDRequired.Error(),
+			},
+		},
+		{
+			name:         "rename file fails due to invalid fileID",
+			auth:         true,
+			fileID:       "invalid-uuid",
+			body:         `{"newName":"renamed.txt"}`,
+			expectedCode: http.StatusBadRequest,
+			expectedError: map[string]string{
+				"fileID": modelUtils.ErrFileIDInvalidUUID.Error(),
+			},
+		},
+		{
 			name:         "rename file fails due to empty newName",
 			auth:         true,
-			fileID:       "file-id-123",
+			fileID:       "550e8400-e29b-41d4-a716-446655440000",
 			body:         `{"newName":""}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
@@ -71,7 +93,7 @@ func TestRenameFileHandler(t *testing.T) {
 		{
 			name:         "rename file fails due to whitespace newName",
 			auth:         true,
-			fileID:       "file-id-123",
+			fileID:       "550e8400-e29b-41d4-a716-446655440000",
 			body:         `{"newName":"   "}`,
 			expectedCode: http.StatusBadRequest,
 			expectedError: map[string]string{
@@ -79,76 +101,96 @@ func TestRenameFileHandler(t *testing.T) {
 			},
 		},
 		{
+			name:         "rename file fails due to newName exceeding max length",
+			auth:         true,
+			fileID:       "550e8400-e29b-41d4-a716-446655440000",
+			body:         `{"newName":"` + strings.Repeat("a", 256) + `"}`,
+			expectedCode: http.StatusBadRequest,
+			expectedError: map[string]string{
+				"newName": modelUtils.ErrNameTooLong.Error(),
+			},
+		},
+		{
 			name:                "rename file fails due to db internal error",
 			auth:                true,
-			fileID:              "file-id-123",
+			fileID:              "550e8400-e29b-41d4-a716-446655440000",
 			body:                `{"newName":"renamed.txt"}`,
 			UpdateUserFileError: mocks.DbOpInternalError,
 			expectedCode:        http.StatusInternalServerError,
-			expectedError:       handlerErrors.ErrFailedToRenameFile.Error(),
+			expectedError:       handlerErrors.ErrFailedToUpdateUserFile.Error(),
 		},
 		{
 			name:                "rename file succeeds when file not found in db",
 			auth:                true,
-			fileID:              "file-id-123",
+			fileID:              "550e8400-e29b-41d4-a716-446655440000",
 			body:                `{"newName":"renamed.txt"}`,
 			UpdateUserFileError: mocks.DbOpNotFound,
 			expectedCode:        http.StatusOK,
 			expectedData:        map[string]string{"message": fileRenamedSuccessfully},
 		},
 		{
+			name:          "rename file fails due to grpc missing metadata",
+			auth:          true,
+			fileID:        "550e8400-e29b-41d4-a716-446655440000",
+			body:          `{"newName":"renamed.txt"}`,
+			mockGrpcErr:   mocks.GrpcOpMissingMetadata,
+			expectedCode:  http.StatusUnauthorized,
+			expectedError: handlerErrors.ErrUnauthorized.Error(),
+		},
+		{
+			name:          "rename file fails due to grpc missing userID",
+			auth:          true,
+			fileID:        "550e8400-e29b-41d4-a716-446655440000",
+			body:          `{"newName":"renamed.txt"}`,
+			mockGrpcErr:   mocks.GrpcOpMissingUserID,
+			expectedCode:  http.StatusUnauthorized,
+			expectedError: handlerErrors.ErrUnauthorized.Error(),
+		},
+		{
 			name:          "rename file fails due to grpc internal error",
 			auth:          true,
-			fileID:        "file-id-123",
+			fileID:        "550e8400-e29b-41d4-a716-446655440000",
 			body:          `{"newName":"renamed.txt"}`,
 			mockGrpcErr:   mocks.GrpcOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
 			expectedError: handlerErrors.ErrFailedToRenameFile.Error(),
 		},
 		{
-			name:          "rename file fails due to grpc invalid argument",
+			name:          "rename file fails due to grpc file already exists",
 			auth:          true,
-			fileID:        "file-id-123",
+			fileID:        "550e8400-e29b-41d4-a716-446655440000",
 			body:          `{"newName":"renamed.txt"}`,
-			mockGrpcErr:   mocks.GrpcOpInvalidArgument,
-			expectedCode:  http.StatusBadRequest,
-			expectedError: modelUtils.ErrFileIDRequired.Error(),
-		},
-		{
-			name:          "rename file fails due to grpc file name already exists",
-			auth:          true,
-			fileID:        "file-id-123",
-			body:          `{"newName":"renamed.txt"}`,
-			mockGrpcErr:   mocks.GrpcOpFileNameAlreadyExists,
+			mockGrpcErr:   mocks.GrpcOpFileAlreadyExists,
 			expectedCode:  http.StatusConflict,
-			expectedError: mocks.ErrFileNameAlreadyExists.Error(),
+			expectedError: mocks.ErrFileAlreadyExists.Error(),
 		},
 		{
 			name:         "rename file succeeds when file not found in grpc",
 			auth:         true,
-			fileID:       "file-id-123",
+			fileID:       "550e8400-e29b-41d4-a716-446655440000",
 			body:         `{"newName":"renamed.txt"}`,
 			mockGrpcErr:  mocks.GrpcOpNotFound,
 			expectedCode: http.StatusOK,
 			expectedData: map[string]string{"message": fileRenamedSuccessfully},
 		},
 		{
+			name:          "rename file fails due to grpc internal error and rollback succeeds",
+			auth:          true,
+			fileID:        "550e8400-e29b-41d4-a716-446655440000",
+			body:          `{"newName":"renamed.txt"}`,
+			mockGrpcErr:   mocks.GrpcOpInternalError,
+			expectedCode:  http.StatusInternalServerError,
+			expectedError: handlerErrors.ErrFailedToRenameFile.Error(),
+		},
+		{
 			name:                "rename file fails due to grpc rollback failure",
 			auth:                true,
-			fileID:              "file-id-123",
+			fileID:              "550e8400-e29b-41d4-a716-446655440000",
 			body:                `{"newName":"renamed.txt"}`,
 			mockGrpcErr:         mocks.GrpcOpInternalError,
 			UpdateRollbackError: mocks.DbOpInternalError,
 			expectedCode:        http.StatusInternalServerError,
-			expectedError:       handlerErrors.ErrFailedToRenameFile.Error(),
-		},
-		{
-			name:         "rename file succeeds",
-			auth:         true,
-			fileID:       "file-id-123",
-			body:         `{"newName":"renamed.txt"}`,
-			expectedCode: http.StatusOK,
-			expectedData: map[string]string{"message": fileRenamedSuccessfully},
+			expectedError:       handlerErrors.ErrFailedToRollback.Error(),
 		},
 	}
 
@@ -157,7 +199,7 @@ func TestRenameFileHandler(t *testing.T) {
 			c, w := mockUtils.SetUpGinTest(http.MethodPatch, "/api/files/:fileID/rename", tt.body, tt.auth)
 			c.Params = []gin.Param{{Key: "fileID", Value: tt.fileID}}
 
-			mmsClient := &mocks.MockMMSClient{MockErr: tt.mockGrpcErr}
+			mmsClient := &mocks.MockMMSClient{RenameGrpcErr: tt.mockGrpcErr}
 			svc := &mocks.MockUserFilesService{UpdateUserFileError: tt.UpdateUserFileError, UpdateRollbackError: tt.UpdateRollbackError}
 			client := grpc.NewClient(mmsClient, svc)
 			handler := NewUserFilesHandler(client, svc)

@@ -1,3 +1,6 @@
+# an ideal mock - exmaple only
+
+```go
 package mocks
 
 import (
@@ -36,15 +39,12 @@ func (m *MockUserService) CreateUser(ctx context.Context, user *models.User) (*m
 		return nil, handlerErrors.ErrFailedToCreateUser
 	}
 
-	m.User = &models.User{
-		ID:           "success-user-id",
-		Name:         user.Name,
-		Email:        user.Email,
-		Phone:        user.Phone,
-		CreatedAtUTC: ZeroTime,
-		UpdatedAtUTC: ZeroTime,
-	}
-	return m.User, nil
+	m.User = user
+	user.ID = "success-user-id"
+	user.CreatedAtUTC = ZeroTime
+	user.UpdatedAtUTC = ZeroTime
+	user.Password = config.NullString
+	return user, nil
 }
 
 func (m *MockUserService) GetUserByID(ctx context.Context, id string) (*models.User, error) {
@@ -112,3 +112,4 @@ func init() {
 	}
 	mockPasswordHash = string(hash)
 }
+```

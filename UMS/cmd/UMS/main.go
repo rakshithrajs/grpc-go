@@ -9,7 +9,7 @@ import (
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	mmsGrpc "github.com/rakshithrajs/cloud/UMS/internal/grpc"
 	user "github.com/rakshithrajs/cloud/UMS/internal/handlers/user"
-	userfiles "github.com/rakshithrajs/cloud/UMS/internal/handlers/userFiles"
+	userFiles "github.com/rakshithrajs/cloud/UMS/internal/handlers/userFiles"
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"
 
 	"google.golang.org/grpc"
@@ -51,16 +51,16 @@ func main() {
 
 	router.Use(gin.Logger())
 
-	store := storage.NewUserStore(db)
-	UserHandler := user.NewUserHandler(store)
+	userStore := storage.NewUserStore(db)
+	UserHandler := user.NewUserHandler(userStore)
 
 	userFilesStore := storage.NewUserFilesStore(db)
 	mmsClient := mmsGrpc.NewClient(MMSClient, userFilesStore)
-	UserFilesHandler := userfiles.NewUserFilesHandler(mmsClient, userFilesStore)
+	UserFilesHandler := userFiles.NewUserFilesHandler(mmsClient, userFilesStore)
 
 	usersRouterGroup := router.Group(apiPrefix + "/users")
 	user.RegisterRoutes(usersRouterGroup, UserHandler)
-	userfiles.RegisterRoutes(usersRouterGroup, UserFilesHandler)
+	userFiles.RegisterRoutes(usersRouterGroup, UserFilesHandler)
 
 	if err := router.Run(cfg.ServerAddress); err != nil {
 		slog.Error(logPrefix+"failed to run server", slog.Any(config.ErrorKey, err))

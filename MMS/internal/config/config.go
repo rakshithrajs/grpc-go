@@ -20,6 +20,7 @@ type gRPCConfig struct {
 	Port string
 }
 
+// Address returns the full address for the gRPC server in the format "host:port".
 func (g *gRPCConfig) Address() string {
 	return g.Host + ":" + g.Port
 }
@@ -33,16 +34,26 @@ type DbConfig struct {
 	SSLMode  string
 }
 
+// DSN returns the Data Source Name for connecting to the database, formatted as a connection string.
 func (d *DbConfig) DSN() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", d.Host, d.Port, d.User, d.Password, d.DbName, d.SSLMode)
 }
 
 const (
-	functionName      = "Load"
-	logPrefix         = "[" + functionName + "]: "
-	NullString        = ""
+	// functionName is Load
+	functionName = "Load"
+
+	// logPrefix is the prefix for log messages in this package
+	logPrefix = "[" + functionName + "]: "
+
+	// NullString is the representation of a ""
+	NullString = ""
+
+	// UserIDMetadataKey is the key to be used in metadata for userID
 	UserIDMetadataKey = "userID"
-	ErrorKey          = "error"
+
+	// ErrorKey is the key for error messages in logs
+	ErrorKey = "error"
 )
 
 type Config struct {
@@ -53,6 +64,7 @@ type Config struct {
 
 var cfg *Config
 
+// moduleRoot returns the root directory of the Go module by executing "go env GOMOD" and trimming the output.
 func moduleRoot() string {
 	out, err := exec.Command("go", "env", "GOMOD").Output()
 	if err != nil {
@@ -62,6 +74,7 @@ func moduleRoot() string {
 	return root[:len(root)-len("go.mod")]
 }
 
+// Load reads the configuration from the .env file and returns a Config struct. It also validates that all required environment variables are present.
 func Load() (*Config, error) {
 	env, err := godotenv.Read(filepath.Join(moduleRoot(), "..", ".env"))
 	if err != nil {
@@ -105,6 +118,7 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
+// GetConfig returns the current configuration. If the configuration has not been loaded yet, it calls Load to load it.
 func GetConfig() (*Config, error) {
 	if cfg == nil {
 		return Load()
@@ -112,6 +126,7 @@ func GetConfig() (*Config, error) {
 	return cfg, nil
 }
 
+// SetConfig sets the current configuration. This is useful for testing purposes.
 func SetConfig(c *Config) {
 	cfg = c
 }

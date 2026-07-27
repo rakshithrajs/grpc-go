@@ -24,16 +24,19 @@ type MockUserFilesService struct {
 }
 
 func (m *MockUserFilesService) CreateUserFile(ctx context.Context, userID, fileID, fileName string) error {
+	m.UserID = userID
+	m.FileID = fileID
+	m.FileName = fileName
+
 	switch m.CreateUserFileError {
 	case DbOpDuplicateFile:
 		return handlerErrors.ErrUserFileAlreadyExists
 	case DbOpInternalError:
 		return storage.ErrFailedToCreateUserFile
+	case DbOpRollbackFailure:
+		return handlerErrors.ErrFailedToRollback
 	}
 
-	m.UserID = userID
-	m.FileID = fileID
-	m.FileName = fileName
 	return nil
 }
 
@@ -46,9 +49,12 @@ func (m *MockUserFilesService) DeleteUserFile(ctx context.Context, userID, fileI
 		return config.NullString, storage.ErrFailedToDeleteUserFile
 	case DbOpNotFound:
 		return config.NullString, nil
+	case DbOpRollbackFailure:
+		return config.NullString, handlerErrors.ErrFailedToRollback
 	}
 
-	return "test-file-name.txt", nil
+	m.FileName = "test-file-name.txt"
+	return m.FileName, nil
 }
 
 func (m *MockUserFilesService) ListUserFiles(ctx context.Context, userID string) ([]models.UserFiles, error) {
@@ -83,9 +89,7 @@ func (m *MockUserFilesService) UpdateUserFile(ctx context.Context, userID, fileI
 			return config.NullString, nil
 		}
 
-		oldName := "old-file-name.txt"
-		m.FileName = fileName
-		return oldName, nil
+		return "old-file-name.txt", nil
 	}
 
 	switch m.UpdateRollbackError {

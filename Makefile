@@ -39,7 +39,7 @@ force-MMS:
 	@migrate -path ${MMS_DIR}/internal/storage/migrations -database ${MMS_MIGRATE_DB_URL} force ${VERSION}
 
 proto:
-	@protoc --go_out=paths=source_relative:.. --go-grpc_out=paths=source_relative:.. UMS/proto/MMS/v1/MMS.proto
-	@protoc --go_out=paths=source_relative:.. --go-grpc_out=paths=source_relative:.. MMS/proto/MMS/v1/MMS.proto
+	protoc --go_out=paths=source_relative:.. --go-grpc_out=paths=source_relative:.. UMS/proto/MMS/v1/MMS.proto
+	protoc --go_out=paths=source_relative:.. --go-grpc_out=paths=source_relative:.. MMS/proto/MMS/v1/MMS.proto
 
 .PHONY: check-UMS check-MMS up down create-UMS-migration create-MMS-migration UMS-version MMS-version force-UMS force-MMS proto

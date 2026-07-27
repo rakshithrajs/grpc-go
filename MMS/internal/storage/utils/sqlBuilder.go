@@ -10,6 +10,7 @@ type UpdateField struct {
 	Value  any
 }
 
+// BuildUpdateSQL constructs an SQL UPDATE statement for the specified table, fields to update, and WHERE clause columns.
 func BuildUpdateSQL(table string, fields []UpdateField, whereColumns []string) (string, []any) {
 	args := make([]any, 0, len(whereColumns)+len(fields))
 	for range whereColumns {

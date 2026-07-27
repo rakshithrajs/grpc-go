@@ -14,12 +14,20 @@ import (
 )
 
 const (
+	// function name for CreateUserFile
 	fnCreateUserFile = "CreateUserFile"
+
+	// function name for DeleteUserFile
 	fnDeleteUserFile = "DeleteUserFile"
-	fnListUserFiles  = "ListUserFiles"
+
+	// function name for ListUserFiles
+	fnListUserFiles = "ListUserFiles"
+
+	// function name for UpdateUserFile
 	fnUpdateUserFile = "UpdateUserFile"
 
-	uniqueConstraintUserFilesUserIDFileID = "userFiles_pkey"
+	// primary key constraint name for userFiles table on userID and fileID columns
+	primaryKeyConstraintUserFiles = "userFiles_pkey"
 )
 
 type userFilesStore struct {
@@ -42,7 +50,7 @@ func (u *userFilesStore) CreateUserFile(ctx context.Context, userID, fileID, fil
 
 	if _, err := stmt.ExecContext(ctx, userID, fileID, fileName); err != nil {
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == uniqueConstraintUserFilesUserIDFileID {
+		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == primaryKeyConstraintUserFiles {
 			return handlerErrors.ErrUserFileAlreadyExists
 		}
 		slog.Error(logPrefix(fnCreateUserFile)+"execute statement", slog.Any(config.ErrorKey, err))
@@ -65,7 +73,7 @@ func (u *userFilesStore) DeleteUserFile(ctx context.Context, userID, fileID stri
 	var fileName string
 	if err := stmt.QueryRowContext(ctx, userID, fileID).Scan(&fileName); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return config.NullString, nil
+			return fileName, nil
 		}
 		slog.Error(logPrefix(fnDeleteUserFile)+"query row", slog.Any(config.ErrorKey, err))
 		return config.NullString, ErrFailedToDeleteUserFile

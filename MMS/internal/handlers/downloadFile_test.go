@@ -133,7 +133,7 @@ func TestDownloadFile(t *testing.T) {
 				tt.beforeCall()
 			}
 
-			mockService := &mocks.MockFileService{MockErr: tt.mockDbErr}
+			mockService := &mocks.MockFileService{GetFileByIDErr: tt.mockDbErr}
 			handler := &FileHandler{fileService: mockService}
 
 			resp, err := handler.DownloadFile(tt.setupCtx(), &MMSpb.DownloadFileRequest{FileID: tt.fileID})

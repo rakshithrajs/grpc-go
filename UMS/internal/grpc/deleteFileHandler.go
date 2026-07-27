@@ -15,7 +15,7 @@ import (
 func (c *Client) DeleteFileGrpcHandler(ctx context.Context, userID, fileID string) (int, string) {
 	fileName, err := c.storage.DeleteUserFile(ctx, userID, fileID)
 	if err != nil {
-		return http.StatusBadRequest, err.Error()
+		return http.StatusInternalServerError, err.Error()
 	}
 
 	ctx = metadata.AppendToOutgoingContext(ctx, config.UserIDMetadataKey, userID)

@@ -10,7 +10,6 @@ import (
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
-	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 )
 
 func TestDownloadFileGrpcHandler(t *testing.T) {
@@ -23,50 +22,8 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 		expectedData *MMSpb.DownloadFileResponse
 	}{
 		{
-			name:         "file download fails as file id is missing",
-			fileID:       config.NullString,
-			expectedCode: http.StatusBadRequest,
-			expectedErr:  modelUtils.ErrFileIDRequired.Error(),
-		},
-		{
-			name:         "file download fails as file id is whitespace",
-			fileID:       "   ",
-			expectedCode: http.StatusBadRequest,
-			expectedErr:  modelUtils.ErrFileIDRequired.Error(),
-		},
-		{
-			name:         "file download fails as missing metadata",
-			fileID:       "file-id-123",
-			mockGrpcErr:  mocks.GrpcOpMissingMetadata,
-			expectedCode: http.StatusUnauthorized,
-			expectedErr:  mocks.ErrMissingMetadata.Error(),
-		},
-		{
-			name:         "file download fails due to user id is missing",
-			fileID:       "file-id-123",
-			mockGrpcErr:  mocks.GrpcOpMissingUserID,
-			expectedCode: http.StatusUnauthorized,
-			expectedErr:  mocks.ErrMissingUserID.Error(),
-		},
-		{
-			name:         "file download succeeds with no file id found",
-			fileID:       "file-id-123",
-			mockGrpcErr:  mocks.GrpcOpNotFound,
-			expectedCode: http.StatusOK,
-			expectedErr:  config.NullString,
-			expectedData: &MMSpb.DownloadFileResponse{},
-		},
-		{
-			name:         "file download fails due to internal error",
-			fileID:       "file-id-123",
-			mockGrpcErr:  mocks.GrpcOpInternalError,
-			expectedCode: http.StatusInternalServerError,
-			expectedErr:  handlerErrors.ErrFailedToDownloadFile.Error(),
-		},
-		{
-			name:         "file download succeeds",
-			fileID:       "file-id-123",
-			mockGrpcErr:  mocks.GrpcOpSuccess,
+			name:         "file downloaded successfully",
+			fileID:       "550e8400-e29b-41d4-a716-446655440000",
 			expectedCode: http.StatusOK,
 			expectedErr:  config.NullString,
 			expectedData: &MMSpb.DownloadFileResponse{
@@ -75,25 +32,51 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 				Content:  []byte("test content"),
 			},
 		},
+		{
+			name:         "download succeeds with no file found",
+			fileID:       "550e8400-e29b-41d4-a716-446655440000",
+			mockGrpcErr:  mocks.GrpcOpNotFound,
+			expectedCode: http.StatusOK,
+			expectedErr:  config.NullString,
+			expectedData: &MMSpb.DownloadFileResponse{},
+		},
+		{
+			name:         "download fails due to missing metadata",
+			fileID:       "550e8400-e29b-41d4-a716-446655440000",
+			mockGrpcErr:  mocks.GrpcOpMissingMetadata,
+			expectedCode: http.StatusUnauthorized,
+			expectedErr:  handlerErrors.ErrUnauthorized.Error(),
+		},
+		{
+			name:         "download fails due to missing user id",
+			fileID:       "550e8400-e29b-41d4-a716-446655440000",
+			mockGrpcErr:  mocks.GrpcOpMissingUserID,
+			expectedCode: http.StatusUnauthorized,
+			expectedErr:  handlerErrors.ErrUnauthorized.Error(),
+		},
+		{
+			name:         "download fails due to internal error",
+			fileID:       "550e8400-e29b-41d4-a716-446655440000",
+			mockGrpcErr:  mocks.GrpcOpInternalError,
+			expectedCode: http.StatusInternalServerError,
+			expectedErr:  handlerErrors.ErrFailedToDownloadFile.Error(),
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mmsClient := &mocks.MockMMSClient{MockErr: tt.mockGrpcErr}
+			mmsClient := &mocks.MockMMSClient{DownloadGrpcErr: tt.mockGrpcErr}
 			svc := &mocks.MockUserFilesService{}
 			c := NewClient(mmsClient, svc)
 
 			resp, status, err := c.DownloadFileGrpcHandler(context.Background(), "user-123", tt.fileID)
 
-			if tt.expectedCode != status {
-				t.Errorf("expected %v got %v", tt.expectedCode, status)
-			}
+			mockUtils.CheckData(t, status, tt.expectedCode)
+			mockUtils.CheckError(t, err, tt.expectedErr)
 
-			if tt.expectedCode == http.StatusOK {
+			if status == http.StatusOK {
 				mockUtils.CheckData(t, resp, tt.expectedData)
 			}
-
-			mockUtils.CheckData(t, err, tt.expectedErr)
 		})
 	}
 }

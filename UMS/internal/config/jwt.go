@@ -17,6 +17,7 @@ const (
 	JWTClaimExpiry   = "exp"
 )
 
+// GenerateJWT generates a JWT token for the given user using the provided secret key.
 func GenerateJWT(user models.User, secret string) (string, error) {
 	now := time.Now().UTC()
 	claims := jwt.MapClaims{

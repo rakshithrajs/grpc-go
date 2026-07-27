@@ -2,6 +2,7 @@ package mocks
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http/httptest"
 	"reflect"
 	"testing"
@@ -11,53 +12,83 @@ type ErrorResponse struct {
 	Error any `json:"error"`
 }
 
-func CheckError(t *testing.T, w *httptest.ResponseRecorder, expected any) {
+// CheckError checks if the actual error matches the expected error.
+func CheckError(t *testing.T, actual any, expected any) {
 	t.Helper()
 
-	body := w.Body.Bytes()
+	switch a := actual.(type) {
+	case *httptest.ResponseRecorder:
+		body := a.Body.Bytes()
 
-	var resp ErrorResponse
-	if err := json.Unmarshal(body, &resp); err != nil {
-		t.Fatalf("failed to decode error response: %v", err)
-	}
+		var resp ErrorResponse
+		if err := json.Unmarshal(body, &resp); err != nil {
+			t.Fatalf("failed to decode error response: %v", err)
+		}
 
-	switch want := expected.(type) {
-	case string:
-		got, ok := resp.Error.(string)
-		if !ok {
-			t.Fatalf("expected single error %q, got keyed error %v", want, resp.Error)
-		}
-		if got != want {
-			t.Errorf("expected %q, got %q", want, got)
-		}
-	case map[string]string:
-		got, ok := resp.Error.(map[string]any)
-		if !ok {
-			t.Fatalf("expected keyed validation errors, got %v", resp.Error)
-		}
-		if len(got) != len(want) {
-			t.Errorf("expected %d errors, got %d (%v)", len(want), len(got), got)
-		}
-		for key, wantErr := range want {
-			gotVal, exists := got[key]
-			if !exists {
-				t.Errorf("expected error for field %q", key)
-				continue
-			}
-			gotStr, ok := gotVal.(string)
+		switch want := expected.(type) {
+		case string:
+			got, ok := resp.Error.(string)
 			if !ok {
-				t.Errorf("expected string error for field %q, got %v", key, gotVal)
-				continue
+				t.Fatalf("expected single error %q, got keyed error %v", want, resp.Error)
 			}
-			if gotStr != wantErr {
-				t.Errorf("expected field %q to have error %q, got %q", key, wantErr, gotStr)
+			if got != want {
+				t.Errorf("expected %q, got %q", want, got)
 			}
+		case map[string]string:
+			got, ok := resp.Error.(map[string]any)
+			if !ok {
+				t.Fatalf("expected keyed validation errors, got %v", resp.Error)
+			}
+			if len(got) != len(want) {
+				t.Errorf("expected %d errors, got %d (%v)", len(want), len(got), got)
+			}
+			for key, wantErr := range want {
+				gotVal, exists := got[key]
+				if !exists {
+					t.Errorf("expected error for field %q", key)
+					continue
+				}
+				gotStr, ok := gotVal.(string)
+				if !ok {
+					t.Errorf("expected string error for field %q, got %v", key, gotVal)
+					continue
+				}
+				if gotStr != wantErr {
+					t.Errorf("expected field %q to have error %q, got %q", key, wantErr, gotStr)
+				}
+			}
+		default:
+			t.Fatalf("unsupported expected error type %T", expected)
+		}
+	case string:
+		want, ok := expected.(string)
+		if !ok {
+			t.Fatalf("expected string error, got %T", expected)
+		}
+		if a != want {
+			t.Errorf("expected %q, got %q", want, a)
+		}
+	case error:
+		want, ok := expected.(error)
+		if !ok {
+			want, ok := expected.(string)
+			if !ok {
+				t.Fatalf("expected error or string error, got %T", expected)
+			}
+			if a.Error() != want {
+				t.Errorf("expected %q, got %q", want, a.Error())
+			}
+			return
+		}
+		if !errors.Is(a, want) {
+			t.Errorf("expected %v, got %v", want, a)
 		}
 	default:
-		t.Fatalf("unsupported expected error type %T", expected)
+		t.Fatalf("unsupported actual error type %T", actual)
 	}
 }
 
+// CheckData checks if the actual data matches the expected data.
 func CheckData(t *testing.T, actual any, expected any) {
 	t.Helper()
 

@@ -2,6 +2,7 @@ package handlers
 
 import MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 
+// MimeTypeToString converts a given MMSpb.MimeType to its corresponding string representation.
 func MimeTypeToString(mt MMSpb.MimeType) string {
 	switch mt {
 	case MMSpb.MimeType_MIME_TYPE_IMAGE_PNG:

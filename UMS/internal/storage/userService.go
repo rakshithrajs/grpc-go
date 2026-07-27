@@ -16,12 +16,22 @@ import (
 )
 
 const (
-	fnCreateUser     = "CreateUser"
-	fnGetUserByID    = "GetUserByID"
-	fnGetUserByEmail = "GetUserByEmail"
-	fnUpdateUser     = "UpdateUser"
+	// function name for Create User
+	fnCreateUser = "CreateUser"
 
+	// function name for Get User by ID
+	fnGetUserByID = "GetUserByID"
+
+	// function name for Get User by Email
+	fnGetUserByEmail = "GetUserByEmail"
+
+	// function name for Update User
+	fnUpdateUser = "UpdateUser"
+
+	// unique constraint names for users email key
 	uniqueConstraintUsersEmailKey = "users_email_key"
+
+	// unique constraint names for users phone key
 	uniqueConstraintUsersPhoneKey = "users_phone_key"
 )
 

@@ -20,6 +20,7 @@ const (
 	MimeTypeApplicationJSON MimeType = "application/json"
 )
 
+// ParseMimeType takes a string representation of a MIME type and returns the corresponding MimeType constant.
 func ParseMimeType(s string) MimeType {
 	if mediaType, _, err := mime.ParseMediaType(s); err == nil {
 		s = mediaType

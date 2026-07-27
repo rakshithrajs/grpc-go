@@ -74,7 +74,21 @@ func TestUploadFile(t *testing.T) {
 			content:      []byte("content"),
 			preCreate:    true,
 			expectedCode: codes.AlreadyExists,
-			expectedErr:  storage.ErrFilePathAlreadyExists.Error(),
+			expectedErr:  storage.ErrFileAlreadyExists.Error(),
+		},
+		{
+			name: "upload fails when file path is a directory",
+			setupCtx: func() context.Context {
+				_ = os.RemoveAll(userDir)
+				if err := os.MkdirAll(filepath.Join(userDir, "is-a-dir"), 0o755); err != nil {
+					t.Fatalf("failed to create directory for upload path: %v", err)
+				}
+				return metadata.NewIncomingContext(context.Background(), metadata.Pairs(config.UserIDMetadataKey, userID))
+			},
+			fileName:     "is-a-dir",
+			content:      []byte("content"),
+			expectedCode: codes.Internal,
+			expectedErr:  storage.ErrFailedToUploadFile.Error(),
 		},
 		{
 			name:         "upload fails as file name already exists in db",
@@ -83,7 +97,7 @@ func TestUploadFile(t *testing.T) {
 			content:      []byte("content"),
 			mockDbErr:    mocks.DbOpDuplicateName,
 			expectedCode: codes.AlreadyExists,
-			expectedErr:  storage.ErrFileNameAlreadyExists.Error(),
+			expectedErr:  storage.ErrFileAlreadyExists.Error(),
 		},
 		{
 			name:         "upload fails due to db internal error",
@@ -123,7 +137,7 @@ func TestUploadFile(t *testing.T) {
 				}
 			}
 
-			handler := NewFileHandler(&mocks.MockFileService{MockErr: tt.mockDbErr})
+			handler := NewFileHandler(&mocks.MockFileService{UploadFileErr: tt.mockDbErr})
 
 			// act
 			resp, err := handler.UploadFile(tt.setupCtx(), &MMSpb.UploadFileRequest{

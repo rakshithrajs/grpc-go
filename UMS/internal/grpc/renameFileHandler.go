@@ -19,10 +19,11 @@ func (c *Client) RenameFileGrpcHandler(ctx context.Context, userID, fileID, newN
 
 	ctx = metadata.AppendToOutgoingContext(ctx, config.UserIDMetadataKey, userID)
 
-	if _, err := c.mmsClient.RenameFile(ctx, &MMS.RenameFileRequest{
+	renameBody := &MMS.RenameFileRequest{
 		FileID:  fileID,
 		NewName: newName,
-	}); err != nil {
+	}
+	if _, err := c.mmsClient.RenameFile(ctx, renameBody); err != nil {
 		if _, rbErr := c.storage.UpdateUserFile(ctx, userID, fileID, oldName); rbErr != nil {
 			return http.StatusInternalServerError, handlerErrors.ErrFailedToRollback.Error()
 		}

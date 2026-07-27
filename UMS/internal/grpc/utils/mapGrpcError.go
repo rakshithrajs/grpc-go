@@ -15,8 +15,6 @@ func MapGRPCError(err error, defaultMsg string) (int, string) {
 	}
 
 	switch st.Code() {
-	case codes.InvalidArgument:
-		return http.StatusBadRequest, st.Message()
 	case codes.AlreadyExists:
 		return http.StatusConflict, st.Message()
 	case codes.Unauthenticated:

@@ -5,7 +5,6 @@ import (
 
 	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
-	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -13,32 +12,31 @@ import (
 )
 
 type MockMMSClient struct {
-	MockErr           GrpcOperationError
-	MockDeleteErr     GrpcOperationError
-	UploadReturnEmpty bool
+	UploadGrpcErr   GrpcOperationError
+	DownloadGrpcErr GrpcOperationError
+	DeleteGrpcErr   GrpcOperationError
+	RenameGrpcErr   GrpcOperationError
 }
 
 func (m *MockMMSClient) UploadFile(ctx context.Context, in *MMSpb.UploadFileRequest, opts ...grpc.CallOption) (*MMSpb.UploadFileResponse, error) {
-	switch m.MockErr {
+	err := m.UploadGrpcErr
+
+	switch err {
 	case GrpcOpMissingMetadata:
 		return nil, status.Error(codes.Unauthenticated, ErrMissingMetadata.Error())
 	case GrpcOpMissingUserID:
 		return nil, status.Error(codes.Unauthenticated, ErrMissingUserID.Error())
 	case GrpcOpInternalError:
 		return nil, status.Error(codes.Internal, handlerErrors.ErrFailedToUploadFile.Error())
-	case GrpcOpFileNameAlreadyExists:
-		return nil, status.Error(codes.AlreadyExists, ErrFileNameAlreadyExists.Error())
-	case GrpcOpFilePathAlreadyExists:
-		return nil, status.Error(codes.AlreadyExists, ErrFilePathAlreadyExists.Error())
-	}
-
-	if m.UploadReturnEmpty {
-		return &MMSpb.UploadFileResponse{}, nil
+	case GrpcOpFileAlreadyExists:
+		return nil, status.Error(codes.AlreadyExists, ErrFileAlreadyExists.Error())
+	case GrpcOpRollbackFailure:
+		return nil, status.Error(codes.Internal, handlerErrors.ErrFailedToRollback.Error())
 	}
 
 	return &MMSpb.UploadFileResponse{
 		File: &MMSpb.File{
-			ID:       "file-id-123",
+			ID:       "550e8400-e29b-41d4-a716-446655440000",
 			FileName: in.GetFileName(),
 			FileSize: int64(len(in.GetContent())),
 			MimeType: MMSpb.MimeType_MIME_TYPE_TEXT_PLAIN,
@@ -47,7 +45,9 @@ func (m *MockMMSClient) UploadFile(ctx context.Context, in *MMSpb.UploadFileRequ
 }
 
 func (m *MockMMSClient) DownloadFile(ctx context.Context, in *MMSpb.DownloadFileRequest, opts ...grpc.CallOption) (*MMSpb.DownloadFileResponse, error) {
-	switch m.MockErr {
+	err := m.DownloadGrpcErr
+
+	switch err {
 	case GrpcOpMissingMetadata:
 		return nil, status.Error(codes.Unauthenticated, ErrMissingMetadata.Error())
 	case GrpcOpMissingUserID:
@@ -65,66 +65,39 @@ func (m *MockMMSClient) DownloadFile(ctx context.Context, in *MMSpb.DownloadFile
 	}, nil
 }
 
-func (m *MockMMSClient) ListFiles(ctx context.Context, in *MMSpb.EmptyMessage, opts ...grpc.CallOption) (*MMSpb.ListFilesResponse, error) {
-	switch m.MockErr {
-	case GrpcOpMissingMetadata:
-		return nil, status.Error(codes.Unauthenticated, ErrMissingMetadata.Error())
-	case GrpcOpMissingUserID:
-		return nil, status.Error(codes.Unauthenticated, ErrMissingUserID.Error())
-	case GrpcOpInternalError:
-		return nil, status.Error(codes.Internal, ErrFailedToGetFiles.Error())
-	}
-
-	return &MMSpb.ListFilesResponse{
-		File: []*MMSpb.File{
-			{ID: "file-1", FileName: "file1.txt", FileSize: 100, MimeType: MMSpb.MimeType_MIME_TYPE_TEXT_PLAIN},
-			{ID: "file-2", FileName: "file2.txt", FileSize: 200, MimeType: MMSpb.MimeType_MIME_TYPE_TEXT_PLAIN},
-		},
-	}, nil
-}
-
 func (m *MockMMSClient) DeleteFile(ctx context.Context, in *MMSpb.DeleteFileRequest, opts ...grpc.CallOption) (*MMSpb.EmptyMessage, error) {
-	err := m.MockDeleteErr
-	if err == GrpcOpSuccess {
-		err = m.MockErr
-	}
+	err := m.DeleteGrpcErr
 
 	switch err {
 	case GrpcOpMissingMetadata:
 		return nil, status.Error(codes.Unauthenticated, ErrMissingMetadata.Error())
 	case GrpcOpMissingUserID:
 		return nil, status.Error(codes.Unauthenticated, ErrMissingUserID.Error())
-	case GrpcOpInvalidArgument:
-		return nil, status.Error(codes.InvalidArgument, modelUtils.ErrFileIDRequired.Error())
 	case GrpcOpInternalError:
 		return nil, status.Error(codes.Internal, handlerErrors.ErrFailedToDeleteFile.Error())
-	case GrpcOpNotFound:
-		return &MMSpb.EmptyMessage{}, nil
 	case GrpcOpRollbackFailure:
-		return nil, status.Error(codes.Internal, "rollback failed")
+		return nil, status.Error(codes.Internal, handlerErrors.ErrFailedToRollback.Error())
 	}
 
 	return &MMSpb.EmptyMessage{}, nil
 }
 
 func (m *MockMMSClient) RenameFile(ctx context.Context, in *MMSpb.RenameFileRequest, opts ...grpc.CallOption) (*MMSpb.EmptyMessage, error) {
-	err := m.MockErr
+	err := m.RenameGrpcErr
 
 	switch err {
 	case GrpcOpMissingMetadata:
 		return nil, status.Error(codes.Unauthenticated, ErrMissingMetadata.Error())
 	case GrpcOpMissingUserID:
 		return nil, status.Error(codes.Unauthenticated, ErrMissingUserID.Error())
-	case GrpcOpInvalidArgument:
-		return nil, status.Error(codes.InvalidArgument, modelUtils.ErrFileIDRequired.Error())
 	case GrpcOpInternalError:
 		return nil, status.Error(codes.Internal, handlerErrors.ErrFailedToRenameFile.Error())
-	case GrpcOpFileNameAlreadyExists:
-		return nil, status.Error(codes.AlreadyExists, ErrFileNameAlreadyExists.Error())
+	case GrpcOpFileAlreadyExists:
+		return nil, status.Error(codes.AlreadyExists, ErrFileAlreadyExists.Error())
 	case GrpcOpNotFound:
 		return &MMSpb.EmptyMessage{}, nil
 	case GrpcOpRollbackFailure:
-		return nil, status.Error(codes.Internal, "rollback failed")
+		return nil, status.Error(codes.Internal, handlerErrors.ErrFailedToRollback.Error())
 	}
 
 	return &MMSpb.EmptyMessage{}, nil

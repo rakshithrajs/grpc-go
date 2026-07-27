@@ -13,6 +13,7 @@ const (
 	connMaxLifetime = 5 * time.Minute
 )
 
+// Connect establishes a connection to the PostgreSQL database using the provided DSN (Data Source Name).
 func Connect(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {

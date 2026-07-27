@@ -13,9 +13,6 @@ service Files {
     // DownloadFile downloads a file from the cloud.
     rpc DownloadFile (DownloadFileRequest) returns (DownloadFileResponse);
 
-    // ListFiles returns the list of files for the authenticated user.
-    rpc ListFiles (EmptyMessage) returns (ListFilesResponse);
-
     // DeleteFile deletes the intended file from the cloud.
     rpc DeleteFile (DeleteFileRequest) returns (EmptyMessage);
 
@@ -93,11 +90,6 @@ message RenameFileRequest {
 
     // file's new name
     string newName = 2;
-}
-
-// ListFilesResponse contains the list of files.
-message ListFilesResponse {
-    repeated File file = 1;
 }
 
 // EmptyMessage has an empty body.

@@ -12,17 +12,30 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// logPrefix returns a formatted string for logging purposes, including the function name.
 func logPrefix(fn string) string { return "[" + fn + "]: " }
 
 const (
-	fnUploadFile        = "UploadFile"
-	fnDownloadFile      = "DownloadFile"
-	fnListFiles         = "ListFiles"
-	fnRenameFile        = "RenameFile"
-	fnDeleteFile        = "DeleteFile"
+	// function name for UploadFile
+	fnUploadFile = "UploadFile"
+
+	// function name for DownloadFile
+	fnDownloadFile = "DownloadFile"
+
+	// function name for ListFiles
+	fnListFiles = "ListFiles"
+
+	// function name for RenameFile
+	fnRenameFile = "RenameFile"
+
+	// function name for DeleteFile
+	fnDeleteFile = "DeleteFile"
+
+	// function name for UserIDFromContext
 	fnUserIDFromContext = "UserIDFromContext"
 )
 
+// UserIDFromContext extracts the user ID from the gRPC context metadata.
 func UserIDFromContext(ctx context.Context) (string, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
@@ -42,6 +55,7 @@ type FileHandler struct {
 	fileService storage.FileService
 }
 
+// NewFileHandler creates a new instance of FileHandler with the provided file service.
 func NewFileHandler(fileService storage.FileService) *FileHandler {
 	return &FileHandler{fileService: fileService}
 }

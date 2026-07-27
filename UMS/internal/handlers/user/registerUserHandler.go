@@ -10,7 +10,6 @@ import (
 
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
-	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 
 	"golang.org/x/crypto/bcrypt"
@@ -19,21 +18,21 @@ import (
 func (h *UserHandler) RegisterUserHandler(ctx *gin.Context) {
 	var payload models.RegisterUserRequest
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		handlerErrors.ReturnErrorResponse(ctx, handlerErrors.ErrInvalidJSON, FnRegisterUser, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(ctx, handlerErrors.ErrInvalidJSON, FnRegisterUser, handlerErrors.ErrFailedToRegisterUser, config.NullString)
 		return
 	}
 
 	payload.Email = modelUtils.NormalizeEmail(payload.Email)
 
 	if err := modelUtils.Validate.Struct(payload); err != nil {
-		handlerErrors.ReturnErrorResponse(ctx, modelUtils.FieldErrors(err), FnRegisterUser, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(ctx, modelUtils.FieldErrors(err), FnRegisterUser, handlerErrors.ErrFailedToRegisterUser, config.NullString)
 		return
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
 	if err != nil {
 		slog.Error(handlerUtils.LogPrefix(FnRegisterUser)+"failed to generate password hash", slog.Any(config.ErrorKey, err))
-		handlerErrors.ReturnErrorResponse(ctx, err, FnRegisterUser, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(ctx, err, FnRegisterUser, handlerErrors.ErrFailedToRegisterUser, config.NullString)
 		return
 	}
 

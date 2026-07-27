@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"reflect"
 	"strings"
 	"testing"
@@ -439,6 +440,7 @@ type validationTest struct {
 	Phone           string `validate:"required,isValueEmpty,isValidPhone"`
 	Name            string `validate:"required,isValueEmpty,max=100,isValidName"`
 	NewName         string `validate:"required,isValueEmpty"`
+	FileID          string `validate:"required,isValueEmpty,uuid"`
 }
 
 func validValidationTest() validationTest {
@@ -449,132 +451,202 @@ func validValidationTest() validationTest {
 		Phone:           "9876543210",
 		Name:            "John",
 		NewName:         "Johnny",
+		FileID:          "550e8400-e29b-41d4-a716-446655440000",
+	}
+}
+
+type newNameTest struct {
+	NewName string `validate:"required,isValueEmpty,max=100"`
+}
+
+func TestValidateNewName(t *testing.T) {
+	tests := []struct {
+		name    string
+		newName string
+		wantErr bool
+	}{
+		{
+			name:    "new name too long",
+			newName: strings.Repeat("a", 101),
+			wantErr: true,
+		},
+		{
+			name:    "new name invalid characters",
+			newName: "John123",
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := Validate.Struct(newNameTest{NewName: tt.newName})
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("expected error=%v, got %v", tt.wantErr, err != nil)
+			}
+		})
+	}
+}
+
+func TestFileIDPayload(t *testing.T) {
+	tests := []struct {
+		name    string
+		fileID  string
+		wantErr bool
+	}{
+		{
+			name:    "valid file id",
+			fileID:  "550e8400-e29b-41d4-a716-446655440000",
+			wantErr: false,
+		},
+		{
+			name:    "empty file id",
+			fileID:  config.NullString,
+			wantErr: true,
+		},
+		{
+			name:    "only spaces file id",
+			fileID:  "   ",
+			wantErr: true,
+		},
+		{
+			name:    "invalid uuid",
+			fileID:  "not-a-uuid",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := Validate.Struct(FileIDPayload{FileID: tt.fileID})
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("expected error=%v, got %v", tt.wantErr, err != nil)
+			}
+		})
 	}
 }
 
 func TestFieldErrors(t *testing.T) {
 	tests := []struct {
-		name      string
-		input     validationTest
-		customErr error
-		expected  map[string]string
+		name     string
+		input    error
+		expected map[string]string
 	}{
 		{
 			name: "email required",
-			input: func() validationTest {
+			input: Validate.Struct(func() validationTest {
 				v := validValidationTest()
 				v.Email = config.NullString
 				return v
-			}(),
+			}()),
 			expected: map[string]string{
 				"email": ErrEmailRequired.Error(),
 			},
 		},
 		{
 			name: "email too long",
-			input: func() validationTest {
+			input: Validate.Struct(func() validationTest {
 				v := validValidationTest()
 				v.Email = strings.Repeat("a", 245) + "@gmail.com"
 				return v
-			}(),
+			}()),
 			expected: map[string]string{
 				"email": ErrInvalidEmailLength.Error(),
 			},
 		},
 		{
 			name: "invalid email",
-			input: func() validationTest {
+			input: Validate.Struct(func() validationTest {
 				v := validValidationTest()
 				v.Email = "ab@invalid-domain-xyz-123.com"
 				return v
-			}(),
+			}()),
 			expected: map[string]string{
 				"email": ErrInvalidEmail.Error(),
 			},
 		},
 		{
 			name: "password required",
-			input: func() validationTest {
+			input: Validate.Struct(func() validationTest {
 				v := validValidationTest()
 				v.Email = "abc@gmail.com"
 				v.Password = " "
 				v.ConfirmPassword = " "
 				return v
-			}(),
+			}()),
 			expected: map[string]string{
 				"password": ErrPasswordRequired.Error(),
 			},
 		},
 		{
 			name: "invalid password",
-			input: func() validationTest {
+			input: Validate.Struct(func() validationTest {
 				v := validValidationTest()
 				v.Email = "abc@gmail.com"
 				v.Password = "password"
 				v.ConfirmPassword = "password"
 				return v
-			}(),
+			}()),
 			expected: map[string]string{
 				"password": ErrInvalidPassword.Error(),
 			},
 		},
 		{
 			name: "confirm password required",
-			input: func() validationTest {
+			input: Validate.Struct(func() validationTest {
 				v := validValidationTest()
 				v.Email = "abc@gmail.com"
 				v.Password = "Valid123!"
 				v.ConfirmPassword = config.NullString
 				return v
-			}(),
+			}()),
 			expected: map[string]string{
 				"confirmPassword": ErrPasswordConfirmRequired.Error(),
 			},
 		},
 		{
 			name: "password mismatch",
-			input: func() validationTest {
+			input: Validate.Struct(func() validationTest {
 				v := validValidationTest()
 				v.Email = "abc@gmail.com"
 				v.Password = "Valid123!"
 				v.ConfirmPassword = "Different123!"
 				return v
-			}(),
+			}()),
 			expected: map[string]string{
 				"confirmPassword": ErrPasswordMismatch.Error(),
 			},
 		},
 		{
 			name: "phone required",
-			input: func() validationTest {
+			input: Validate.Struct(func() validationTest {
 				v := validValidationTest()
 				v.Email = "abc@gmail.com"
 				v.Password = "Valid123!"
 				v.ConfirmPassword = "Valid123!"
 				v.Phone = config.NullString
 				return v
-			}(),
+			}()),
 			expected: map[string]string{
 				"phone": ErrPhoneRequired.Error(),
 			},
 		},
 		{
 			name: "invalid phone",
-			input: func() validationTest {
+			input: Validate.Struct(func() validationTest {
 				v := validValidationTest()
 				v.Email = "abc@gmail.com"
 				v.Password = "Valid123!"
 				v.ConfirmPassword = "Valid123!"
 				v.Phone = "123"
 				return v
-			}(),
+			}()),
 			expected: map[string]string{
 				"phone": ErrInvalidPhoneNumber.Error(),
 			},
 		},
 		{
 			name: "name required",
-			input: func() validationTest {
+			input: Validate.Struct(func() validationTest {
 				v := validValidationTest()
 				v.Email = "abc@gmail.com"
 				v.Password = "Valid123!"
@@ -582,14 +654,14 @@ func TestFieldErrors(t *testing.T) {
 				v.Phone = "9876543210"
 				v.Name = config.NullString
 				return v
-			}(),
+			}()),
 			expected: map[string]string{
 				"name": ErrNameRequired.Error(),
 			},
 		},
 		{
 			name: "name too long",
-			input: func() validationTest {
+			input: Validate.Struct(func() validationTest {
 				v := validValidationTest()
 				v.Email = "abc@gmail.com"
 				v.Password = "Valid123!"
@@ -597,14 +669,14 @@ func TestFieldErrors(t *testing.T) {
 				v.Phone = "9876543210"
 				v.Name = strings.Repeat("a", 101)
 				return v
-			}(),
+			}()),
 			expected: map[string]string{
 				"name": ErrNameTooLong.Error(),
 			},
 		},
 		{
 			name: "invalid name",
-			input: func() validationTest {
+			input: Validate.Struct(func() validationTest {
 				v := validValidationTest()
 				v.Email = "abc@gmail.com"
 				v.Password = "Valid123!"
@@ -612,14 +684,14 @@ func TestFieldErrors(t *testing.T) {
 				v.Phone = "9876543210"
 				v.Name = "John1"
 				return v
-			}(),
+			}()),
 			expected: map[string]string{
 				"name": ErrInvalidName.Error(),
 			},
 		},
 		{
 			name: "new name required",
-			input: func() validationTest {
+			input: Validate.Struct(func() validationTest {
 				v := validValidationTest()
 				v.Email = "abc@gmail.com"
 				v.Password = "Valid123!"
@@ -628,16 +700,50 @@ func TestFieldErrors(t *testing.T) {
 				v.Name = "JohnDoe"
 				v.NewName = config.NullString
 				return v
-			}(),
+			}()),
 			expected: map[string]string{
 				"newName": ErrNewNameRequired.Error(),
 			},
 		},
 		{
+			name: "file id required",
+			input: Validate.Struct(func() validationTest {
+				v := validValidationTest()
+				v.Email = "abc@gmail.com"
+				v.Password = "Valid123!"
+				v.ConfirmPassword = "Valid123!"
+				v.Phone = "9876543210"
+				v.Name = "JohnDoe"
+				v.NewName = "JaneDoe"
+				v.FileID = config.NullString
+				return v
+			}()),
+			expected: map[string]string{
+				"fileID": ErrFileIDRequired.Error(),
+			},
+		},
+		{
+			name: "file id invalid uuid",
+			input: Validate.Struct(func() validationTest {
+				v := validValidationTest()
+				v.Email = "abc@gmail.com"
+				v.Password = "Valid123!"
+				v.ConfirmPassword = "Valid123!"
+				v.Phone = "9876543210"
+				v.Name = "JohnDoe"
+				v.NewName = "JaneDoe"
+				v.FileID = "invalid-uuid"
+				return v
+			}()),
+			expected: map[string]string{
+				"fileID": ErrFileIDInvalidUUID.Error(),
+			},
+		},
+		{
 			name: "multiple validation errors",
-			input: func() validationTest {
+			input: Validate.Struct(func() validationTest {
 				return validationTest{}
-			}(),
+			}()),
 			expected: map[string]string{
 				"email":           ErrEmailRequired.Error(),
 				"password":        ErrPasswordRequired.Error(),
@@ -645,21 +751,19 @@ func TestFieldErrors(t *testing.T) {
 				"phone":           ErrPhoneRequired.Error(),
 				"name":            ErrNameRequired.Error(),
 				"newName":         ErrNewNameRequired.Error(),
+				"fileID":          ErrFileIDRequired.Error(),
 			},
+		},
+		{
+			name:     "non validation error",
+			input:    errors.New("some random error"),
+			expected: map[string]string{config.NullString: "some random error"},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var err error
-
-			if tt.customErr != nil {
-				err = tt.customErr
-			} else {
-				err = Validate.Struct(tt.input)
-			}
-
-			got := FieldErrors(err)
+			got := FieldErrors(tt.input)
 
 			if !reflect.DeepEqual(got, tt.expected) {
 				t.Fatalf("expected %#v, got %#v", tt.expected, got)

@@ -31,9 +31,9 @@ func (h *UserFilesHandler) RenameFileHandler(c *gin.Context) {
 		return
 	}
 
-	var fileID = strings.TrimSpace(c.Param("fileID"))
-	if err := modelUtils.Validate.Var(fileID, "required,isValueEmpty,uuid"); err != nil {
-		handlerErrors.ReturnErrorResponse(c, modelUtils.ErrFileIDRequired, FnRenameFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+	fileID := strings.TrimSpace(c.Param("fileID"))
+	if err := modelUtils.Validate.Struct(&modelUtils.FileIDPayload{FileID: fileID}); err != nil {
+		handlerErrors.ReturnErrorResponse(c, modelUtils.FieldErrors(err), FnRenameFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 

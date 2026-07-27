@@ -19,9 +19,9 @@ func (h *UserFilesHandler) DownloadFileHandler(c *gin.Context) {
 		return
 	}
 
-	var fileID = strings.TrimSpace(c.Param("fileID"))
-	if err := modelUtils.Validate.Var(fileID, "required,isValueEmpty,uuid"); err != nil {
-		handlerErrors.ReturnErrorResponse(c, modelUtils.ErrFileIDRequired, FnDownloadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+	fileID := strings.TrimSpace(c.Param("fileID"))
+	if err := modelUtils.Validate.Struct(&modelUtils.FileIDPayload{FileID: fileID}); err != nil {
+		handlerErrors.ReturnErrorResponse(c, modelUtils.FieldErrors(err), FnDownloadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
 		return
 	}
 

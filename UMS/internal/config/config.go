@@ -16,10 +16,19 @@ var (
 )
 
 const (
-	functionName      = "Load"
-	logPrefix         = "[" + functionName + "]: "
-	NullString        = ""
-	ErrorKey          = "error"
+	// functionName is Load
+	functionName = "Load"
+
+	// logPrefix is the prefix for log messages in this package
+	logPrefix = "[" + functionName + "]: "
+
+	// NullString is the representation of a ""
+	NullString = ""
+
+	// ErrorKey is the key for error messages in logs
+	ErrorKey = "error"
+
+	// UserIDMetadataKey is the key for userID
 	UserIDMetadataKey = "userID"
 )
 

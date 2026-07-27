@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 
@@ -35,6 +36,10 @@ func (h *UserHandler) LoginUserHandler(ctx *gin.Context) {
 
 	user, err := h.storage.GetUserByEmail(ctx.Request.Context(), req.Email)
 	if err != nil {
+		if errors.Is(err, handlerErrors.ErrEmailNotFound) {
+			handlerErrors.ReturnErrorResponse(ctx, handlerErrors.ErrInvalidCredentials, FnLoginUser, handlerErrors.ErrFailedToLoginUser, config.NullString)
+			return
+		}
 		handlerErrors.ReturnErrorResponse(ctx, err, FnLoginUser, handlerErrors.ErrFailedToLoginUser, config.NullString)
 		return
 	}

@@ -5,9 +5,21 @@ import (
 )
 
 var (
+	// message: failed to download file
 	ErrFailedToDownloadFile = errors.New("failed to download file")
-	ErrMissingMetadata      = errors.New("missing metadata")
-	ErrMissingUserID        = errors.New("missing user ID in metadata")
-	ErrFailedToListFiles    = errors.New("failed to list files")
-	ErrFailedToRenameFile   = errors.New("failed to rename file")
+
+	// message: missing metadata in context
+	ErrMissingMetadata = errors.New("missing metadata")
+
+	// message: missing user ID in metadata
+	ErrMissingUserID = errors.New("missing user ID in metadata")
+
+	// message: failed to upload file
+	ErrFailedToListFiles = errors.New("failed to list files")
+
+	// message: failed to rename file
+	ErrFailedToRenameFile = errors.New("failed to rename file")
+
+	// message: failed to roll back
+	ErrFailedToRollback = errors.New("failed to roll back")
 )

@@ -27,17 +27,14 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 
 	file, err := f.fileService.UpdateFile(ctx, req.GetFileID(), updateBody, userID)
 	if err != nil {
-		if errors.Is(err, storage.ErrFileNotFound) {
-			return &MMSpb.EmptyMessage{}, nil
-		}
 		slog.Error(logPrefix(fnRenameFile)+"failed to update file record", slog.Any(config.ErrorKey, err))
-		if errors.Is(err, storage.ErrFileNameAlreadyExists) {
+		if errors.Is(err, storage.ErrFileAlreadyExists) {
 			return nil, status.Error(codes.AlreadyExists, err.Error())
 		}
 		return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 	}
 
-	if file.Name == updateBody.Name {
+	if file == nil || file.ID == config.NullString {
 		return &MMSpb.EmptyMessage{}, nil
 	}
 
@@ -46,13 +43,17 @@ func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileReque
 	newPath := filepath.Join(userDir, updateBody.Name)
 	updateBody.Path = newPath
 
+	if oldPath == newPath {
+		return &MMSpb.EmptyMessage{}, nil
+	}
+
 	if err := os.Rename(oldPath, newPath); err != nil {
 		slog.Error(logPrefix(fnRenameFile)+"failed to rename file on disk", slog.Any(config.ErrorKey, err), slog.String("oldPath", oldPath), slog.String("newPath", newPath))
 		updateBody.Name = file.Name
 		updateBody.Path = file.Path
 		if _, rbErr := f.fileService.UpdateFile(ctx, req.GetFileID(), updateBody, userID); rbErr != nil {
 			slog.Error(logPrefix(fnRenameFile)+"failed to roll back file rename", slog.Any(config.ErrorKey, rbErr), slog.String("oldPath", oldPath), slog.String("newPath", newPath))
-			return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
+			return nil, status.Error(codes.Internal, ErrFailedToRollback.Error())
 		}
 		return nil, status.Error(codes.Internal, ErrFailedToRenameFile.Error())
 	}

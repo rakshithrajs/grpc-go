@@ -5,6 +5,7 @@ import (
 	"github.com/rakshithrajs/cloud/MMS/internal/models"
 )
 
+// toProtoMimeType converts a models.MimeType to its corresponding MMSpb.MimeType.
 func toProtoMimeType(mt models.MimeType) MMSpb.MimeType {
 	switch mt {
 	case models.MimeTypeImagePNG:

@@ -29,6 +29,20 @@ func TestUploadFileHandler(t *testing.T) {
 		expectedData        any
 	}{
 		{
+			name:         "file uploaded successfully",
+			auth:         true,
+			withFile:     true,
+			expectedCode: http.StatusCreated,
+			expectedData: map[string]any{
+				"file": map[string]any{
+					"id":       "550e8400-e29b-41d4-a716-446655440000",
+					"fileName": "test.txt",
+					"fileSize": float64(12),
+					"mimeType": "text/plain",
+				},
+			},
+		},
+		{
 			name:          "upload file fails due to missing auth",
 			auth:          false,
 			withFile:      true,
@@ -59,6 +73,22 @@ func TestUploadFileHandler(t *testing.T) {
 			expectedError: handlerErrors.ErrFileNameRequired.Error(),
 		},
 		{
+			name:          "upload file fails due to grpc missing metadata",
+			auth:          true,
+			withFile:      true,
+			uploadGrpcErr: mocks.GrpcOpMissingMetadata,
+			expectedCode:  http.StatusUnauthorized,
+			expectedError: handlerErrors.ErrUnauthorized.Error(),
+		},
+		{
+			name:          "upload file fails due to grpc missing userID",
+			auth:          true,
+			withFile:      true,
+			uploadGrpcErr: mocks.GrpcOpMissingUserID,
+			expectedCode:  http.StatusUnauthorized,
+			expectedError: handlerErrors.ErrUnauthorized.Error(),
+		},
+		{
 			name:          "upload file fails due to grpc internal error",
 			auth:          true,
 			withFile:      true,
@@ -67,20 +97,12 @@ func TestUploadFileHandler(t *testing.T) {
 			expectedError: handlerErrors.ErrFailedToUploadFile.Error(),
 		},
 		{
-			name:          "upload file fails due to grpc file name already exists",
+			name:          "upload file fails due to grpc file already exists",
 			auth:          true,
 			withFile:      true,
-			uploadGrpcErr: mocks.GrpcOpFileNameAlreadyExists,
+			uploadGrpcErr: mocks.GrpcOpFileAlreadyExists,
 			expectedCode:  http.StatusConflict,
-			expectedError: mocks.ErrFileNameAlreadyExists.Error(),
-		},
-		{
-			name:          "upload file fails due to grpc file path already exists",
-			auth:          true,
-			withFile:      true,
-			uploadGrpcErr: mocks.GrpcOpFilePathAlreadyExists,
-			expectedCode:  http.StatusConflict,
-			expectedError: mocks.ErrFilePathAlreadyExists.Error(),
+			expectedError: mocks.ErrFileAlreadyExists.Error(),
 		},
 		{
 			name:                "upload file fails due to db duplicate file",
@@ -99,27 +121,21 @@ func TestUploadFileHandler(t *testing.T) {
 			expectedError:       handlerErrors.ErrFailedToUploadFile.Error(),
 		},
 		{
+			name:          "upload file fails due to grpc internal and rollback success",
+			auth:          true,
+			withFile:      true,
+			uploadGrpcErr: mocks.GrpcOpInternalError,
+			expectedCode:  http.StatusInternalServerError,
+			expectedError: handlerErrors.ErrFailedToUploadFile.Error(),
+		},
+		{
 			name:                "upload file fails due to grpc rollback failure",
 			auth:                true,
 			withFile:            true,
 			CreateUserFileError: mocks.DbOpInternalError,
 			deleteGrpcErr:       mocks.GrpcOpRollbackFailure,
 			expectedCode:        http.StatusInternalServerError,
-			expectedError:       handlerErrors.ErrFailedToUploadFile.Error(),
-		},
-		{
-			name:         "upload file succeeds",
-			auth:         true,
-			withFile:     true,
-			expectedCode: http.StatusCreated,
-			expectedData: map[string]any{
-				"file": map[string]any{
-					"id":       "file-id-123",
-					"fileName": "test.txt",
-					"fileSize": float64(12),
-					"mimeType": "text/plain",
-				},
-			},
+			expectedError:       handlerErrors.ErrFailedToRollback.Error(),
 		},
 	}
 
@@ -141,7 +157,7 @@ func TestUploadFileHandler(t *testing.T) {
 				c, w = mockUtils.SetUpGinTest(http.MethodPost, "/api/files/upload", config.NullString, tt.auth)
 			}
 
-			mmsClient := &mocks.MockMMSClient{MockErr: tt.uploadGrpcErr, MockDeleteErr: tt.deleteGrpcErr}
+			mmsClient := &mocks.MockMMSClient{UploadGrpcErr: tt.uploadGrpcErr, DeleteGrpcErr: tt.deleteGrpcErr}
 			svc := &mocks.MockUserFilesService{CreateUserFileError: tt.CreateUserFileError}
 			client := grpc.NewClient(mmsClient, svc)
 			handler := NewUserFilesHandler(client, svc)
