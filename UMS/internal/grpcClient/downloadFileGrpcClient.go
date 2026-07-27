@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func (c *Client) DownloadFileGrpcHandler(ctx context.Context, userID, fileID string) (*MMSpb.DownloadFileResponse, error) {
+func (c *Client) DownloadFileGrpcClient(ctx context.Context, userID, fileID string) (*MMSpb.DownloadFileResponse, error) {
 	ctx = metadata.AppendToOutgoingContext(ctx, config.UserIDMetadataKey, userID)
 
 	resp, err := c.mmsClient.DownloadFile(ctx, &MMS.DownloadFileRequest{FileID: fileID})

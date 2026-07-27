@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func TestUploadFileGrpcHandler(t *testing.T) {
+func TestUploadFileGrpcClient(t *testing.T) {
 	tests := []struct {
 		name              string
 		fileName          string
@@ -102,7 +102,7 @@ func TestUploadFileGrpcHandler(t *testing.T) {
 			svc := &mocks.MockUserFilesService{CreateUserFileError: tt.createDbErr}
 			c := NewClient(mmsClient, svc)
 
-			file, err := c.UploadFileGrpcHandler(context.Background(), "user-123", tt.fileName, tt.content)
+			file, err := c.UploadFileGrpcClient(context.Background(), "user-123", tt.fileName, tt.content)
 
 			status, _ := status.FromError(err)
 

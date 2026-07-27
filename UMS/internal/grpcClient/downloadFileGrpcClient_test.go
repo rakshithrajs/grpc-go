@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func TestDownloadFileGrpcHandler(t *testing.T) {
+func TestDownloadFileGrpcClient(t *testing.T) {
 	tests := []struct {
 		name         string
 		fileID       string
@@ -70,7 +70,7 @@ func TestDownloadFileGrpcHandler(t *testing.T) {
 			svc := &mocks.MockUserFilesService{}
 			c := NewClient(mmsClient, svc)
 
-			resp, err := c.DownloadFileGrpcHandler(context.Background(), "user-123", tt.fileID)
+			resp, err := c.DownloadFileGrpcClient(context.Background(), "user-123", tt.fileID)
 
 			status, _ := status.FromError(err)
 

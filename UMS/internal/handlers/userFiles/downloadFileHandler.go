@@ -27,7 +27,7 @@ func (h *UserFilesHandler) DownloadFileHandler(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	resp, err := h.client.DownloadFileGrpcHandler(ctx, userID, fileID)
+	resp, err := h.client.DownloadFileGrpcClient(ctx, userID, fileID)
 	if err != nil {
 		status, errMsg := handlerUtils.MapGRPCError(err, handlerErrors.ErrFailedToDownloadFile.Error())
 		c.JSON(status, gin.H{"error": errMsg})

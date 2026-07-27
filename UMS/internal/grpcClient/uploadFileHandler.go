@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (c *Client) UploadFileGrpcHandler(ctx context.Context, userID, fileName string, content []byte) (*models.File, error) {
+func (c *Client) UploadFileGrpcClient(ctx context.Context, userID, fileName string, content []byte) (*models.File, error) {
 	ctx = metadata.AppendToOutgoingContext(ctx, config.UserIDMetadataKey, userID)
 
 	resp, err := c.mmsClient.UploadFile(ctx, &MMS.UploadFileRequest{

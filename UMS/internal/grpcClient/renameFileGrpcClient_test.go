@@ -8,80 +8,98 @@ import (
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
-	"github.com/rakshithrajs/cloud/UMS/internal/storage"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func TestDeleteFileGrpcHandler(t *testing.T) {
+func TestRenameFileGrpcClient(t *testing.T) {
 	tests := []struct {
 		name              string
 		fileID            string
-		deleteDbErr       mocks.DbOperationError
+		newName           string
 		grpcErr           mocks.GrpcOperationError
-		createRollbackErr mocks.DbOperationError
+		updateDbErr       mocks.DbOperationError
+		updateRollbackErr mocks.DbOperationError
 		expectedCode      codes.Code
 		expectedErr       string
 	}{
 		{
-			name:         "file deleted successfully",
+			name:         "file renamed successfully",
 			fileID:       "550e8400-e29b-41d4-a716-446655440000",
+			newName:      "renamed.txt",
 			expectedCode: codes.OK,
 			expectedErr:  config.NullString,
 		},
 		{
-			name:         "delete succeeds with no user file found",
+			name:         "rename succeeds with no user file found",
 			fileID:       "550e8400-e29b-41d4-a716-446655440000",
-			deleteDbErr:  mocks.DbOpNotFound,
+			newName:      "renamed.txt",
+			updateDbErr:  mocks.DbOpNotFound,
 			expectedCode: codes.OK,
+			expectedErr:  config.NullString,
 		},
 		{
-			name:         "delete succeeds with no file found in MMS",
+			name:         "rename succeeds with no file found in MMS",
 			fileID:       "550e8400-e29b-41d4-a716-446655440000",
+			newName:      "renamed.txt",
 			grpcErr:      mocks.GrpcOpNotFound,
 			expectedCode: codes.OK,
 			expectedErr:  config.NullString,
 		},
 		{
-			name:         "delete fails when storage returns internal error",
+			name:         "rename fails when storage returns internal error",
 			fileID:       "550e8400-e29b-41d4-a716-446655440000",
-			deleteDbErr:  mocks.DbOpInternalError,
+			newName:      "renamed.txt",
+			updateDbErr:  mocks.DbOpInternalError,
 			expectedCode: codes.Internal,
-			expectedErr:  storage.ErrFailedToDeleteUserFile.Error(),
+			expectedErr:  handlerErrors.ErrFailedToUpdateUserFile.Error(),
 		},
 		{
-			name:         "delete fails due to missing metadata",
+			name:         "rename fails due to missing metadata",
 			fileID:       "550e8400-e29b-41d4-a716-446655440000",
+			newName:      "renamed.txt",
 			grpcErr:      mocks.GrpcOpMissingMetadata,
 			expectedCode: codes.Unauthenticated,
 			expectedErr:  mocks.ErrMissingMetadata.Error(),
 		},
 		{
-			name:         "delete fails due to missing user id",
+			name:         "rename fails due to missing user id",
 			fileID:       "550e8400-e29b-41d4-a716-446655440000",
+			newName:      "renamed.txt",
 			grpcErr:      mocks.GrpcOpMissingUserID,
 			expectedCode: codes.Unauthenticated,
 			expectedErr:  mocks.ErrMissingUserID.Error(),
 		},
 		{
-			name:         "delete fails due to internal error",
+			name:         "rename fails as file already exists",
 			fileID:       "550e8400-e29b-41d4-a716-446655440000",
-			grpcErr:      mocks.GrpcOpInternalError,
-			expectedCode: codes.Internal,
-			expectedErr:  mocks.ErrFailedToDeleteFile.Error(),
+			newName:      "renamed.txt",
+			grpcErr:      mocks.GrpcOpFileAlreadyExists,
+			expectedCode: codes.AlreadyExists,
+			expectedErr:  mocks.ErrFileAlreadyExists.Error(),
 		},
 		{
-			name:         "delete fails due to internal error and rollback succeeds",
+			name:         "rename fails due to internal error",
 			fileID:       "550e8400-e29b-41d4-a716-446655440000",
+			newName:      "renamed.txt",
 			grpcErr:      mocks.GrpcOpInternalError,
 			expectedCode: codes.Internal,
-			expectedErr:  mocks.ErrFailedToDeleteFile.Error(),
+			expectedErr:  handlerErrors.ErrFailedToRenameFile.Error(),
 		},
 		{
-			name:              "delete fails due to internal error and rollback fails",
+			name:         "rename fails due to internal error and rollback succeeds",
+			fileID:       "550e8400-e29b-41d4-a716-446655440000",
+			newName:      "renamed.txt",
+			grpcErr:      mocks.GrpcOpInternalError,
+			expectedCode: codes.Internal,
+			expectedErr:  handlerErrors.ErrFailedToRenameFile.Error(),
+		},
+		{
+			name:              "rename fails due to internal error and rollback fails",
 			fileID:            "550e8400-e29b-41d4-a716-446655440000",
+			newName:           "renamed.txt",
 			grpcErr:           mocks.GrpcOpInternalError,
-			createRollbackErr: mocks.DbOpRollbackFailure,
+			updateRollbackErr: mocks.DbOpInternalError,
 			expectedCode:      codes.Internal,
 			expectedErr:       handlerErrors.ErrFailedToRollback.Error(),
 		},
@@ -89,11 +107,11 @@ func TestDeleteFileGrpcHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mmsClient := &mocks.MockMMSClient{DeleteGrpcErr: tt.grpcErr}
-			svc := &mocks.MockUserFilesService{DeleteUserFileError: tt.deleteDbErr, CreateUserFileError: tt.createRollbackErr}
+			mmsClient := &mocks.MockMMSClient{RenameGrpcErr: tt.grpcErr}
+			svc := &mocks.MockUserFilesService{UpdateUserFileError: tt.updateDbErr, UpdateRollbackError: tt.updateRollbackErr}
 			c := NewClient(mmsClient, svc)
 
-			err := c.DeleteFileGrpcHandler(context.Background(), "user-123", tt.fileID)
+			err := c.RenameFileGrpcClient(context.Background(), "user-123", tt.fileID, tt.newName)
 
 			status, _ := status.FromError(err)
 

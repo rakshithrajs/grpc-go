@@ -11,24 +11,20 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (c *Client) RenameFileGrpcHandler(ctx context.Context, userID, fileID, newName string) error {
-	oldName, err := c.storage.UpdateUserFile(ctx, userID, fileID, newName)
+func (c *Client) DeleteFileGrpcClient(ctx context.Context, userID, fileID string) error {
+	fileName, err := c.storage.DeleteUserFile(ctx, userID, fileID)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
 	}
 
 	ctx = metadata.AppendToOutgoingContext(ctx, config.UserIDMetadataKey, userID)
 
-	renameBody := &MMS.RenameFileRequest{
-		FileID:  fileID,
-		NewName: newName,
-	}
-	if _, err := c.mmsClient.RenameFile(ctx, renameBody); err != nil {
-		if _, rbErr := c.storage.UpdateUserFile(ctx, userID, fileID, oldName); rbErr != nil {
+	if _, err := c.mmsClient.DeleteFile(ctx, &MMS.DeleteFileRequest{FileID: fileID}); err != nil {
+		if rbErr := c.storage.CreateUserFile(ctx, userID, fileID, fileName); rbErr != nil {
 			return status.Error(codes.Internal, handlerErrors.ErrFailedToRollback.Error())
 		}
 		return err
 	}
 
-	return nil
+	return status.Error(codes.OK, config.NullString)
 }

@@ -44,7 +44,7 @@ func (h *UserFilesHandler) RenameFileHandler(c *gin.Context) {
 
 	newName := strings.TrimSpace(payload.NewName)
 
-	if err := h.client.RenameFileGrpcHandler(ctx, userID, fileID, newName); err != nil {
+	if err := h.client.RenameFileGrpcClient(ctx, userID, fileID, newName); err != nil {
 		slog.Error(handlerUtils.LogPrefix(FnRenameFile)+"failed to rename file", slog.Any(config.ErrorKey, err))
 		status, errMsg := handlerUtils.MapGRPCError(err, handlerErrors.ErrFailedToRenameFile.Error())
 		c.JSON(status, gin.H{"error": errMsg})

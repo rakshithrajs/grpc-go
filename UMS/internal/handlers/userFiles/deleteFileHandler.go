@@ -27,7 +27,7 @@ func (h *UserFilesHandler) DeleteFileHandler(c *gin.Context) {
 	}
 	ctx := c.Request.Context()
 
-	if err = h.client.DeleteFileGrpcHandler(ctx, userID, fileID); err != nil {
+	if err = h.client.DeleteFileGrpcClient(ctx, userID, fileID); err != nil {
 		status, errMsg := handlerUtils.MapGRPCError(err, handlerErrors.ErrFailedToDeleteFile.Error())
 		c.JSON(status, gin.H{"error": errMsg})
 		return
