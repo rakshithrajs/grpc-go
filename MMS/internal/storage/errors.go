@@ -3,24 +3,21 @@ package storage
 import "errors"
 
 var (
-	// message: failed to upload file
+	// ErrFailedToUploadFile is returned when a file upload fails.
 	ErrFailedToUploadFile = errors.New("failed to upload file")
 
-	// message: file already exists
+	// ErrFileAlreadyExists is returned when a file with the same name already exists.
 	ErrFileAlreadyExists = errors.New("file already exists")
 
-	// message: file not found
-	ErrFileNotFound = errors.New("file not found")
-
-	// message: failed to get file by ID
+	// ErrFailedToGetFileByID is returned when fetching a file by ID fails.
 	ErrFailedToGetFileByID = errors.New("failed to get file by ID")
 
-	// message: failed to update file
+	// ErrFailedToUpdateFile is returned when a file update fails.
 	ErrFailedToUpdateFile = errors.New("failed to update file")
 
-	// message: failed to delete file
+	// ErrFailedToDeleteFile is returned when a file deletion fails.
 	ErrFailedToDeleteFile = errors.New("failed to delete file")
 
-	// message: failed to roll back
+	// ErrFailedToRollback is returned when a rollback operation fails.
 	ErrFailedToRollback = errors.New("failed to roll back")
 )

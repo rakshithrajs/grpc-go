@@ -11,13 +11,13 @@ import (
 
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
-	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 )
 
+// UploadFileHandler uploads a user file via the MMS client.
 func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		handlerErrors.ReturnErrorResponse(c, err, FnUploadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(c, err, FnUploadFile, handlerErrors.ErrSomethingWentWrong)
 		return
 	}
 
@@ -25,32 +25,36 @@ func (h *UserFilesHandler) UploadFileHandler(c *gin.Context) {
 
 	fileHeader, err := c.FormFile(multipartFileField)
 	if err != nil {
-		handlerErrors.ReturnErrorResponse(c, handlerErrors.ErrFileIsRequired, FnUploadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(c, handlerErrors.ErrFileIsRequired, FnUploadFile, handlerErrors.ErrSomethingWentWrong)
 		return
 	}
 
 	if strings.TrimSpace(fileHeader.Filename) == config.NullString {
-		handlerErrors.ReturnErrorResponse(c, handlerErrors.ErrFileNameRequired, FnUploadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(c, handlerErrors.ErrFileNameRequired, FnUploadFile, handlerErrors.ErrSomethingWentWrong)
 		return
 	}
 
 	openedFile, err := fileHeader.Open()
 	if err != nil {
 		slog.Error(handlerUtils.LogPrefix(FnUploadFile)+"failed to open uploaded file", slog.Any(config.ErrorKey, err))
-		handlerErrors.ReturnErrorResponse(c, err, FnUploadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(c, err, FnUploadFile, handlerErrors.ErrSomethingWentWrong)
 		return
 	}
-	defer openedFile.Close()
+	defer func() {
+		if err := openedFile.Close(); err != nil {
+			slog.Error(handlerUtils.LogPrefix(FnUploadFile)+"failed to close uploaded file", slog.Any(config.ErrorKey, err))
+		}
+	}()
 
 	content, err := io.ReadAll(openedFile)
 	if err != nil {
 		slog.Error(handlerUtils.LogPrefix(FnUploadFile)+"failed to read uploaded file", slog.Any(config.ErrorKey, err))
-		handlerErrors.ReturnErrorResponse(c, err, FnUploadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(c, err, FnUploadFile, handlerErrors.ErrSomethingWentWrong)
 		return
 	}
 
 	if len(content) == 0 {
-		handlerErrors.ReturnErrorResponse(c, handlerErrors.ErrEmptyFileContent, FnUploadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(c, handlerErrors.ErrEmptyFileContent, FnUploadFile, handlerErrors.ErrSomethingWentWrong)
 		return
 	}
 

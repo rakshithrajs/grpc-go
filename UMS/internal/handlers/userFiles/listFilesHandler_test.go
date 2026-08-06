@@ -63,7 +63,7 @@ func TestListFilesHandler(t *testing.T) {
 				ListUserFilesError: tt.mockDbErr,
 				ReturnEmptyList:    tt.returnEmpty,
 			}
-			client := grpc.NewClient(mmsClient, svc)
+			client := grpc.NewMMSClient(mmsClient, svc)
 			handler := NewUserFilesHandler(client, svc)
 
 			handler.ListFilesHandler(c)

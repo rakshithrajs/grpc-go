@@ -14,7 +14,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (c *Client) UploadFileGrpcClient(ctx context.Context, userID, fileName string, content []byte) (*models.File, error) {
+// UploadFileGrpcClient uploads a file to MMS storage and records the user-file mapping.
+func (c *MMSClient) UploadFileGrpcClient(ctx context.Context, userID, fileName string, content []byte) (*models.File, error) {
 	ctx = metadata.AppendToOutgoingContext(ctx, config.UserIDMetadataKey, userID)
 
 	resp, err := c.mmsClient.UploadFile(ctx, &MMS.UploadFileRequest{

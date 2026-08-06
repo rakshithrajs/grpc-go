@@ -2,6 +2,7 @@ include .env
 
 UMS_DIR=UMS
 MMS_DIR=MMS
+TMS_DIR=TMS
 
 UMS_MIGRATE_DB_URL="postgres://${UMS_DB_USER}:${UMS_DB_PASSWORD}@${UMS_DB_HOST}:${UMS_DB_PORT}/${UMS_DB_NAME}?sslmode=${UMS_DB_SSLMODE}"
 MMS_MIGRATE_DB_URL="postgres://${MMS_DB_USER}:${MMS_DB_PASSWORD}@${MMS_DB_HOST}:${MMS_DB_PORT}/${MMS_DB_NAME}?sslmode=${MMS_DB_SSLMODE}"
@@ -36,10 +37,12 @@ force-UMS:
 	@migrate -path ${UMS_DIR}/internal/storage/migrations -database ${UMS_MIGRATE_DB_URL} force ${VERSION}
 
 force-MMS:
-	@migrate -path ${MMS_DIR}/internal/storage/migrations -database ${MMS_MIGRATE_DB_URL} force ${VERSION}
+	@migrate -path ${MMS_DIR}/internal/storage/migrations -database ${UMS_MIGRATE_DB_URL} force ${VERSION}
 
 proto:
-	protoc --go_out=paths=source_relative:.. --go-grpc_out=paths=source_relative:.. UMS/proto/MMS/v1/MMS.proto
-	protoc --go_out=paths=source_relative:.. --go-grpc_out=paths=source_relative:.. MMS/proto/MMS/v1/MMS.proto
+	@cd ${MMS_DIR}/ && protoc -I=proto/ --go_out=. --go-grpc_out=. ./proto/MMS/v1/MMS.proto
+	@cd ${UMS_DIR}/ && protoc -I=proto/ --go_out=. --go-grpc_out=. ./proto/MMS/v1/MMS.proto
+	@cd ${UMS_DIR}/ && protoc -I=proto/ --go_out=. --go-grpc_out=. ./proto/TMS/v1/TMS.proto
+	@cd ${TMS_DIR}/ && protoc -I=proto/ --go_out=. --go-grpc_out=. ./proto/TMS/v1/TMS.proto
 
 .PHONY: check-UMS check-MMS up down create-UMS-migration create-MMS-migration UMS-version MMS-version force-UMS force-MMS proto

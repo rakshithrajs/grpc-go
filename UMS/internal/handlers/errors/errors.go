@@ -6,127 +6,142 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 )
 
-// source identifiers for error handling
+// Source identifiers used when mapping errors to HTTP responses.
 const (
+	// AuthMiddlewareSource identifies errors originating from the auth middleware.
 	AuthMiddlewareSource = "AuthMiddleware"
-	LoginUserSource      = "LoginUserHandler"
-	RegisterUserSource   = "RegisterUserHandler"
-	UpdateUserSource     = "UpdateUserProfileHandler"
+
+	// LoginUserSource identifies errors originating from the login handler.
+	LoginUserSource = "LoginUserHandler"
+
+	// RegisterUserSource identifies errors originating from the register handler.
+	RegisterUserSource = "RegisterUserHandler"
+
+	// UpdateUserSource identifies errors originating from the update user handler.
+	UpdateUserSource = "UpdateUserProfileHandler"
+
+	// GetUserProfileSource identifies errors originating from the get user profile handler.
 	GetUserProfileSource = "GetUserProfileHandler"
-	UploadFileSource     = "UploadFile"
-	DownloadFileSource   = "DownloadFile"
-	ListFilesSource      = "ListFiles"
-	RenameFileSource     = "RenameFile"
-	DeleteFileSource     = "DeleteFile"
+
+	// UploadFileSource identifies errors originating from the upload file handler.
+	UploadFileSource = "UploadFile"
+
+	// DownloadFileSource identifies errors originating from the download file handler.
+	DownloadFileSource = "DownloadFile"
+
+	// ListFilesSource identifies errors originating from the list files handler.
+	ListFilesSource = "ListFiles"
+
+	// RenameFileSource identifies errors originating from the rename file handler.
+	RenameFileSource = "RenameFile"
+
+	// DeleteFileSource identifies errors originating from the delete file handler.
+	DeleteFileSource = "DeleteFile"
 )
 
 var (
-	// message: missing Authorization header
+	// ErrSomethingWentWrong is returned for unexpected internal failures.
+	ErrSomethingWentWrong = errors.New("something went wrong")
+
+	// ErrMissingAuthHeader is returned when the Authorization header is missing.
 	ErrMissingAuthHeader = errors.New("missing Authorization header")
 
-	// message: unauthorized
+	// ErrUnauthorized is returned when the request is not authenticated.
 	ErrUnauthorized = errors.New("unauthorized")
 
-	// message: user not found
-	ErrUserNotFound = errors.New("user not found")
-
-	// message: email not found
-	ErrEmailNotFound = errors.New("email not found")
-
-	// message: invalid JSON
+	// ErrInvalidJSON is returned when the request body is not valid JSON.
 	ErrInvalidJSON = errors.New("invalid JSON")
 
-	// message: failed to register user
+	// ErrInvalidURI is returned when URI path parameters are invalid.
+	ErrInvalidURI = errors.New("invalid URI")
+
+	// ErrFailedToRegisterUser is returned when user registration fails internally.
 	ErrFailedToRegisterUser = errors.New("failed to register user")
 
-	// message: invalid credentials
+	// ErrInvalidCredentials is returned when login credentials are invalid.
 	ErrInvalidCredentials = errors.New("invalid credentials")
 
-	// message: failed to login user
+	// ErrFailedToLoginUser is returned when user login fails internally.
 	ErrFailedToLoginUser = errors.New("failed to login user")
 
-	// message: no fields to update
+	// ErrNoFieldsToUpdate is returned when an update request has no fields to change.
 	ErrNoFieldsToUpdate = errors.New("no fields to update")
 
-	// message: new password is same as old password
+	// ErrPasswordSameAsOldPassword is returned when the new password matches the old password.
 	ErrPasswordSameAsOldPassword = errors.New("new password is same as old password")
 
-	// message: user email already exists
+	// ErrUserEmailAlreadyExists is returned when a user with the email already exists.
 	ErrUserEmailAlreadyExists = errors.New("user email already exists")
 
-	// message: phone number already exists
+	// ErrPhoneNumberAlreadyExists is returned when a user with the phone number already exists.
 	ErrPhoneNumberAlreadyExists = errors.New("phone number already exists")
 
-	// message: file is required
+	// ErrFileIsRequired is returned when a file is not provided.
 	ErrFileIsRequired = errors.New("file is required")
 
-	// message: file name is required
+	// ErrFileNameRequired is returned when a filename is not provided.
 	ErrFileNameRequired = errors.New("file name is required")
 
-	// message: file content is empty
+	// ErrEmptyFileContent is returned when the provided file is empty.
 	ErrEmptyFileContent = errors.New("file content is empty")
 
-	// message: failed to upload file
+	// ErrFailedToUploadFile is returned when a file upload fails internally.
 	ErrFailedToUploadFile = errors.New("failed to upload file")
 
-	// message: failed to rename file
+	// ErrFailedToRenameFile is returned when a file rename fails internally.
 	ErrFailedToRenameFile = errors.New("failed to rename file")
 
-	// message: failed to list file
+	// ErrFailedToListFiles is returned when listing files fails internally.
 	ErrFailedToListFiles = errors.New("failed to list files")
 
-	// message: failed to download file
+	// ErrFailedToDownloadFile is returned when a file download fails internally.
 	ErrFailedToDownloadFile = errors.New("failed to download file")
 
-	// message: failed to delete file
+	// ErrFailedToDeleteFile is returned when a file deletion fails internally.
 	ErrFailedToDeleteFile = errors.New("failed to delete file")
 
-	// message: user file mapping already exists
+	// ErrUserFileAlreadyExists is returned when a user-file mapping already exists.
 	ErrUserFileAlreadyExists = errors.New("user file mapping already exists")
 
-	// message: failed to rollback changes
+	// ErrFailedToRollback is returned when a rollback operation fails.
 	ErrFailedToRollback = errors.New("failed to rollback changes")
 
-	// message: failed to create user
+	// ErrFailedToCreateUser is returned when creating a user fails internally.
 	ErrFailedToCreateUser = errors.New("failed to create user")
 
-	// message: failed to get user by ID
+	// ErrFailedToGetUserByID is returned when fetching a user by ID fails internally.
 	ErrFailedToGetUserByID = errors.New("failed to get user by ID")
 
-	// message: failed to get user by email
+	// ErrFailedToGetUserByEmail is returned when fetching a user by email fails internally.
 	ErrFailedToGetUserByEmail = errors.New("failed to get user by email")
 
-	// message: failed to update user
+	// ErrFailedToUpdateUser is returned when updating a user fails internally.
 	ErrFailedToUpdateUser = errors.New("failed to update user")
 
-	// message: failed to create user file mapping
+	// ErrFailedToCreateUserFile is returned when creating a user-file mapping fails internally.
 	ErrFailedToCreateUserFile = errors.New("failed to create user file mapping")
 
-	// message: failed to delete user file mapping
+	// ErrFailedToDeleteUserFile is returned when deleting a user-file mapping fails internally.
 	ErrFailedToDeleteUserFile = errors.New("failed to delete user file mapping")
 
-	// message: failed to update user file mapping
+	// ErrFailedToUpdateUserFile is returned when updating a user-file mapping fails internally.
 	ErrFailedToUpdateUserFile = errors.New("failed to update user file mapping")
 
-	// message: failed to list user files
+	// ErrFailedToListUserFiles is returned when listing user files fails internally.
 	ErrFailedToListUserFiles = errors.New("failed to list user files")
 )
 
 var errorResponseSpec = map[string]map[error]int{
 	AuthMiddlewareSource: {
-		ErrMissingAuthHeader:                  http.StatusUnauthorized,
-		middlewareUtils.ErrMissingBearerToken: http.StatusUnauthorized,
-		middlewareUtils.ErrInvalidToken:       http.StatusUnauthorized,
-		middlewareUtils.ErrTokenExpired:       http.StatusUnauthorized,
+		ErrMissingAuthHeader: http.StatusUnauthorized,
+		ErrUnauthorized:      http.StatusUnauthorized,
 	},
 	LoginUserSource: {
 		ErrInvalidJSON:        http.StatusBadRequest,
 		ErrInvalidCredentials: http.StatusUnauthorized,
-		ErrEmailNotFound:      http.StatusUnauthorized,
 		ErrFailedToLoginUser:  http.StatusInternalServerError,
 	},
 	RegisterUserSource: {
@@ -136,7 +151,6 @@ var errorResponseSpec = map[string]map[error]int{
 		ErrFailedToRegisterUser:     http.StatusInternalServerError,
 	},
 	UpdateUserSource: {
-		ErrUserNotFound:              http.StatusOK,
 		ErrInvalidJSON:               http.StatusBadRequest,
 		ErrNoFieldsToUpdate:          http.StatusBadRequest,
 		ErrPasswordSameAsOldPassword: http.StatusBadRequest,
@@ -144,26 +158,26 @@ var errorResponseSpec = map[string]map[error]int{
 		ErrPhoneNumberAlreadyExists:  http.StatusConflict,
 		ErrFailedToUpdateUser:        http.StatusInternalServerError,
 	},
-	GetUserProfileSource: {
-		ErrUserNotFound: http.StatusOK,
-	},
 	UploadFileSource: {
 		ErrFileIsRequired:   http.StatusBadRequest,
 		ErrFileNameRequired: http.StatusBadRequest,
 		ErrEmptyFileContent: http.StatusBadRequest,
 	},
 	DownloadFileSource: {
+		ErrInvalidURI:                http.StatusBadRequest,
 		modelUtils.ErrFileIDRequired: http.StatusBadRequest,
 	},
 	ListFilesSource: {
 		ErrFailedToListFiles: http.StatusInternalServerError,
 	},
 	RenameFileSource: {
-		ErrInvalidJSON:                   http.StatusBadRequest,
-		modelUtils.ErrFileIDRequired:     http.StatusBadRequest,
-		modelUtils.ErrFileIDInvalidUUID:  http.StatusBadRequest,
+		ErrInvalidJSON:                  http.StatusBadRequest,
+		ErrInvalidURI:                   http.StatusBadRequest,
+		modelUtils.ErrFileIDRequired:    http.StatusBadRequest,
+		modelUtils.ErrFileIDInvalidUUID: http.StatusBadRequest,
 	},
 	DeleteFileSource: {
+		ErrInvalidURI:                http.StatusBadRequest,
 		modelUtils.ErrFileIDRequired: http.StatusBadRequest,
 	},
 }
@@ -187,8 +201,8 @@ var commonInternalServerErrors = []error{
 	ErrFailedToListUserFiles,
 }
 
-// ReturnErrorResponse sends an error response based on the provided error and source. It checks for specific error types and returns appropriate HTTP status codes and messages.
-func ReturnErrorResponse(c *gin.Context, err any, source string, defaultError error, data any) {
+// ReturnErrorResponse sends an HTTP error response based on the provided error and source.
+func ReturnErrorResponse(c *gin.Context, err any, source string, defaultError error) {
 	if e, ok := err.(error); ok {
 		if isAuthError(e) {
 			c.JSON(http.StatusUnauthorized, gin.H{config.ErrorKey: e.Error()})
@@ -202,10 +216,6 @@ func ReturnErrorResponse(c *gin.Context, err any, source string, defaultError er
 
 		if spec, ok := errorResponseSpec[source]; ok {
 			if status, ok := spec[e]; ok {
-				if status == http.StatusOK {
-					c.JSON(http.StatusOK, gin.H{"user": data})
-					return
-				}
 				c.JSON(status, gin.H{config.ErrorKey: e.Error()})
 				return
 			}
@@ -219,16 +229,13 @@ func ReturnErrorResponse(c *gin.Context, err any, source string, defaultError er
 	c.JSON(http.StatusBadRequest, gin.H{config.ErrorKey: errs})
 }
 
-// isAuthError checks if the provided error is related to authentication issues.
+// isAuthError reports whether the error is an authentication failure.
 func isAuthError(e error) bool {
 	return errors.Is(e, ErrMissingAuthHeader) ||
-		errors.Is(e, middlewareUtils.ErrMissingBearerToken) ||
-		errors.Is(e, middlewareUtils.ErrInvalidToken) ||
-		errors.Is(e, middlewareUtils.ErrTokenExpired) ||
 		errors.Is(e, ErrUnauthorized)
 }
 
-// isCommonInternalError checks if the provided error is one of the common internal server errors defined in the commonInternalServerErrors slice.
+// isCommonInternalError reports whether the error is a common internal server error.
 func isCommonInternalError(e error) bool {
 	for _, candidate := range commonInternalServerErrors {
 		if errors.Is(e, candidate) {

@@ -8,6 +8,7 @@ import (
 	"testing"
 )
 
+// ErrorResponse represents the standard error payload returned by HTTP handlers.
 type ErrorResponse struct {
 	Error any `json:"error"`
 }

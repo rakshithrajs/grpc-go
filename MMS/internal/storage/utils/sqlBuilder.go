@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// UpdateField describes a single column/value pair used to build a dynamic UPDATE statement.
 type UpdateField struct {
 	Column string
 	Value  any

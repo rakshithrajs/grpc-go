@@ -13,6 +13,7 @@ const (
 	connMaxLifetime = 5 * time.Minute
 )
 
+// Connect opens a PostgreSQL connection pool and verifies it with a ping.
 func Connect(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {

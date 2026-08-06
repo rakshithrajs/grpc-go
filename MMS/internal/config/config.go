@@ -12,6 +12,7 @@ import (
 )
 
 var (
+	// ErrMissingEnvVariable is returned when a required environment variable is missing.
 	ErrMissingEnvVariable = errors.New("missing environment variable")
 )
 
@@ -25,6 +26,7 @@ func (g *gRPCConfig) Address() string {
 	return g.Host + ":" + g.Port
 }
 
+// DbConfig contains the database connection parameters.
 type DbConfig struct {
 	Host     string
 	Port     string
@@ -56,6 +58,7 @@ const (
 	ErrorKey = "error"
 )
 
+// Config holds all application-wide configuration values loaded from environment variables.
 type Config struct {
 	GRPCAddress     string
 	DSN             string

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
+	grpcClient "github.com/rakshithrajs/cloud/UMS/internal/grpcClient"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
@@ -26,7 +27,7 @@ func TestRegisterUserHandler(t *testing.T) {
 			expectedCode: http.StatusCreated,
 			expectedData: map[string]any{
 				"user": map[string]any{
-					"id":           "success-user-id",
+					"ID":           "success-user-id",
 					"name":         "Test",
 					"email":        "test@example.com",
 					"phone":        "1234567890",
@@ -131,8 +132,9 @@ func TestRegisterUserHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c, w := mockUtils.SetUpGinTest(http.MethodPost, "/api/users/register", tt.body, false)
 
+			tmsClient := grpcClient.NewTMSClient(&mocks.MockTokensClient{})
 			svc := &mocks.MockUserService{CreateUserErr: tt.mockErr}
-			handler := NewUserHandler(svc)
+			handler := NewUserHandler(svc, tmsClient)
 
 			handler.RegisterUserHandler(c)
 

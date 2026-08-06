@@ -1,20 +1,21 @@
 package mocks
 
+// DbOperationError represents the result of a mocked database operation.
 type DbOperationError int
 
 const (
-	// Represents a successful database operation
+	// DbOpSuccess indicates the mocked database operation succeeded.
 	DbOpSuccess DbOperationError = iota
 
-	// Represents a database operation that failed due to an internal error
+	// DbOpInternalError indicates the mocked database operation failed due to an internal error.
 	DbOpInternalError
 
-	// Represents a database operation that failed due to a duplicate name
+	// DbOpDuplicateName indicates the mocked database operation failed due to a duplicate name.
 	DbOpDuplicateName
 
-	// Represents a database operation that failed because the requested item was not found
+	// DbOpNotFound indicates the mocked database operation failed because the record was not found.
 	DbOpNotFound
 
-	// Represents a database operation that failed due to a rollback error
+	// DbOpRollbackError indicates the mocked database operation failed during rollback.
 	DbOpRollbackError
 )

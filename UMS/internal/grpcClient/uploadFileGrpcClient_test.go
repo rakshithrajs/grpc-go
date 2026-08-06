@@ -100,7 +100,7 @@ func TestUploadFileGrpcClient(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mmsClient := &mocks.MockMMSClient{UploadGrpcErr: tt.grpcErr, DeleteGrpcErr: tt.deleteGrpcErr}
 			svc := &mocks.MockUserFilesService{CreateUserFileError: tt.createDbErr}
-			c := NewClient(mmsClient, svc)
+			c := NewMMSClient(mmsClient, svc)
 
 			file, err := c.UploadFileGrpcClient(context.Background(), "user-123", tt.fileName, tt.content)
 

@@ -35,7 +35,7 @@ func TestUploadFileHandler(t *testing.T) {
 			expectedCode: http.StatusCreated,
 			expectedData: map[string]any{
 				"file": map[string]any{
-					"id":       "550e8400-e29b-41d4-a716-446655440000",
+					"ID":       "550e8400-e29b-41d4-a716-446655440000",
 					"fileName": "test.txt",
 					"fileSize": float64(12),
 					"mimeType": "text/plain",
@@ -159,7 +159,7 @@ func TestUploadFileHandler(t *testing.T) {
 
 			mmsClient := &mocks.MockMMSClient{UploadGrpcErr: tt.uploadGrpcErr, DeleteGrpcErr: tt.deleteGrpcErr}
 			svc := &mocks.MockUserFilesService{CreateUserFileError: tt.CreateUserFileError}
-			client := grpc.NewClient(mmsClient, svc)
+			client := grpc.NewMMSClient(mmsClient, svc)
 			handler := NewUserFilesHandler(client, svc)
 
 			handler.UploadFileHandler(c)

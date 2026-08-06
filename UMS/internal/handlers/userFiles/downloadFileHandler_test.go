@@ -102,12 +102,12 @@ func TestDownloadFileHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, w := mockUtils.SetUpGinTest(http.MethodGet, "/api/files/:fileID/download", config.NullString, tt.auth)
-			c.Params = []gin.Param{{Key: "fileID", Value: tt.fileID}}
+			c, w := mockUtils.SetUpGinTest(http.MethodGet, "/api/files/:fileid/download", config.NullString, tt.auth)
+			c.Params = []gin.Param{{Key: "fileid", Value: tt.fileID}}
 
 			mmsClient := &mocks.MockMMSClient{DownloadGrpcErr: tt.mockGrpcErr}
 			svc := &mocks.MockUserFilesService{}
-			client := grpc.NewClient(mmsClient, svc)
+			client := grpc.NewMMSClient(mmsClient, svc)
 			handler := NewUserFilesHandler(client, svc)
 
 			handler.DownloadFileHandler(c)

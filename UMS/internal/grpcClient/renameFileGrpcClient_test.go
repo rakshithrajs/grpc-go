@@ -109,7 +109,7 @@ func TestRenameFileGrpcClient(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mmsClient := &mocks.MockMMSClient{RenameGrpcErr: tt.grpcErr}
 			svc := &mocks.MockUserFilesService{UpdateUserFileError: tt.updateDbErr, UpdateRollbackError: tt.updateRollbackErr}
-			c := NewClient(mmsClient, svc)
+			c := NewMMSClient(mmsClient, svc)
 
 			err := c.RenameFileGrpcClient(context.Background(), "user-123", tt.fileID, tt.newName)
 

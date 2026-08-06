@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
+	grpcClient "github.com/rakshithrajs/cloud/UMS/internal/grpcClient"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
@@ -117,8 +118,9 @@ func TestUpdateUserHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c, w := mockUtils.SetUpGinTest(http.MethodPatch, "/api/users/update", tt.body, tt.auth)
 
+			tmsClient := grpcClient.NewTMSClient(&mocks.MockTokensClient{})
 			svc := &mocks.MockUserService{UpdateUserErr: tt.mockErr, GetUserByIDErr: tt.getUserByIDErr}
-			handler := NewUserHandler(svc)
+			handler := NewUserHandler(svc, tmsClient)
 
 			handler.UpdateUserHandler(c)
 

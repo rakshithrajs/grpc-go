@@ -5,21 +5,24 @@ import (
 )
 
 var (
-	// message: failed to download file
+	// ErrFailedToDownloadFile is returned when a file download fails.
 	ErrFailedToDownloadFile = errors.New("failed to download file")
 
-	// message: missing metadata in context
+	// ErrFailedToDeleteFile is returned when a file deletion fails.
+	ErrFailedToDeleteFile = errors.New("failed to delete file")
+
+	// ErrMissingMetadata is returned when gRPC metadata is missing from the request context.
 	ErrMissingMetadata = errors.New("missing metadata")
 
-	// message: missing user ID in metadata
+	// ErrMissingUserID is returned when the user ID is missing from gRPC metadata.
 	ErrMissingUserID = errors.New("missing user ID in metadata")
 
-	// message: failed to upload file
+	// ErrFailedToListFiles is returned when listing files fails.
 	ErrFailedToListFiles = errors.New("failed to list files")
 
-	// message: failed to rename file
+	// ErrFailedToRenameFile is returned when a file rename fails.
 	ErrFailedToRenameFile = errors.New("failed to rename file")
 
-	// message: failed to roll back
+	// ErrFailedToRollback is returned when a rollback operation fails.
 	ErrFailedToRollback = errors.New("failed to roll back")
 )

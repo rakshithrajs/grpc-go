@@ -127,12 +127,12 @@ func TestDeleteFileHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, w := mockUtils.SetUpGinTest(http.MethodDelete, "/api/files/:fileID", config.NullString, tt.auth)
-			c.Params = []gin.Param{{Key: "fileID", Value: tt.fileID}}
+			c, w := mockUtils.SetUpGinTest(http.MethodDelete, "/api/files/:fileid", config.NullString, tt.auth)
+			c.Params = []gin.Param{{Key: "fileid", Value: tt.fileID}}
 
 			mmsClient := &mocks.MockMMSClient{DeleteGrpcErr: tt.mockGrpcErr}
 			svc := &mocks.MockUserFilesService{DeleteUserFileError: tt.DeleteUserFileError, CreateUserFileError: tt.CreateUserFileError}
-			client := grpc.NewClient(mmsClient, svc)
+			client := grpc.NewMMSClient(mmsClient, svc)
 			handler := NewUserFilesHandler(client, svc)
 
 			handler.DeleteFileHandler(c)

@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// DeleteFile deletes a file from storage for the authenticated user.
 func (f *FileHandler) DeleteFile(ctx context.Context, req *MMSpb.DeleteFileRequest) (*MMSpb.EmptyMessage, error) {
 	userID, err := UserIDFromContext(ctx)
 	if err != nil {
@@ -30,13 +31,15 @@ func (f *FileHandler) DeleteFile(ctx context.Context, req *MMSpb.DeleteFileReque
 	}
 
 	if err := os.Remove(file.Path); err != nil {
-		if !errors.Is(err, os.ErrNotExist) {
-			slog.Error(logPrefix(fnDeleteFile)+"failed to remove file from disk", slog.Any(config.ErrorKey, err), slog.String("path", file.Path))
+		if errors.Is(err, os.ErrNotExist) {
+			return &MMSpb.EmptyMessage{}, nil
 		}
-		if _, rbErr := f.fileService.UploadFile(ctx, file); rbErr != nil {
+		slog.Error(logPrefix(fnDeleteFile)+"failed to remove file from disk", slog.Any(config.ErrorKey, err), slog.String("path", file.Path))
+		if _, rbErr := f.fileService.CreateFile(ctx, file); rbErr != nil {
 			slog.Error(logPrefix(fnDeleteFile)+"failed to roll back file deletion", slog.Any(config.ErrorKey, rbErr), slog.String("path", file.Path))
 			return nil, status.Error(codes.Internal, ErrFailedToRollback.Error())
 		}
+		return nil, status.Error(codes.Internal, ErrFailedToDeleteFile.Error())
 	}
 
 	return &MMSpb.EmptyMessage{}, nil

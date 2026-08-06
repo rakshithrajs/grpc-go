@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
+	grpcClient "github.com/rakshithrajs/cloud/UMS/internal/grpcClient"
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
@@ -17,6 +18,7 @@ func TestLoginUserHandler(t *testing.T) {
 		name          string
 		body          string
 		mockErr       mocks.DbOperationError
+		generateErr   mocks.GrpcOperationError
 		expectedCode  int
 		expectedError any
 	}{
@@ -101,14 +103,27 @@ func TestLoginUserHandler(t *testing.T) {
 			expectedCode:  http.StatusUnauthorized,
 			expectedError: handlerErrors.ErrInvalidCredentials.Error(),
 		},
+		{
+			name:          "email exists but TMS fails to generate token",
+			body:          `{"email":"test@example.com","password":"ValidPassword@123"}`,
+			mockErr:       mocks.DbOpSuccess,
+			expectedCode:  http.StatusInternalServerError,
+			expectedError: handlerErrors.ErrSomethingWentWrong.Error(),
+			generateErr:   mocks.GrpcOpInternalError,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c, w := mockUtils.SetUpGinTest(http.MethodPost, "/api/users/login", tt.body, false)
 
+			tokensClient := &mocks.MockTokensClient{
+				AccessToken: "test-access-token",
+				GenerateErr: tt.generateErr,
+			}
+			tmsClient := grpcClient.NewTMSClient(tokensClient)
 			svc := &mocks.MockUserService{GetUserByEmailErr: tt.mockErr}
-			handler := NewUserHandler(svc)
+			handler := NewUserHandler(svc, tmsClient)
 
 			handler.LoginUserHandler(c)
 

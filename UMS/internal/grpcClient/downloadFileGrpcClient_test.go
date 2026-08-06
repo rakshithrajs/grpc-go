@@ -68,7 +68,7 @@ func TestDownloadFileGrpcClient(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mmsClient := &mocks.MockMMSClient{DownloadGrpcErr: tt.mockGrpcErr}
 			svc := &mocks.MockUserFilesService{}
-			c := NewClient(mmsClient, svc)
+			c := NewMMSClient(mmsClient, svc)
 
 			resp, err := c.DownloadFileGrpcClient(context.Background(), "user-123", tt.fileID)
 

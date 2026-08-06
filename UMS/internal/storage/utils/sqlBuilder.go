@@ -5,11 +5,13 @@ import (
 	"strings"
 )
 
+// UpdateField describes a single column/value pair used to build a dynamic UPDATE statement.
 type UpdateField struct {
 	Column string
 	Value  any
 }
 
+// BuildUpdateSQL constructs a dynamic UPDATE statement for the given table, fields, and WHERE columns.
 func BuildUpdateSQL(table string, fields []UpdateField, whereColumns []string) (string, []any) {
 	args := make([]any, 0, len(whereColumns)+len(fields))
 	for range whereColumns {

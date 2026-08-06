@@ -3,30 +3,27 @@ package storage
 import "errors"
 
 var (
-	// message: failed to create user
+	// ErrFailedToCreateUser is returned when creating a user fails.
 	ErrFailedToCreateUser = errors.New("failed to create user")
 
-	// message: failed to get user by ID
+	// ErrFailedToGetUserByID is returned when fetching a user by ID fails.
 	ErrFailedToGetUserByID = errors.New("failed to get user by ID")
 
-	// message: failed to get user by email
+	// ErrFailedToGetUserByEmail is returned when fetching a user by email fails.
 	ErrFailedToGetUserByEmail = errors.New("failed to get user by email")
 
-	// message: failed to update user
+	// ErrFailedToUpdateUser is returned when updating a user fails.
 	ErrFailedToUpdateUser = errors.New("failed to update user")
 
-	// message: failed to create user file mapping
+	// ErrFailedToCreateUserFile is returned when creating a user-file mapping fails.
 	ErrFailedToCreateUserFile = errors.New("failed to create user file mapping")
 
-	// message: failed to delete user file mapping
+	// ErrFailedToDeleteUserFile is returned when deleting a user-file mapping fails.
 	ErrFailedToDeleteUserFile = errors.New("failed to delete user file mapping")
 
-	// message: failed to update user file mapping
+	// ErrFailedToUpdateUserFile is returned when updating a user-file mapping fails.
 	ErrFailedToUpdateUserFile = errors.New("failed to update user file mapping")
 
-	// message: failed to list user files
+	// ErrFailedToListUserFiles is returned when listing user files fails.
 	ErrFailedToListUserFiles = errors.New("failed to list user files")
-
-	// message: user file not found
-	ErrUserFileNotFound = errors.New("user file not found")
 )

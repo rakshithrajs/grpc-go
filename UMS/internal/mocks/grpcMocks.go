@@ -4,6 +4,7 @@ import (
 	"context"
 
 	MMSpb "github.com/rakshithrajs/cloud/UMS/gen/MMS/v1"
+	TMSpb "github.com/rakshithrajs/cloud/UMS/gen/TMS/v1"
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 
 	"google.golang.org/grpc"
@@ -11,6 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// MockMMSClient is a mock implementation of the MMS gRPC client.
 type MockMMSClient struct {
 	UploadGrpcErr   GrpcOperationError
 	DownloadGrpcErr GrpcOperationError
@@ -18,6 +20,7 @@ type MockMMSClient struct {
 	RenameGrpcErr   GrpcOperationError
 }
 
+// UploadFile mocks a file upload to the MMS service.
 func (m *MockMMSClient) UploadFile(ctx context.Context, in *MMSpb.UploadFileRequest, opts ...grpc.CallOption) (*MMSpb.UploadFileResponse, error) {
 	err := m.UploadGrpcErr
 
@@ -44,6 +47,7 @@ func (m *MockMMSClient) UploadFile(ctx context.Context, in *MMSpb.UploadFileRequ
 	}, nil
 }
 
+// DownloadFile mocks a file download from the MMS service.
 func (m *MockMMSClient) DownloadFile(ctx context.Context, in *MMSpb.DownloadFileRequest, opts ...grpc.CallOption) (*MMSpb.DownloadFileResponse, error) {
 	err := m.DownloadGrpcErr
 
@@ -65,6 +69,7 @@ func (m *MockMMSClient) DownloadFile(ctx context.Context, in *MMSpb.DownloadFile
 	}, nil
 }
 
+// DeleteFile mocks a file deletion in the MMS service.
 func (m *MockMMSClient) DeleteFile(ctx context.Context, in *MMSpb.DeleteFileRequest, opts ...grpc.CallOption) (*MMSpb.EmptyMessage, error) {
 	err := m.DeleteGrpcErr
 
@@ -82,6 +87,7 @@ func (m *MockMMSClient) DeleteFile(ctx context.Context, in *MMSpb.DeleteFileRequ
 	return &MMSpb.EmptyMessage{}, nil
 }
 
+// RenameFile mocks a file rename in the MMS service.
 func (m *MockMMSClient) RenameFile(ctx context.Context, in *MMSpb.RenameFileRequest, opts ...grpc.CallOption) (*MMSpb.EmptyMessage, error) {
 	err := m.RenameGrpcErr
 
@@ -101,4 +107,42 @@ func (m *MockMMSClient) RenameFile(ctx context.Context, in *MMSpb.RenameFileRequ
 	}
 
 	return &MMSpb.EmptyMessage{}, nil
+}
+
+// MockTokensClient is a mock implementation of the TMS gRPC token client.
+type MockTokensClient struct {
+	AccessToken        string
+	Claims             *TMSpb.TokenClaims
+	GenerateErr        GrpcOperationError
+	ValidateErr        GrpcOperationError
+	UserID             string
+	AccessTokenRequest string
+}
+
+// GenerateToken mocks a token generation request to the TMS service.
+func (m *MockTokensClient) GenerateToken(ctx context.Context, in *TMSpb.GenerateTokenRequest, opts ...grpc.CallOption) (*TMSpb.GenerateTokenResponse, error) {
+	m.UserID = in.GetUserID()
+
+	switch m.GenerateErr {
+	case GrpcOpInternalError:
+		return nil, status.Error(codes.Internal, ErrFailedToGenerateToken.Error())
+	}
+
+	return &TMSpb.GenerateTokenResponse{AccessToken: m.AccessToken}, nil
+}
+
+// ValidateToken mocks a token validation request to the TMS service.
+func (m *MockTokensClient) ValidateToken(ctx context.Context, in *TMSpb.ValidateTokenRequest, opts ...grpc.CallOption) (*TMSpb.ValidateTokenResponse, error) {
+	m.AccessTokenRequest = in.GetAccessToken()
+
+	switch m.ValidateErr {
+	case GrpcOpMissingBearerToken:
+		return nil, status.Error(codes.Unauthenticated, ErrMissingBearerToken.Error())
+	case GrpcOpInvalidToken:
+		return nil, status.Error(codes.Unauthenticated, ErrInvalidToken.Error())
+	case GrpcOpInternalError:
+		return nil, status.Error(codes.Internal, handlerErrors.ErrSomethingWentWrong.Error())
+	}
+
+	return &TMSpb.ValidateTokenResponse{Claims: m.Claims}, nil
 }

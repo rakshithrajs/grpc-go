@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"log/slog"
+	"strings"
 
 	"github.com/rakshithrajs/cloud/MMS/internal/config"
 	"github.com/rakshithrajs/cloud/MMS/internal/models"
@@ -15,8 +16,8 @@ import (
 )
 
 const (
-	// function name for UploadFile
-	fnUploadFile = "UploadFile"
+	// function name for CreateFile
+	fnCreateFile = "CreateFile"
 
 	// function name for GetFileByID
 	fnGetFileByID = "GetFileByID"
@@ -34,6 +35,7 @@ const (
 // logPrefix returns a formatted string for logging purposes, including the function name.
 func logPrefix(fn string) string { return "[" + fn + "]: " }
 
+// FileStore implements FileService using a PostgreSQL database.
 type FileStore struct {
 	db *sql.DB
 }
@@ -43,15 +45,20 @@ func NewFileStore(db *sql.DB) FileService {
 	return &FileStore{db: db}
 }
 
-func (f *FileStore) UploadFile(ctx context.Context, file *models.File) (*models.File, error) {
-	query := `INSERT INTO files ("userID", name, path, size, "mimeType") VALUES ($1, $2, $3, $4, $5) RETURNING "ID", name, size, "mimeType"`
+// CreateFile inserts a new file record into the database.
+func (f *FileStore) CreateFile(ctx context.Context, file *models.File) (*models.File, error) {
+	query := `INSERT INTO files ("userID", "name", "path", "size", "mimeType") VALUES ($1, $2, $3, $4, $5) RETURNING "ID", "name", "size", "mimeType"`
 
 	stmt, err := f.db.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error(logPrefix(fnUploadFile)+"prepare statement", slog.Any(config.ErrorKey, err))
+		slog.Error(logPrefix(fnCreateFile)+"prepare statement", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToUploadFile
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			slog.Error(logPrefix(fnCreateFile)+"failed to close statement", slog.Any(config.ErrorKey, err))
+		}
+	}()
 
 	var newFile models.File
 	if err := stmt.QueryRowContext(ctx, file.UserID, file.Name, file.Path, file.Size, file.MimeType).Scan(&newFile.ID, &newFile.Name, &newFile.Size, &newFile.MimeType); err != nil {
@@ -59,28 +66,34 @@ func (f *FileStore) UploadFile(ctx context.Context, file *models.File) (*models.
 		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == uniqueConstraintFilesUserName {
 			return nil, ErrFileAlreadyExists
 		}
-		slog.Error(logPrefix(fnUploadFile)+"query row", slog.Any(config.ErrorKey, err))
+		slog.Error(logPrefix(fnCreateFile)+"query row", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToUploadFile
 	}
 
 	return &newFile, nil
 }
 
-func (f *FileStore) GetFileByID(ctx context.Context, id string, userID string) (*models.File, error) {
-	query := `SELECT "ID", "userID", name, path, size, "mimeType", "createdAtUTC", "updatedAtUTC" FROM files WHERE "ID" = $1 AND "userID" = $2`
+// GetFileByID returns a file record by its ID and owner.
+func (f *FileStore) GetFileByID(ctx context.Context, fileID string, userID string) (*models.File, error) {
+	query := `SELECT "ID", "name", "path", "size", "mimeType" FROM files WHERE "ID" = $1 AND "userID" = $2`
 
 	stmt, err := f.db.PrepareContext(ctx, query)
 	if err != nil {
 		slog.Error(logPrefix(fnGetFileByID)+"prepare statement", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToGetFileByID
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			slog.Error(logPrefix(fnGetFileByID)+"failed to close statement", slog.Any(config.ErrorKey, err))
+		}
+	}()
 
 	var file models.File
-	if err := stmt.QueryRowContext(ctx, id, userID).Scan(
-		&file.ID, &file.UserID, &file.Name, &file.Path, &file.Size, &file.MimeType, &file.CreatedAtUTC, &file.UpdatedAtUTC); err != nil {
+	file.UserID = userID
+	if err := stmt.QueryRowContext(ctx, fileID, userID).Scan(
+		&file.ID, &file.Name, &file.Path, &file.Size, &file.MimeType); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrFileNotFound
+			return nil, nil
 		}
 		slog.Error(logPrefix(fnGetFileByID)+"query row", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToGetFileByID
@@ -89,6 +102,7 @@ func (f *FileStore) GetFileByID(ctx context.Context, id string, userID string) (
 	return &file, nil
 }
 
+// UpdateFile applies a partial rename/move update to a file record and returns the old name and path.
 func (f *FileStore) UpdateFile(ctx context.Context, id string, req models.UpdateFileRequest, userID string) (*models.File, error) {
 	fields := make([]storageUtils.UpdateField, 0, 2)
 	if req.Name != config.NullString {
@@ -99,22 +113,32 @@ func (f *FileStore) UpdateFile(ctx context.Context, id string, req models.Update
 	}
 
 	query, args := storageUtils.BuildUpdateSQL("files", fields, []string{"ID", "userID"})
-	query += ` RETURNING "ID", "userID", name, path, size, "mimeType", "createdAtUTC", "updatedAtUTC"`
+
+	var queryBuilder strings.Builder
+	queryBuilder.WriteString(`WITH old AS (SELECT "name", "path" FROM files WHERE "ID" = $1 AND "userID" = $2) `)
+	queryBuilder.WriteString(query)
+	queryBuilder.WriteString(` RETURNING (SELECT "name" FROM old), (SELECT "path" FROM old)`)
+
 	args[0] = id
 	args[1] = userID
 
-	stmt, err := f.db.PrepareContext(ctx, query)
+	stmt, err := f.db.PrepareContext(ctx, queryBuilder.String())
 	if err != nil {
 		slog.Error(logPrefix(fnUpdateFile)+"prepare statement", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToUpdateFile
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			slog.Error(logPrefix(fnUpdateFile)+"failed to close statement", slog.Any(config.ErrorKey, err))
+		}
+	}()
 
 	var file models.File
+	file.UserID = userID
 	if err := stmt.QueryRowContext(ctx, args...).Scan(
-		&file.ID, &file.UserID, &file.Name, &file.Path, &file.Size, &file.MimeType, &file.CreatedAtUTC, &file.UpdatedAtUTC); err != nil {
+		&file.Name, &file.Path); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return &file, nil
+			return nil, nil
 		}
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) && pqErr.Code == pqerror.UniqueViolation && pqErr.Constraint == uniqueConstraintFilesUserName {
@@ -127,19 +151,25 @@ func (f *FileStore) UpdateFile(ctx context.Context, id string, req models.Update
 	return &file, nil
 }
 
+// DeleteFile removes a file record from the database.
 func (f *FileStore) DeleteFile(ctx context.Context, id string, userID string) (*models.File, error) {
-	query := `DELETE FROM files WHERE "ID" = $1 AND "userID" = $2 RETURNING "ID", "userID", name, path, size, "mimeType", "createdAtUTC", "updatedAtUTC"`
+	query := `DELETE FROM files WHERE "ID" = $1 AND "userID" = $2 RETURNING "name", "path"`
 
 	stmt, err := f.db.PrepareContext(ctx, query)
 	if err != nil {
 		slog.Error(logPrefix(fnDeleteFile)+"prepare statement", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToDeleteFile
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			slog.Error(logPrefix(fnDeleteFile)+"failed to close statement", slog.Any(config.ErrorKey, err))
+		}
+	}()
 
 	var file models.File
+	file.UserID = userID
 	if err := stmt.QueryRowContext(ctx, id, userID).Scan(
-		&file.ID, &file.UserID, &file.Name, &file.Path, &file.Size, &file.MimeType, &file.CreatedAtUTC, &file.UpdatedAtUTC); err != nil {
+		&file.Name, &file.Path); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}

@@ -1,14 +1,40 @@
-package middleware
+package handlers
 
 import (
 	"testing"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/rakshithrajs/cloud/UMS/internal/config"
+	"github.com/rakshithrajs/cloud/TMS/internal/config"
 )
 
-func TestVerifyToken(t *testing.T) {
+func TestGenerateJWT(t *testing.T) {
+
+	tests := []struct {
+		name   string
+		userID string
+	}{
+		{
+			name:   "generate jwt succeeds",
+			userID: "test-user-id",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			token, err := GenerateJWT(tt.userID)
+
+			if err != nil {
+				t.Fatalf("GenerateJWT() unexpected error = %v", err)
+			}
+			if token == config.NullString {
+				t.Errorf("expected non-empty token")
+			}
+		})
+	}
+}
+
+func TestVerifyJWT(t *testing.T) {
 	config.SetConfig(&config.Config{JWTSecret: "test-secret"})
 
 	tests := []struct {
@@ -24,7 +50,7 @@ func TestVerifyToken(t *testing.T) {
 		{
 			name:    "empty bearer token",
 			token:   "Bearer ",
-			wantErr: ErrMissingBearerToken,
+			wantErr: ErrInvalidToken,
 		},
 		{
 			name:    "invalid token",
@@ -59,7 +85,7 @@ func TestVerifyToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			claims, err := VerifyToken(tt.token)
+			claims, err := VerifyJWT(tt.token)
 			if tt.wantErr != nil {
 				if err != tt.wantErr {
 					t.Errorf("expected %v, got %v", tt.wantErr, err)

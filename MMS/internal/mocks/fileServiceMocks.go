@@ -10,19 +10,21 @@ import (
 	"github.com/rakshithrajs/cloud/MMS/internal/storage"
 )
 
+// MockFileService is a mock implementation of storage.FileService for tests.
 type MockFileService struct {
 	UploadFileErr     DbOperationError
 	GetFileByIDErr    DbOperationError
 	UpdateFileErr     DbOperationError
 	UpdateRollbackErr DbOperationError
-	DeleteFileErr DbOperationError
-	ReturnOldName bool
-	ReturnEmptyID bool
+	DeleteFileErr     DbOperationError
+	ReturnOldName     bool
+	ReturnEmptyID     bool
 	UserID            string
 	FileID            string
 	Files             []*models.ListFileResponse
 }
 
+// ZeroTime is a zero-value time.Time used as a placeholder in tests.
 var ZeroTime = time.Time{}
 
 func userStorageDir(userID string) string {
@@ -33,7 +35,8 @@ func userStorageDir(userID string) string {
 	return filepath.Join(cfg.UserStoragePath, userID)
 }
 
-func (m *MockFileService) UploadFile(ctx context.Context, file *models.File) (*models.File, error) {
+// CreateFile simulates creating a file record and records the request inputs.
+func (m *MockFileService) CreateFile(ctx context.Context, file *models.File) (*models.File, error) {
 	m.UserID = file.UserID
 
 	switch m.UploadFileErr {
@@ -55,20 +58,21 @@ func (m *MockFileService) UploadFile(ctx context.Context, file *models.File) (*m
 	}, nil
 }
 
-func (m *MockFileService) GetFileByID(ctx context.Context, id, userID string) (*models.File, error) {
+// GetFileByID simulates fetching a file by ID and records the request inputs.
+func (m *MockFileService) GetFileByID(ctx context.Context, fileID, userID string) (*models.File, error) {
 	m.UserID = userID
-	m.FileID = id
+	m.FileID = fileID
 
 	switch m.GetFileByIDErr {
 	case DbOpInternalError:
 		return nil, storage.ErrFailedToGetFileByID
 	case DbOpNotFound:
-		return nil, storage.ErrFileNotFound
+		return nil, nil
 	}
 
 	name := "test.txt"
 	return &models.File{
-		ID:           id,
+		ID:           fileID,
 		UserID:       userID,
 		Name:         name,
 		Path:         filepath.Join(userStorageDir(userID), name),
@@ -79,6 +83,7 @@ func (m *MockFileService) GetFileByID(ctx context.Context, id, userID string) (*
 	}, nil
 }
 
+// UpdateFile simulates renaming a file and records the request inputs.
 func (m *MockFileService) UpdateFile(ctx context.Context, id string, req models.UpdateFileRequest, userID string) (*models.File, error) {
 	m.UserID = userID
 	m.FileID = id
@@ -92,7 +97,7 @@ func (m *MockFileService) UpdateFile(ctx context.Context, id string, req models.
 	case DbOpInternalError:
 		return nil, storage.ErrFailedToUpdateFile
 	case DbOpNotFound:
-		return &models.File{}, nil
+		return nil, nil
 	case DbOpDuplicateName:
 		return nil, storage.ErrFileAlreadyExists
 	}
@@ -128,6 +133,7 @@ func (m *MockFileService) UpdateFile(ctx context.Context, id string, req models.
 	}, nil
 }
 
+// DeleteFile simulates deleting a file and records the request inputs.
 func (m *MockFileService) DeleteFile(ctx context.Context, id, userID string) (*models.File, error) {
 	m.UserID = userID
 	m.FileID = id

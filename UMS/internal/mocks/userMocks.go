@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"
@@ -13,8 +12,10 @@ import (
 
 var mockPasswordHash string
 
+// ZeroTime is a zero-value time used for deterministic mock timestamps.
 var ZeroTime = time.Time{}
 
+// MockUserService is a mock implementation of the user storage service.
 type MockUserService struct {
 	GetUserByIDErr    DbOperationError
 	CreateUserErr     DbOperationError
@@ -26,6 +27,7 @@ type MockUserService struct {
 	UpdateReq         models.UpdateUserRequest
 }
 
+// CreateUser mocks inserting a new user into the database.
 func (m *MockUserService) CreateUser(ctx context.Context, user *models.User) (*models.User, error) {
 	switch m.CreateUserErr {
 	case DbOpDuplicateEmail:
@@ -47,12 +49,13 @@ func (m *MockUserService) CreateUser(ctx context.Context, user *models.User) (*m
 	return m.User, nil
 }
 
+// GetUserByID mocks fetching a user by their ID from the database.
 func (m *MockUserService) GetUserByID(ctx context.Context, id string) (*models.User, error) {
 	m.ID = id
 
 	switch m.GetUserByIDErr {
 	case DbOpNotFound:
-		return nil, handlerErrors.ErrUserNotFound
+		return nil, nil
 	case DbOpInternalError:
 		return nil, storage.ErrFailedToGetUserByID
 	}
@@ -67,12 +70,13 @@ func (m *MockUserService) GetUserByID(ctx context.Context, id string) (*models.U
 	return m.User, nil
 }
 
+// GetUserByEmail mocks fetching a user by their email from the database.
 func (m *MockUserService) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
 	m.Email = email
 
 	switch m.GetUserByEmailErr {
 	case DbOpNotFound:
-		return nil, handlerErrors.ErrEmailNotFound
+		return nil, nil
 	case DbOpInternalError:
 		return nil, storage.ErrFailedToGetUserByEmail
 	}
@@ -87,6 +91,7 @@ func (m *MockUserService) GetUserByEmail(ctx context.Context, email string) (*mo
 	return m.User, nil
 }
 
+// UpdateUser mocks updating an existing user's details in the database.
 func (m *MockUserService) UpdateUser(ctx context.Context, id string, req models.UpdateUserRequest) error {
 	m.ID = id
 	m.UpdateReq = req
@@ -104,8 +109,6 @@ func (m *MockUserService) UpdateUser(ctx context.Context, id string, req models.
 }
 
 func init() {
-	config.SetConfig(&config.Config{JWTSecret: "test-secret"})
-
 	hash, err := bcrypt.GenerateFromPassword([]byte("ValidPassword@123"), bcrypt.MinCost)
 	if err != nil {
 		panic(err)

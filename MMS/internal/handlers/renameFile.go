@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// RenameFile renames a file in storage for the authenticated user.
 func (f *FileHandler) RenameFile(ctx context.Context, req *MMSpb.RenameFileRequest) (*MMSpb.EmptyMessage, error) {
 	userID, err := UserIDFromContext(ctx)
 	if err != nil {

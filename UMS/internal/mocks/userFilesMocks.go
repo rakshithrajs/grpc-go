@@ -9,6 +9,7 @@ import (
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"
 )
 
+// MockUserFilesService is a mock implementation of the user files storage service.
 type MockUserFilesService struct {
 	CreateUserFileError DbOperationError
 	DeleteUserFileError DbOperationError
@@ -23,6 +24,7 @@ type MockUserFilesService struct {
 	updateCallCount     int
 }
 
+// CreateUserFile mocks creating a user-file mapping in the database.
 func (m *MockUserFilesService) CreateUserFile(ctx context.Context, userID, fileID, fileName string) error {
 	m.UserID = userID
 	m.FileID = fileID
@@ -40,6 +42,7 @@ func (m *MockUserFilesService) CreateUserFile(ctx context.Context, userID, fileI
 	return nil
 }
 
+// DeleteUserFile mocks deleting a user-file mapping from the database.
 func (m *MockUserFilesService) DeleteUserFile(ctx context.Context, userID, fileID string) (string, error) {
 	m.UserID = userID
 	m.FileID = fileID
@@ -57,6 +60,7 @@ func (m *MockUserFilesService) DeleteUserFile(ctx context.Context, userID, fileI
 	return m.FileName, nil
 }
 
+// ListUserFiles mocks fetching the list of files belonging to a user.
 func (m *MockUserFilesService) ListUserFiles(ctx context.Context, userID string) ([]models.UserFiles, error) {
 	m.UserID = userID
 
@@ -76,6 +80,7 @@ func (m *MockUserFilesService) ListUserFiles(ctx context.Context, userID string)
 	return m.Files, nil
 }
 
+// UpdateUserFile mocks updating the filename of a user's file in the database.
 func (m *MockUserFilesService) UpdateUserFile(ctx context.Context, userID, fileID, fileName string) (string, error) {
 	m.UserID = userID
 	m.FileID = fileID

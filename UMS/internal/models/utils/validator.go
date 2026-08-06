@@ -14,52 +14,53 @@ import (
 )
 
 var (
-	// message: email is required
+	// ErrEmailRequired is returned when the email is missing or empty.
 	ErrEmailRequired = errors.New("email is required")
 
-	// message: email is invalid
+	// ErrInvalidEmail is returned when the email format is invalid or the domain has no MX records.
 	ErrInvalidEmail = errors.New("email is invalid")
 
-	// message: email must be at most 254 characters
+	// ErrInvalidEmailLength is returned when the email exceeds 254 characters.
 	ErrInvalidEmailLength = errors.New("email must be at most 254 characters")
 
-	// message: password is required
+	// ErrPasswordRequired is returned when the password is missing or empty.
 	ErrPasswordRequired = errors.New("password is required")
 
-	// message: password must be 8-64 characters long and contain at least one uppercase letter, one lowercase letter, one number, one special character (!@#$&_) and no spaces
+	// ErrInvalidPassword is returned when the password does not meet the length or complexity requirements.
 	ErrInvalidPassword = errors.New("password must be 8-64 characters long and contain at least one uppercase letter, one lowercase letter, one number, one special character (!@#$&_) and no spaces")
 
-	// message: phone number is required
+	// ErrPhoneRequired is returned when the phone number is missing or empty.
 	ErrPhoneRequired = errors.New("phone number is required")
 
-	// message: phone number must be exactly 10 digits
+	// ErrInvalidPhoneNumber is returned when the phone number is not exactly 10 digits.
 	ErrInvalidPhoneNumber = errors.New("phone number must be exactly 10 digits")
 
-	// message: name is required
+	// ErrNameRequired is returned when the name is missing or empty.
 	ErrNameRequired = errors.New("name is required")
 
-	// message: name can only contain letters
+	// ErrInvalidName is returned when the name contains characters other than letters.
 	ErrInvalidName = errors.New("name can only contain letters")
 
-	// message: name must be at most 100 characters
+	// ErrNameTooLong is returned when the name exceeds 100 characters.
 	ErrNameTooLong = errors.New("name must be at most 100 characters")
 
-	// message: passwords do not match
+	// ErrPasswordMismatch is returned when the password and confirmation do not match.
 	ErrPasswordMismatch = errors.New("passwords do not match")
 
-	// message: password confirmation is required
+	// ErrPasswordConfirmRequired is returned when the password confirmation is missing or empty.
 	ErrPasswordConfirmRequired = errors.New("password confirmation is required")
 
-	// message: new name is required
+	// ErrNewNameRequired is returned when the new name is missing or empty.
 	ErrNewNameRequired = errors.New("new name is required")
 
-	// message: file ID is required
+	// ErrFileIDRequired is returned when the file ID is missing or empty.
 	ErrFileIDRequired = errors.New("file ID is required")
 
-	// message: file ID has invalid UUID
+	// ErrFileIDInvalidUUID is returned when the file ID is not a valid UUID.
 	ErrFileIDInvalidUUID = errors.New("file ID has invalid UUID")
 )
 
+// Validate is the shared go-playground/validator instance used across the package.
 var Validate = validator.New()
 
 // constants for field names used in validation
@@ -72,11 +73,6 @@ const (
 	fieldNewName         = "NewName"
 	fieldFileID          = "FileID"
 )
-
-// FileIDPayload is a single-field validation struct for fileID path parameters.
-type FileIDPayload struct {
-	FileID string `validate:"required,isValueEmpty,uuid" json:"fileID"`
-}
 
 // Regular expressions for validating names and phone numbers
 var (

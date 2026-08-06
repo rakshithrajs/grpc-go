@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package tms.v1;
+
+option go_package = "/gen/TMS/v1;TMS";
+
+// Tokens service manages JWT access-token lifecycle.
+service Tokens {
+
+    // GenerateToken issues a new access token for the requested user.
+    rpc GenerateToken (GenerateTokenRequest) returns (GenerateTokenResponse);
+
+    // ValidateToken verifies an access token and returns its claims.
+    rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+// TokenClaims contains the verified claims of an access token.
+message TokenClaims {
+
+    // userID is the subject of the token.
+    string userID = 1;
+
+    // issuer identifies the token issuer.
+    string issuer = 2;
+
+    // issuedAt is the Unix timestamp when the token was issued.
+    int64 issuedAt = 3;
+}
+
+// GenerateTokenRequest contains the user to issue a token for.
+message GenerateTokenRequest {
+
+    // userID is the ID of the user the token is for.
+    string userID = 1;
+}
+
+// GenerateTokenResponse contains the newly issued access token.
+message GenerateTokenResponse {
+
+    // accessToken is the signed JWT.
+    string accessToken = 1;
+}
+
+// ValidateTokenRequest contains the token to validate.
+message ValidateTokenRequest {
+
+    // accessToken is the JWT to validate, optionally including the "Bearer " prefix.
+    string accessToken = 1;
+}
+
+// ValidateTokenResponse contains the claims of a valid token.
+message ValidateTokenResponse {
+
+    // claims are the token claims.
+    TokenClaims claims = 1;
+}

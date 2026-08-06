@@ -8,20 +8,31 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+type grpcErrorMapping struct {
+	status  int
+	message string
+}
+
+var grpcCodeMapping = map[codes.Code]grpcErrorMapping{
+	codes.AlreadyExists:   {status: http.StatusConflict},
+	codes.Unauthenticated: {status: http.StatusUnauthorized, message: handlerErrors.ErrUnauthorized.Error()},
+	codes.Internal:        {status: http.StatusInternalServerError},
+}
+
+// MapGRPCError maps a gRPC status error to an HTTP status code and message.
 func MapGRPCError(err error, defaultMsg string) (int, string) {
 	st, ok := status.FromError(err)
 	if !ok {
 		return http.StatusInternalServerError, defaultMsg
 	}
 
-	switch st.Code() {
-	case codes.AlreadyExists:
-		return http.StatusConflict, st.Message()
-	case codes.Unauthenticated:
-		return http.StatusUnauthorized, handlerErrors.ErrUnauthorized.Error()
-	case codes.Internal:
-		return http.StatusInternalServerError, st.Message()
-	default:
+	mapping, ok := grpcCodeMapping[st.Code()]
+	if !ok {
 		return http.StatusInternalServerError, defaultMsg
 	}
+
+	if mapping.message != "" {
+		return mapping.status, mapping.message
+	}
+	return mapping.status, st.Message()
 }

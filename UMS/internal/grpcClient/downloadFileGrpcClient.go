@@ -9,7 +9,8 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func (c *Client) DownloadFileGrpcClient(ctx context.Context, userID, fileID string) (*MMSpb.DownloadFileResponse, error) {
+// DownloadFileGrpcClient downloads a file from MMS storage on behalf of the user.
+func (c *MMSClient) DownloadFileGrpcClient(ctx context.Context, userID, fileID string) (*MMSpb.DownloadFileResponse, error) {
 	ctx = metadata.AppendToOutgoingContext(ctx, config.UserIDMetadataKey, userID)
 
 	resp, err := c.mmsClient.DownloadFile(ctx, &MMS.DownloadFileRequest{FileID: fileID})

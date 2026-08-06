@@ -91,7 +91,7 @@ func TestDeleteFileGrpcClient(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mmsClient := &mocks.MockMMSClient{DeleteGrpcErr: tt.grpcErr}
 			svc := &mocks.MockUserFilesService{DeleteUserFileError: tt.deleteDbErr, CreateUserFileError: tt.createRollbackErr}
-			c := NewClient(mmsClient, svc)
+			c := NewMMSClient(mmsClient, svc)
 
 			err := c.DeleteFileGrpcClient(context.Background(), "user-123", tt.fileID)
 

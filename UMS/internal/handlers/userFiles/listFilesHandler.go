@@ -9,13 +9,13 @@ import (
 
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
-	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 )
 
+// ListFilesHandler returns the authenticated user's files.
 func (h *UserFilesHandler) ListFilesHandler(c *gin.Context) {
 	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		handlerErrors.ReturnErrorResponse(c, err, FnListFiles, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(c, err, FnListFiles, handlerErrors.ErrSomethingWentWrong)
 		return
 	}
 
@@ -24,7 +24,7 @@ func (h *UserFilesHandler) ListFilesHandler(c *gin.Context) {
 	files, err := h.storage.ListUserFiles(ctx, userID)
 	if err != nil {
 		slog.Error(handlerUtils.LogPrefix(FnListFiles)+"failed to list user files", slog.Any(config.ErrorKey, err))
-		handlerErrors.ReturnErrorResponse(c, err, FnListFiles, handlerErrors.ErrFailedToListFiles, config.NullString)
+		handlerErrors.ReturnErrorResponse(c, err, FnListFiles, handlerErrors.ErrFailedToListFiles)
 		return
 	}
 

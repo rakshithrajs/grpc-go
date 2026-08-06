@@ -11,7 +11,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (c *Client) RenameFileGrpcClient(ctx context.Context, userID, fileID, newName string) error {
+// RenameFileGrpcClient renames a file in MMS storage after updating the user-file mapping.
+func (c *MMSClient) RenameFileGrpcClient(ctx context.Context, userID, fileID, newName string) error {
 	oldName, err := c.storage.UpdateUserFile(ctx, userID, fileID, newName)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())

@@ -2,66 +2,83 @@ package mocks
 
 import "errors"
 
+// DbOperationError represents the result of a mocked database operation.
 type DbOperationError int
 
 const (
-	// Represents a successful database operation
+	// DbOpSuccess indicates the mocked database operation succeeded.
 	DbOpSuccess DbOperationError = iota
 
-	// Represents a database operation that failed due to an internal error
+	// DbOpInternalError indicates the mocked database operation failed due to an internal error.
 	DbOpInternalError
 
-	// Represents a database operation that failed due to a duplicate name
+	// DbOpDuplicateEmail indicates the mocked database operation failed due to a duplicate email.
 	DbOpDuplicateEmail
 
-	// Represents a database operation that failed due to a duplicate phone number
+	// DbOpDuplicatePhone indicates the mocked database operation failed due to a duplicate phone number.
 	DbOpDuplicatePhone
 
-	// Represents a database operation that failed due to a duplicate file
+	// DbOpDuplicateFile indicates the mocked database operation failed due to a duplicate file.
 	DbOpDuplicateFile
 
-	// Represents a database operation that failed because the requested record was not found
+	// DbOpNotFound indicates the mocked database operation failed because the record was not found.
 	DbOpNotFound
 
-	// Represents a database operation that failed due to a rollback failure
+	// DbOpRollbackFailure indicates the mocked database operation failed during rollback.
 	DbOpRollbackFailure
 )
 
+// GrpcOperationError represents the result of a mocked gRPC operation.
 type GrpcOperationError int
 
 const (
-	// Represents a successful gRPC operation
+	// GrpcOpSuccess indicates the mocked gRPC operation succeeded.
 	GrpcOpSuccess GrpcOperationError = iota
 
-	// Represents a gRPC operation that failed due to missing metadata
+	// GrpcOpMissingMetadata indicates the mocked gRPC operation failed due to missing metadata.
 	GrpcOpMissingMetadata
 
-	// Represents a gRPC operation that failed due to missing user ID in metadata
+	// GrpcOpMissingUserID indicates the mocked gRPC operation failed due to a missing user ID in metadata.
 	GrpcOpMissingUserID
 
-	// Represents a gRPC operation that failed due to an internal error
+	// GrpcOpInternalError indicates the mocked gRPC operation failed due to an internal error.
 	GrpcOpInternalError
 
-	// Represents a gRPC operation that failed due to a file already existing
+	// GrpcOpFileAlreadyExists indicates the mocked gRPC operation failed because the file already exists.
 	GrpcOpFileAlreadyExists
 
-	// Represents a gRPC operation that failed due to a file not being found
+	// GrpcOpNotFound indicates the mocked gRPC operation failed because the file was not found.
 	GrpcOpNotFound
 
-	// Represents a gRPC operation that failed due to a rollback failure
+	// GrpcOpRollbackFailure indicates the mocked gRPC operation failed during rollback.
 	GrpcOpRollbackFailure
+
+	// GrpcOpInvalidToken indicates the mocked gRPC operation failed because the token is invalid.
+	GrpcOpInvalidToken
+
+	// GrpcOpMissingBearerToken indicates the mocked gRPC operation failed because the bearer token is missing.
+	GrpcOpMissingBearerToken
 )
 
 var (
-	// message: missing metadata
+	// ErrMissingMetadata is returned when metadata is missing from a gRPC request.
 	ErrMissingMetadata = errors.New("missing metadata")
 
-	// message: missing user id in metadata
+	// ErrMissingUserID is returned when the user ID is missing from gRPC metadata.
 	ErrMissingUserID = errors.New("missing user id in metadata")
 
-	// message: file already exists
+	// ErrFileAlreadyExists is returned when a file with the same name already exists.
 	ErrFileAlreadyExists = errors.New("file already exists")
 
-	// message: failed to delete file
+	// ErrFailedToDeleteFile is returned when a file deletion operation fails.
 	ErrFailedToDeleteFile = errors.New("failed to delete file")
+
+	// ErrFailedToGenerateToken is returned when the token generation fails.
+	ErrFailedToGenerateToken = errors.New("failed to generate token")
+
+	// ErrInvalidToken is returned when the provided token is invalid.
+	ErrInvalidToken = errors.New("invalid token")
+
+	// ErrMissingBearerToken is returned when the bearer token is missing.
+	ErrMissingBearerToken = errors.New("missing bearer token")
 )

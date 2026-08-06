@@ -2,32 +2,35 @@ package handlers
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
-	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
+	"github.com/rakshithrajs/cloud/UMS/internal/models"
 	modelUtils "github.com/rakshithrajs/cloud/UMS/internal/models/utils"
 )
 
+// DownloadFileHandler downloads a user file via the MMS client.
 func (h *UserFilesHandler) DownloadFileHandler(c *gin.Context) {
 	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		handlerErrors.ReturnErrorResponse(c, err, FnDownloadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+		handlerErrors.ReturnErrorResponse(c, err, FnDownloadFile, handlerErrors.ErrSomethingWentWrong)
 		return
 	}
 
-	fileID := strings.TrimSpace(c.Param("fileID"))
-	if err := modelUtils.Validate.Struct(&modelUtils.FileIDPayload{FileID: fileID}); err != nil {
-		handlerErrors.ReturnErrorResponse(c, modelUtils.FieldErrors(err), FnDownloadFile, middlewareUtils.ErrSomethingWentWrong, config.NullString)
+	var uri models.FileIDURI
+	if err := c.ShouldBindUri(&uri); err != nil {
+		handlerErrors.ReturnErrorResponse(c, handlerErrors.ErrInvalidURI, FnDownloadFile, handlerErrors.ErrSomethingWentWrong)
+		return
+	}
+	if err := modelUtils.Validate.Struct(&uri); err != nil {
+		handlerErrors.ReturnErrorResponse(c, modelUtils.FieldErrors(err), FnDownloadFile, handlerErrors.ErrSomethingWentWrong)
 		return
 	}
 
 	ctx := c.Request.Context()
 
-	resp, err := h.client.DownloadFileGrpcClient(ctx, userID, fileID)
+	resp, err := h.client.DownloadFileGrpcClient(ctx, userID, uri.FileID)
 	if err != nil {
 		status, errMsg := handlerUtils.MapGRPCError(err, handlerErrors.ErrFailedToDownloadFile.Error())
 		c.JSON(status, gin.H{"error": errMsg})

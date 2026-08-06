@@ -17,6 +17,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// UploadFile stores a new file for the authenticated user.
 func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileRequest) (*MMSpb.UploadFileResponse, error) {
 	userID, err := UserIDFromContext(ctx)
 	if err != nil {
@@ -55,7 +56,11 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 		slog.Error(logPrefix(fnUploadFile)+"failed to create file", slog.Any(config.ErrorKey, err))
 		return nil, status.Error(codes.Internal, storage.ErrFailedToUploadFile.Error())
 	}
-	defer fi.Close()
+	defer func() {
+		if err := fi.Close(); err != nil {
+			slog.Error(logPrefix(fnUploadFile)+"failed to close file", slog.Any(config.ErrorKey, err))
+		}
+	}()
 
 	if written, err := fi.Write(payload.Contents); err != nil {
 		slog.Error(logPrefix(fnUploadFile)+"failed to write file", slog.Any(config.ErrorKey, err), slog.Int("written", written), slog.Int("expected", len(payload.Contents)))
@@ -64,12 +69,6 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 
 	if err := fi.Sync(); err != nil {
 		slog.Error(logPrefix(fnUploadFile)+"failed to sync file", slog.Any(config.ErrorKey, err))
-		return nil, status.Error(codes.Internal, storage.ErrFailedToUploadFile.Error())
-	}
-
-	if err := fi.Close(); err != nil {
-		slog.Error(logPrefix(fnUploadFile)+"failed to close file", slog.Any(config.ErrorKey, err))
-		return nil, status.Error(codes.Internal, storage.ErrFailedToUploadFile.Error())
 	}
 
 	file := &models.File{
@@ -80,14 +79,13 @@ func (f *FileHandler) UploadFile(ctx context.Context, req *MMSpb.UploadFileReque
 		MimeType: mimeType,
 	}
 
-	savedFile, err := f.fileService.UploadFile(ctx, file)
+	savedFile, err := f.fileService.CreateFile(ctx, file)
 	if err != nil {
 		if errors.Is(err, storage.ErrFileAlreadyExists) {
 			return nil, status.Error(codes.AlreadyExists, err.Error())
 		}
-		if err := os.Remove(filePath); err != nil {
-			slog.Error(logPrefix(fnUploadFile)+"failed to remove file", slog.Any(config.ErrorKey, err))
-			return nil, status.Error(codes.Internal, ErrFailedToRollback.Error())
+		if removeErr := os.Remove(filePath); removeErr != nil {
+			slog.Error(logPrefix(fnUploadFile)+"failed to remove file", slog.Any(config.ErrorKey, removeErr))
 		}
 		slog.Error(logPrefix(fnUploadFile)+"failed to save file metadata", slog.Any(config.ErrorKey, err))
 		return nil, status.Error(codes.Internal, storage.ErrFailedToUploadFile.Error())

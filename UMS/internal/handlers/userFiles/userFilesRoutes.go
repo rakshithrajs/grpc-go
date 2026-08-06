@@ -3,45 +3,48 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
-	grpc "github.com/rakshithrajs/cloud/UMS/internal/grpcClient"
+	"github.com/rakshithrajs/cloud/UMS/internal/grpcClient"
 	"github.com/rakshithrajs/cloud/UMS/internal/middleware"
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"
 )
 
 const (
-	// functions name for upload user files
+	// FnUploadFile is the log prefix for the upload handler.
 	FnUploadFile = "UploadFile"
 
-	// functions name for download user files
+	// FnDownloadFile is the log prefix for the download handler.
 	FnDownloadFile = "DownloadFile"
 
-	// functions name for list user files
+	// FnListFiles is the log prefix for the list files handler.
 	FnListFiles = "ListFiles"
 
-	// functions name for rename user files
+	// FnRenameFile is the log prefix for the rename handler.
 	FnRenameFile = "RenameFile"
 
-	// functions name for delete user files
+	// FnDeleteFile is the log prefix for the delete handler.
 	FnDeleteFile = "DeleteFile"
 
 	multipartFileField = "file"
 )
 
+// UserFilesHandler exposes HTTP handlers for user file operations.
 type UserFilesHandler struct {
-	client  *grpc.Client
+	client  *grpcClient.MMSClient
 	storage storage.UserFilesService
 }
 
-func NewUserFilesHandler(client *grpc.Client, storage storage.UserFilesService) *UserFilesHandler {
+// NewUserFilesHandler creates a new UserFilesHandler.
+func NewUserFilesHandler(client *grpcClient.MMSClient, storage storage.UserFilesService) *UserFilesHandler {
 	return &UserFilesHandler{client: client, storage: storage}
 }
 
-func RegisterRoutes(rg *gin.RouterGroup, h *UserFilesHandler) {
+// RegisterRoutes wires the file operation routes to the provided router group.
+func RegisterRoutes(rg *gin.RouterGroup, h *UserFilesHandler, tmsClient *grpcClient.TMSClient) {
 	filesRouterGroup := rg.Group("/files")
-	filesRouterGroup.Use(middleware.AuthMiddleware())
+	filesRouterGroup.Use(middleware.AuthMiddleware(tmsClient))
 	filesRouterGroup.POST("/upload", h.UploadFileHandler)
-	filesRouterGroup.GET("/:fileID/download", h.DownloadFileHandler)
+	filesRouterGroup.GET("/:fileid/download", h.DownloadFileHandler)
 	filesRouterGroup.GET(config.NullString, h.ListFilesHandler)
-	filesRouterGroup.PATCH("/:fileID/rename", h.RenameFileHandler)
-	filesRouterGroup.DELETE("/:fileID", h.DeleteFileHandler)
+	filesRouterGroup.PATCH("/:fileid/rename", h.RenameFileHandler)
+	filesRouterGroup.DELETE("/:fileid", h.DeleteFileHandler)
 }

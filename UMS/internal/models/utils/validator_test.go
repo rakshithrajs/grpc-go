@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
+	fileModels "github.com/rakshithrajs/cloud/UMS/internal/models"
 )
 
 type notEmptyTest struct {
@@ -487,7 +488,7 @@ func TestValidateNewName(t *testing.T) {
 	}
 }
 
-func TestFileIDPayload(t *testing.T) {
+func TestFileIDURI(t *testing.T) {
 	tests := []struct {
 		name    string
 		fileID  string
@@ -517,7 +518,7 @@ func TestFileIDPayload(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := Validate.Struct(FileIDPayload{FileID: tt.fileID})
+			err := Validate.Struct(fileModels.FileIDURI{FileID: tt.fileID})
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("expected error=%v, got %v", tt.wantErr, err != nil)
 			}

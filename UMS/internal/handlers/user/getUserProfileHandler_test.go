@@ -6,7 +6,7 @@ import (
 
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
-	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
+	grpcClient "github.com/rakshithrajs/cloud/UMS/internal/grpcClient"
 	"github.com/rakshithrajs/cloud/UMS/internal/mocks"
 	mockUtils "github.com/rakshithrajs/cloud/UMS/internal/mocks/utils"
 )
@@ -31,7 +31,7 @@ func TestGetUserProfileHandler(t *testing.T) {
 			auth:          true,
 			mockErr:       mocks.DbOpInternalError,
 			expectedCode:  http.StatusInternalServerError,
-			expectedError: middlewareUtils.ErrSomethingWentWrong.Error(),
+			expectedError: handlerErrors.ErrSomethingWentWrong.Error(),
 		},
 		{
 			name:         "get user profile succeeds with no user found",
@@ -48,7 +48,7 @@ func TestGetUserProfileHandler(t *testing.T) {
 			expectedCode: http.StatusOK,
 			expectedData: map[string]any{
 				"user": map[string]any{
-					"id":           "test-user-id",
+					"ID":           "test-user-id",
 					"name":         "Test User",
 					"email":        "test@example.com",
 					"phone":        "1234567890",
@@ -63,8 +63,9 @@ func TestGetUserProfileHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c, w := mockUtils.SetUpGinTest(http.MethodGet, "/api/users/profile", config.NullString, tt.auth)
 
+			tmsClient := grpcClient.NewTMSClient(&mocks.MockTokensClient{})
 			svc := &mocks.MockUserService{GetUserByIDErr: tt.mockErr}
-			handler := NewUserHandler(svc)
+			handler := NewUserHandler(svc, tmsClient)
 
 			handler.GetUserProfileHandler(c)
 

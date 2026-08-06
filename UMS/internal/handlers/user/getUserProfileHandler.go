@@ -5,18 +5,17 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/rakshithrajs/cloud/UMS/internal/config"
 	"github.com/rakshithrajs/cloud/UMS/internal/storage"
 
 	handlerErrors "github.com/rakshithrajs/cloud/UMS/internal/handlers/errors"
 	handlerUtils "github.com/rakshithrajs/cloud/UMS/internal/handlers/utils"
-	middlewareUtils "github.com/rakshithrajs/cloud/UMS/internal/middleware/utils"
 )
 
+// GetUserProfileHandler returns the authenticated user's profile.
 func (h *UserHandler) GetUserProfileHandler(c *gin.Context) {
 	userID, err := handlerUtils.GetUserIDFromGin(c)
 	if err != nil {
-		handlerErrors.ReturnErrorResponse(c, err, FnGetUserProfile, storage.ErrFailedToGetUserByID, config.NullString)
+		handlerErrors.ReturnErrorResponse(c, err, FnGetUserProfile, storage.ErrFailedToGetUserByID)
 		return
 	}
 
@@ -24,11 +23,9 @@ func (h *UserHandler) GetUserProfileHandler(c *gin.Context) {
 
 	user, err := h.storage.GetUserByID(ctx, userID)
 	if err != nil {
-		handlerErrors.ReturnErrorResponse(c, err, FnGetUserProfile, middlewareUtils.ErrSomethingWentWrong, user)
+		handlerErrors.ReturnErrorResponse(c, err, FnGetUserProfile, handlerErrors.ErrSomethingWentWrong)
 		return
 	}
-
-	user.Password = config.NullString
 
 	c.JSON(http.StatusOK, gin.H{"user": user})
 }

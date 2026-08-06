@@ -6,6 +6,7 @@ import (
 	"github.com/rakshithrajs/cloud/UMS/internal/models"
 )
 
+// UserService defines the contract for user persistence operations.
 type UserService interface {
 	CreateUser(ctx context.Context, user *models.User) (*models.User, error)
 	GetUserByID(ctx context.Context, id string) (*models.User, error)
@@ -13,6 +14,7 @@ type UserService interface {
 	UpdateUser(ctx context.Context, id string, req models.UpdateUserRequest) error
 }
 
+// UserFilesService defines the contract for user-file mapping persistence operations.
 type UserFilesService interface {
 	CreateUserFile(ctx context.Context, userID, fileID, fileName string) error
 	DeleteUserFile(ctx context.Context, userID, fileID string) (string, error)

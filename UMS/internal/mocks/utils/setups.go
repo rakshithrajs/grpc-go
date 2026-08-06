@@ -12,6 +12,7 @@ import (
 	"github.com/rakshithrajs/cloud/UMS/internal/config"
 )
 
+// SetUpGinTest creates a gin test context with a JSON request.
 func SetUpGinTest(method, url string, body string, authWorks bool) (*gin.Context, *httptest.ResponseRecorder) {
 	gin.SetMode(gin.TestMode)
 
@@ -30,6 +31,7 @@ func SetUpGinTest(method, url string, body string, authWorks bool) (*gin.Context
 	return c, w
 }
 
+// SetUpGinTestMultipart creates a gin test context with a multipart file upload request.
 func SetUpGinTestMultipart(fileContent, fileName string, authWorks bool) (*gin.Context, *httptest.ResponseRecorder) {
 	gin.SetMode(gin.TestMode)
 

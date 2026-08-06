@@ -34,10 +34,12 @@ type userFilesStore struct {
 	db *sql.DB
 }
 
+// NewUserFilesStore creates a new PostgreSQL-backed UserFilesService.
 func NewUserFilesStore(db *sql.DB) UserFilesService {
 	return &userFilesStore{db: db}
 }
 
+// CreateUserFile persists a mapping between a user and an uploaded file.
 func (u *userFilesStore) CreateUserFile(ctx context.Context, userID, fileID, fileName string) error {
 	query := `INSERT INTO "userFiles" ("userID", "fileID", "fileName") VALUES ($1, $2, $3)`
 
@@ -46,7 +48,11 @@ func (u *userFilesStore) CreateUserFile(ctx context.Context, userID, fileID, fil
 		slog.Error(logPrefix(fnCreateUserFile)+"prepare statement", slog.Any(config.ErrorKey, err))
 		return ErrFailedToCreateUserFile
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			slog.Error(logPrefix(fnCreateUserFile)+"failed to close statement", slog.Any(config.ErrorKey, err))
+		}
+	}()
 
 	if _, err := stmt.ExecContext(ctx, userID, fileID, fileName); err != nil {
 		var pqErr *pq.Error
@@ -60,6 +66,7 @@ func (u *userFilesStore) CreateUserFile(ctx context.Context, userID, fileID, fil
 	return nil
 }
 
+// DeleteUserFile removes a user-file mapping and returns the deleted filename.
 func (u *userFilesStore) DeleteUserFile(ctx context.Context, userID, fileID string) (string, error) {
 	query := `DELETE FROM "userFiles" WHERE "userID" = $1 AND "fileID" = $2 RETURNING "fileName"`
 
@@ -68,7 +75,11 @@ func (u *userFilesStore) DeleteUserFile(ctx context.Context, userID, fileID stri
 		slog.Error(logPrefix(fnDeleteUserFile)+"prepare statement", slog.Any(config.ErrorKey, err))
 		return config.NullString, ErrFailedToDeleteUserFile
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			slog.Error(logPrefix(fnDeleteUserFile)+"failed to close statement", slog.Any(config.ErrorKey, err))
+		}
+	}()
 
 	var fileName string
 	if err := stmt.QueryRowContext(ctx, userID, fileID).Scan(&fileName); err != nil {
@@ -82,6 +93,7 @@ func (u *userFilesStore) DeleteUserFile(ctx context.Context, userID, fileID stri
 	return fileName, nil
 }
 
+// ListUserFiles returns all files owned by the given user.
 func (u *userFilesStore) ListUserFiles(ctx context.Context, userID string) ([]models.UserFiles, error) {
 	query := `SELECT "fileID", "fileName" FROM "userFiles" WHERE "userID" = $1 ORDER BY "createdAtUTC" DESC`
 
@@ -90,14 +102,22 @@ func (u *userFilesStore) ListUserFiles(ctx context.Context, userID string) ([]mo
 		slog.Error(logPrefix(fnListUserFiles)+"prepare statement", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToListUserFiles
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			slog.Error(logPrefix(fnListUserFiles)+"failed to close statement", slog.Any(config.ErrorKey, err))
+		}
+	}()
 
 	rows, err := stmt.QueryContext(ctx, userID)
 	if err != nil {
 		slog.Error(logPrefix(fnListUserFiles)+"execute statement", slog.Any(config.ErrorKey, err))
 		return nil, ErrFailedToListUserFiles
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			slog.Error(logPrefix(fnListUserFiles)+"failed to close rows", slog.Any(config.ErrorKey, err))
+		}
+	}()
 
 	files := []models.UserFiles{}
 	for rows.Next() {
@@ -118,15 +138,29 @@ func (u *userFilesStore) ListUserFiles(ctx context.Context, userID string) ([]mo
 	return files, nil
 }
 
+// UpdateUserFile renames a user-file mapping and returns the previous filename.
 func (u *userFilesStore) UpdateUserFile(ctx context.Context, userID, fileID, fileName string) (string, error) {
-	query := `UPDATE "userFiles" SET "fileName" = $1, "updatedAtUTC" = NOW() WHERE "userID" = $2 AND "fileID" = $3 RETURNING "fileName"`
+	query := `
+		WITH old AS (
+			SELECT "fileName" FROM "userFiles" WHERE "userID" = $2 AND "fileID" = $3
+		)
+		UPDATE "userFiles"
+		SET "fileName" = $1, "updatedAtUTC" = NOW()
+		FROM old
+		WHERE "userFiles"."userID" = $2 AND "userFiles"."fileID" = $3
+		RETURNING old."fileName"
+	`
 
 	stmt, err := u.db.PrepareContext(ctx, query)
 	if err != nil {
 		slog.Error(logPrefix(fnUpdateUserFile)+"prepare statement", slog.Any(config.ErrorKey, err))
 		return config.NullString, ErrFailedToUpdateUserFile
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			slog.Error(logPrefix(fnUpdateUserFile)+"failed to close statement", slog.Any(config.ErrorKey, err))
+		}
+	}()
 
 	var oldFileName string
 	if err := stmt.QueryRowContext(ctx, fileName, userID, fileID).Scan(&oldFileName); err != nil {

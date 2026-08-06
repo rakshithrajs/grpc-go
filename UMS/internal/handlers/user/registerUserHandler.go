@@ -15,24 +15,25 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// RegisterUserHandler creates a new user account.
 func (h *UserHandler) RegisterUserHandler(ctx *gin.Context) {
 	var payload models.RegisterUserRequest
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		handlerErrors.ReturnErrorResponse(ctx, handlerErrors.ErrInvalidJSON, FnRegisterUser, handlerErrors.ErrFailedToRegisterUser, config.NullString)
+		handlerErrors.ReturnErrorResponse(ctx, handlerErrors.ErrInvalidJSON, FnRegisterUser, handlerErrors.ErrFailedToRegisterUser)
 		return
 	}
 
 	payload.Email = modelUtils.NormalizeEmail(payload.Email)
 
 	if err := modelUtils.Validate.Struct(payload); err != nil {
-		handlerErrors.ReturnErrorResponse(ctx, modelUtils.FieldErrors(err), FnRegisterUser, handlerErrors.ErrFailedToRegisterUser, config.NullString)
+		handlerErrors.ReturnErrorResponse(ctx, modelUtils.FieldErrors(err), FnRegisterUser, handlerErrors.ErrFailedToRegisterUser)
 		return
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
 	if err != nil {
 		slog.Error(handlerUtils.LogPrefix(FnRegisterUser)+"failed to generate password hash", slog.Any(config.ErrorKey, err))
-		handlerErrors.ReturnErrorResponse(ctx, err, FnRegisterUser, handlerErrors.ErrFailedToRegisterUser, config.NullString)
+		handlerErrors.ReturnErrorResponse(ctx, err, FnRegisterUser, handlerErrors.ErrFailedToRegisterUser)
 		return
 	}
 
@@ -44,7 +45,7 @@ func (h *UserHandler) RegisterUserHandler(ctx *gin.Context) {
 		Phone:    payload.Phone,
 	})
 	if err != nil {
-		handlerErrors.ReturnErrorResponse(ctx, err, FnRegisterUser, handlerErrors.ErrFailedToRegisterUser, config.NullString)
+		handlerErrors.ReturnErrorResponse(ctx, err, FnRegisterUser, handlerErrors.ErrFailedToRegisterUser)
 		return
 	}
 

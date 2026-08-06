@@ -12,6 +12,7 @@ import (
 )
 
 var (
+	// ErrMissingEnvVariable is returned when a required environment variable is missing.
 	ErrMissingEnvVariable = errors.New("missing environment variable")
 )
 
@@ -32,15 +33,18 @@ const (
 	UserIDMetadataKey = "userID"
 )
 
+// ServerConfig contains the host and port used to build server addresses.
 type ServerConfig struct {
 	Host string
 	Port string
 }
 
+// Address returns the host:port server address.
 func (g *ServerConfig) Address() string {
 	return g.Host + ":" + g.Port
 }
 
+// DbConfig contains the database connection parameters.
 type DbConfig struct {
 	Host     string
 	Port     string
@@ -50,15 +54,17 @@ type DbConfig struct {
 	SSLMode  string
 }
 
+// DSN returns the PostgreSQL connection string.
 func (d *DbConfig) DSN() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", d.Host, d.Port, d.User, d.Password, d.DbName, d.SSLMode)
 }
 
+// Config holds all application-wide configuration values loaded from environment variables.
 type Config struct {
 	ServerAddress  string
 	MMSGRPCAddress string
+	TMSGRPCAddress string
 	DSN            string
-	JWTSecret      string
 }
 
 var cfg *Config
@@ -72,6 +78,7 @@ func moduleRoot() string {
 	return root[:len(root)-len("go.mod")]
 }
 
+// Load loads the configuration from environment variables.
 func Load() (*Config, error) {
 	env, err := godotenv.Read(filepath.Join(moduleRoot(), "..", ".env"))
 	if err != nil {
@@ -96,6 +103,15 @@ func Load() (*Config, error) {
 		return nil, ErrMissingEnvVariable
 	}
 
+	TMSGRPCConf := &ServerConfig{
+		Host: env["TMS_GRPC_HOST"],
+		Port: env["TMS_GRPC_PORT"],
+	}
+	if TMSGRPCConf.Host == NullString || TMSGRPCConf.Port == NullString {
+		slog.Error(logPrefix+"missing TMS gRPC environment variables", slog.Any(ErrorKey, ErrMissingEnvVariable))
+		return nil, ErrMissingEnvVariable
+	}
+
 	dbConf := &DbConfig{
 		Host:     env["UMS_DB_HOST"],
 		Port:     env["UMS_DB_PORT"],
@@ -109,22 +125,17 @@ func Load() (*Config, error) {
 		return nil, ErrMissingEnvVariable
 	}
 
-	jwtSecret := env["JWT_SECRET"]
-	if jwtSecret == NullString {
-		slog.Error(logPrefix+"missing JWT environment variable", slog.Any(ErrorKey, ErrMissingEnvVariable))
-		return nil, ErrMissingEnvVariable
-	}
-
 	cfg = &Config{
 		ServerAddress:  ServerConf.Address(),
 		MMSGRPCAddress: MMSGRPCConf.Address(),
+		TMSGRPCAddress: TMSGRPCConf.Address(),
 		DSN:            dbConf.DSN(),
-		JWTSecret:      jwtSecret,
 	}
 
 	return cfg, nil
 }
 
+// GetConfig returns the current configuration, loading it if necessary.
 func GetConfig() (*Config, error) {
 	if cfg == nil {
 		return Load()
@@ -132,6 +143,7 @@ func GetConfig() (*Config, error) {
 	return cfg, nil
 }
 
+// SetConfig sets the current configuration.
 func SetConfig(c *Config) {
 	cfg = c
 }

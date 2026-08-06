@@ -2,18 +2,17 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	"os"
 
 	MMSpb "github.com/rakshithrajs/cloud/MMS/gen/MMS/v1"
 	"github.com/rakshithrajs/cloud/MMS/internal/config"
-	"github.com/rakshithrajs/cloud/MMS/internal/storage"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
+// DownloadFile returns a file's contents and metadata for the authenticated user.
 func (f *FileHandler) DownloadFile(ctx context.Context, req *MMSpb.DownloadFileRequest) (*MMSpb.DownloadFileResponse, error) {
 	userID, err := UserIDFromContext(ctx)
 	if err != nil {
@@ -22,11 +21,11 @@ func (f *FileHandler) DownloadFile(ctx context.Context, req *MMSpb.DownloadFileR
 
 	file, err := f.fileService.GetFileByID(ctx, req.GetFileID(), userID)
 	if err != nil {
-		if errors.Is(err, storage.ErrFileNotFound) {
-			return &MMSpb.DownloadFileResponse{}, nil
-		}
 		slog.Error(logPrefix(fnDownloadFile)+"failed to get file", slog.Any(config.ErrorKey, err))
 		return nil, status.Error(codes.Internal, ErrFailedToDownloadFile.Error())
+	}
+	if file == nil {
+		return &MMSpb.DownloadFileResponse{}, nil
 	}
 
 	fi, err := os.Open(file.Path)
@@ -34,16 +33,15 @@ func (f *FileHandler) DownloadFile(ctx context.Context, req *MMSpb.DownloadFileR
 		slog.Error(logPrefix(fnDownloadFile)+"failed to open file", slog.Any(config.ErrorKey, err), slog.String("path", file.Path))
 		return nil, status.Error(codes.Internal, ErrFailedToDownloadFile.Error())
 	}
-	defer fi.Close()
+	defer func() {
+		if err := fi.Close(); err != nil {
+			slog.Error(logPrefix(fnDownloadFile)+"failed to close file", slog.Any(config.ErrorKey, err), slog.String("path", file.Path))
+		}
+	}()
 
 	contents := make([]byte, file.Size)
 	if _, err := fi.Read(contents); err != nil {
 		slog.Error(logPrefix(fnDownloadFile)+"failed to read file", slog.Any(config.ErrorKey, err), slog.String("path", file.Path))
-		return nil, status.Error(codes.Internal, ErrFailedToDownloadFile.Error())
-	}
-
-	if err := fi.Close(); err != nil {
-		slog.Error(logPrefix(fnDownloadFile)+"failed to close file", slog.Any(config.ErrorKey, err), slog.String("path", file.Path))
 		return nil, status.Error(codes.Internal, ErrFailedToDownloadFile.Error())
 	}
 

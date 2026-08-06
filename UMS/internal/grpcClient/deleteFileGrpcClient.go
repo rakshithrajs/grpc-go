@@ -11,7 +11,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (c *Client) DeleteFileGrpcClient(ctx context.Context, userID, fileID string) error {
+// DeleteFileGrpcClient deletes a file from MMS storage after removing the user-file mapping.
+func (c *MMSClient) DeleteFileGrpcClient(ctx context.Context, userID, fileID string) error {
 	fileName, err := c.storage.DeleteUserFile(ctx, userID, fileID)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
@@ -26,5 +27,5 @@ func (c *Client) DeleteFileGrpcClient(ctx context.Context, userID, fileID string
 		return err
 	}
 
-	return status.Error(codes.OK, config.NullString)
+	return nil
 }
